@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Daftar | KarirKu Polinema</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+<header class="simple-top">
+  <div class="container">
+    <a class="brand" href="index.html"><img class="brand-mark" src="assets/img/logo-polinema.png" alt="Logo Politeknik Negeri Malang"><span>KarirKu Polinema</span></a>
+    <span style="margin-left:auto" class="muted">Sudah punya akun? <a href="masuk.html"><b>Masuk</b></a></span>
+  </div>
+</header>
+
+<main class="auth-main" style="align-items:flex-start;padding-top:40px;background:var(--sky);min-height:calc(100vh - 68px)">
+  <div class="auth-box wide">
+
+    <!-- Step 0: pilih peran -->
+    <section id="s0">
+      <a class="back" href="index.html"><span data-ic="left"></span>Kembali ke beranda</a>
+      <h1 style="font-size:2rem">Daftar ke KarirKu</h1>
+      <p class="muted">Pilih peranmu. Data yang diminta berbeda untuk setiap peran.</p>
+      <div class="role-cards">
+        <button class="role-card" data-role="mhs"><span class="feature-ic" data-ic="graduation"></span><b>Mahasiswa atau alumni</b><span>Khusus civitas Politeknik Negeri Malang. Cari dan lamar lowongan.</span></button>
+        <button class="role-card" data-role="pt"><span class="feature-ic" data-ic="building"></span><b>Perusahaan</b><span>Pasang lowongan dan rekrut lulusan vokasi Polinema.</span></button>
+      </div>
+      <button class="btn btn-primary" id="startBtn" disabled style="width:100%;padding:13px">Lanjut</button>
+    </section>
+
+    <!-- Form -->
+    <section id="sForm" hidden>
+      <button class="back btn-link" id="changeRole" style="padding:0"><span data-ic="left"></span>Ganti peran</button>
+      <h1 style="font-size:1.8rem" id="formTitle">Daftar sebagai mahasiswa atau alumni</h1>
+      <div class="stepper" aria-label="Langkah pendaftaran">
+        <div class="s on" data-s="1"><i>1</i><span>Akun</span></div><div class="ln"></div>
+        <div class="s" data-s="2"><i>2</i><span id="st2">Data diri</span></div><div class="ln"></div>
+        <div class="s" data-s="3"><i>3</i><span>Dokumen</span></div>
+      </div>
+      <div class="panel">
+        <form id="regForm" novalidate>
+          <!-- langkah 1 -->
+          <div data-step="1">
+            <div class="field mhs-only"><label for="nama">Nama lengkap</label><input class="input" id="nama" required placeholder="Sesuai KTM atau ijazah"><div class="err">Nama lengkap wajib diisi.</div></div>
+            <div class="field"><label for="remail" id="lblEmail">Email</label><input class="input" id="remail" type="email" required placeholder="nama@email.com"><div class="err">Masukkan email yang valid.</div><div class="hint">Info status akun dikirim ke email ini.</div></div>
+            <div class="field mhs-only"><label for="wa">Nomor WhatsApp</label><input class="input" id="wa" inputmode="tel" required placeholder="08xxxxxxxxxx"><div class="err">Nomor WhatsApp wajib diisi.</div></div>
+            <div class="row2">
+              <div class="field"><label for="p1">Kata sandi</label><div class="pw"><input class="input" id="p1" type="password" required minlength="8" placeholder="Minimal 8 karakter"><button type="button" aria-label="Tampilkan kata sandi" data-ic="eye"></button></div><div class="err">Kata sandi minimal 8 karakter.</div></div>
+              <div class="field"><label for="p2">Ulangi kata sandi</label><div class="pw"><input class="input" id="p2" type="password" required placeholder="Ketik ulang"><button type="button" aria-label="Tampilkan kata sandi" data-ic="eye"></button></div><div class="err">Kata sandi belum sama.</div></div>
+            </div>
+          </div>
+          <!-- langkah 2 mahasiswa -->
+          <div data-step="2" class="mhs-only" hidden>
+            <div class="row2">
+              <div class="field"><label for="nim">NIM</label><input class="input" id="nim" required inputmode="numeric" placeholder="10 digit"><div class="err">NIM harus 10 digit angka.</div></div>
+              <div class="field"><label for="status">Status</label><select class="input" id="status"><option value="aktif">Mahasiswa aktif</option><option value="alumni">Alumni</option></select></div>
+            </div>
+            <div class="row2">
+              <div class="field"><label for="jur">Jurusan</label><select class="input" id="jur" required><option value="">Pilih jurusan</option></select><div class="err">Pilih jurusan.</div></div>
+              <div class="field"><label for="prodi">Program studi</label><select class="input" id="prodi" required><option value="">Pilih jurusan dulu</option></select><div class="err">Pilih program studi.</div></div>
+            </div>
+            <div class="row2">
+              <div class="field"><label for="angk">Angkatan</label><select class="input" id="angk"><option>2022</option><option>2023</option><option>2024</option><option>2021</option><option>2020</option><option>2019</option></select></div>
+              <div class="field" id="lulusField" hidden><label for="lulus">Tahun lulus</label><select class="input" id="lulus"><option>2026</option><option>2025</option><option>2024</option><option>2023</option></select></div>
+            </div>
+          </div>
+          <!-- langkah 2 perusahaan -->
+          <div data-step="2" class="pt-only" hidden>
+            <div class="field"><label for="ptnama">Nama perusahaan</label><input class="input" id="ptnama" required placeholder="PT Contoh Sejahtera"><div class="err">Nama perusahaan wajib diisi.</div></div>
+            <div class="row2">
+              <div class="field"><label for="bidang">Bidang usaha</label><select class="input" id="bidang"><option>Teknologi Informasi</option><option>Konstruksi</option><option>Manufaktur</option><option>Kelistrikan dan energi</option><option>Kimia dan farmasi</option><option>Keuangan dan akuntansi</option><option>Perdagangan dan jasa</option></select></div>
+              <div class="field"><label for="jenis">Jenis perusahaan</label><select class="input" id="jenis"><option>Swasta nasional</option><option>BUMN / BUMD</option><option>Multinasional</option><option>Startup</option><option>UMKM</option></select></div>
+            </div>
+            <div class="field"><label for="alamat">Alamat kantor</label><input class="input" id="alamat" required placeholder="Jalan, nomor, kota"><div class="err">Alamat wajib diisi.</div></div>
+            <div class="row2">
+              <div class="field"><label for="web">Website <span class="muted">(opsional)</span></label><input class="input" id="web" placeholder="https://"></div>
+              <div class="field"><label for="pic">Nama PIC</label><input class="input" id="pic" required placeholder="Penanggung jawab rekrutmen"><div class="err">Nama PIC wajib diisi.</div></div>
+            </div>
+            <div class="row2">
+              <div class="field"><label for="jab">Jabatan PIC</label><input class="input" id="jab" placeholder="HR Manager"></div>
+              <div class="field"><label for="picwa">WhatsApp PIC</label><input class="input" id="picwa" required inputmode="tel" placeholder="08xxxxxxxxxx"><div class="err">Nomor WhatsApp PIC wajib diisi.</div></div>
+            </div>
+          </div>
+          <!-- langkah 3 -->
+          <div data-step="3" hidden>
+            <div class="field mhs-only">
+              <label id="docLabel">Unggah KTM</label>
+              <label class="upload"><input type="file" id="doc" accept=".pdf,.jpg,.jpeg,.png"><span data-ic="upload"></span><div><b>Pilih file</b> atau seret ke sini</div><div class="hint">PDF, JPG, atau PNG. Maksimal 2 MB.</div></label>
+              <div class="err">Dokumen wajib diunggah.</div>
+            </div>
+            <div class="pt-only">
+              <h3>Dokumen legalitas perusahaan</h3>
+              <p class="muted" style="font-size:.9rem">PDF, JPG, atau PNG. Maksimal 2 MB per file.</p>
+              <div class="row2">
+                <div class="field"><label>NIB <span style="color:var(--bad)">*</span></label>
+                  <label class="upload"><input type="file" id="docpt" data-req accept=".pdf,.jpg,.jpeg,.png"><span data-ic="upload"></span><div><b>Pilih file NIB</b></div></label>
+                  <div class="err">NIB wajib diunggah.</div></div>
+                <div class="field"><label>NPWP perusahaan <span style="color:var(--bad)">*</span></label>
+                  <label class="upload"><input type="file" id="docnpwp" data-req accept=".pdf,.jpg,.jpeg,.png"><span data-ic="upload"></span><div><b>Pilih file NPWP</b></div></label>
+                  <div class="err">NPWP perusahaan wajib diunggah.</div></div>
+                <div class="field"><label>Akta pendirian <span style="color:var(--bad)">*</span></label>
+                  <label class="upload"><input type="file" id="docakta" data-req accept=".pdf,.jpg,.jpeg,.png"><span data-ic="upload"></span><div><b>Pilih file akta</b></div></label>
+                  <div class="err">Akta pendirian wajib diunggah.</div></div>
+                <div class="field"><label>Surat keterangan domisili <span class="muted">(opsional)</span></label>
+                  <label class="upload"><input type="file" accept=".pdf,.jpg,.jpeg,.png"><span data-ic="upload"></span><div><b>Pilih file</b></div></label></div>
+              </div>
+              <div class="field"><label>Logo perusahaan <span class="muted">(opsional)</span></label><label class="upload"><input type="file" accept=".jpg,.jpeg,.png"><span data-ic="image"></span><div><b>Pilih logo</b></div><div class="hint">PNG atau JPG persegi.</div></label></div>
+              <div class="field"><label class="check"><input type="checkbox" id="noOut"> Saya menyatakan perusahaan ini bukan perusahaan outsourcing.</label><div class="err">Pernyataan ini wajib dicentang.</div></div>
+            </div>
+            <h3 style="margin-top:8px">Periksa datamu</h3>
+            <div class="summary"><dl id="sumList"></dl></div>
+            <div class="field" style="margin-top:14px"><label class="check"><input type="checkbox" id="agree"> Saya menyetujui syarat penggunaan dan kebijakan privasi KarirKu Polinema.</label><div class="err">Setujui syarat penggunaan untuk melanjutkan.</div></div>
+          </div>
+
+          <div style="display:flex;justify-content:space-between;gap:12px;margin-top:10px">
+            <button type="button" class="btn btn-outline" id="prevBtn">Kembali</button>
+            <button type="submit" class="btn btn-primary" id="nextBtn">Lanjut</button>
+          </div>
+        </form>
+      </div>
+    </section>
+
+    <!-- Sukses -->
+    <section id="sDone" hidden>
+      <div class="panel" style="text-align:center;padding:40px 28px">
+        <div class="feature-ic" style="margin:0 auto 16px;width:64px;height:64px;border-radius:50%;background:var(--ok-bg);color:var(--ok)" data-ic="check"></div>
+        <h1 style="font-size:1.7rem">Pendaftaran terkirim</h1>
+        <p class="muted" style="max-width:48ch;margin-inline:auto">Nomor pendaftaranmu <b style="color:var(--navy)">REG-2026-0123</b>. Career Center akan memeriksa datamu paling lama 2 hari kerja.</p>
+        <div class="alert alert-info" style="text-align:left;max-width:460px;margin:20px auto"><span data-ic="mail"></span><span>Kami sudah mengirim email konfirmasi ke <b id="doneEmail">emailmu</b>. Email berikutnya dikirim saat akun disetujui atau perlu diperbaiki.</span></div>
+        <a class="btn btn-primary" href="status-akun.html">Lihat status akun</a>
+        <a class="btn btn-link" href="index.html">Ke beranda</a>
+      </div>
+    </section>
+  </div>
+</main>
+
+<script src="assets/js/app.js"></script>
+<script>
+const PRODI={
+ 'Teknik Sipil':['D-III Teknik Sipil','D-IV Manajemen Rekayasa Konstruksi'],
+ 'Teknik Mesin':['D-III Teknik Mesin','D-IV Teknik Otomotif Elektronik'],
+ 'Teknik Elektro':['D-III Teknik Listrik','D-IV Teknik Elektronika'],
+ 'Teknik Kimia':['D-III Teknik Kimia','D-IV Teknologi Kimia Industri'],
+ 'Akuntansi':['D-III Akuntansi','D-IV Akuntansi Manajemen'],
+ 'Administrasi Niaga':['D-III Administrasi Bisnis','D-IV Manajemen Pemasaran'],
+ 'Teknologi Informasi':['D-IV Teknik Informatika','D-IV Sistem Informasi Bisnis']
+};
+const jurSel=document.getElementById('jur'), prodiSel=document.getElementById('prodi');
+JURUSAN.forEach(j=>jurSel.add(new Option(j,j)));
+jurSel.addEventListener('change',()=>{ prodiSel.innerHTML='<option value="">Pilih program studi</option>'; (PRODI[jurSel.value]||[]).forEach(p=>prodiSel.add(new Option(p,p))); });
+document.getElementById('status').addEventListener('change',e=>{
+  const al=e.target.value==='alumni';
+  document.getElementById('lulusField').hidden=!al;
+  document.getElementById('docLabel').textContent= al?'Unggah ijazah atau SKL':'Unggah KTM';
+});
+
+let role=null, step=1;
+const cards=document.querySelectorAll('.role-card'), startBtn=document.getElementById('startBtn');
+function pick(r){ role=r; cards.forEach(c=>c.classList.toggle('selected',c.dataset.role===r)); startBtn.disabled=false; }
+cards.forEach(c=>c.addEventListener('click',()=>pick(c.dataset.role)));
+if(new URLSearchParams(location.search).get('peran')==='perusahaan') pick('pt');
+startBtn.addEventListener('click',()=>{
+  document.getElementById('s0').hidden=true; document.getElementById('sForm').hidden=false;
+  const pt=role==='pt';
+  document.getElementById('formTitle').textContent= pt?'Daftar sebagai perusahaan':'Daftar sebagai mahasiswa atau alumni';
+  document.getElementById('st2').textContent= pt?'Data perusahaan':'Data diri';
+  document.getElementById('lblEmail').textContent= pt?'Email perusahaan':'Email';
+  document.querySelectorAll('.mhs-only').forEach(e=>e.dataset.role='mhs');
+  document.querySelectorAll('.pt-only').forEach(e=>e.dataset.role='pt');
+  step=1; render();
+});
+document.getElementById('changeRole').addEventListener('click',()=>{ document.getElementById('sForm').hidden=true; document.getElementById('s0').hidden=false; });
+
+function visible(el){ return !el.closest('[data-role]') || el.closest('[data-role]').dataset.role===role; }
+function render(){
+  document.querySelectorAll('[data-step]').forEach(s=>{ const r=s.dataset.role; s.hidden = s.dataset.step!=step || (r && r!==role); });
+  document.querySelectorAll('[data-step] [data-role]').forEach(e=>e.hidden = e.dataset.role!==role);
+  document.querySelectorAll('.stepper .s').forEach(s=>{ const n=+s.dataset.s; s.classList.toggle('on',n===step); s.classList.toggle('done',n<step); s.querySelector('i').innerHTML = n<step ? ic('check') : n; });
+  document.querySelectorAll('.stepper .ln').forEach((l,k)=>l.classList.toggle('on',k+1<step));
+  document.getElementById('prevBtn').style.visibility= step===1?'hidden':'visible';
+  document.getElementById('nextBtn').textContent= step===3?'Kirim pendaftaran':'Lanjut';
+  if(step===3) summary();
+  window.scrollTo(0,0);
+}
+function val(id){ return document.getElementById(id).value; }
+function summary(){
+  const rows = role==='pt'
+   ? [['Perusahaan',val('ptnama')],['Bidang usaha',val('bidang')],['Jenis',val('jenis')],['Alamat',val('alamat')],['PIC',val('pic')+(val('jab')?', '+val('jab'):'')],['WhatsApp PIC',val('picwa')],['Email',val('remail')]]
+   : [['Nama',val('nama')],['NIM',val('nim')],['Jurusan',val('jur')],['Program studi',val('prodi')],['Angkatan',val('angk')],['Status',val('status')==='alumni'?'Alumni, lulus '+val('lulus'):'Mahasiswa aktif'],['Email',val('remail')],['WhatsApp',val('wa')]];
+  document.getElementById('sumList').innerHTML=rows.map(([k,v])=>`<dt>${k}</dt><dd>${v||'-'}</dd>`).join('');
+}
+function validate(){
+  let ok=true;
+  const pane=[...document.querySelectorAll(`[data-step="${step}"]`)].find(p=>!p.hidden);
+  pane.querySelectorAll('.field').forEach(f=>{
+    if(f.hidden || f.closest('[hidden]')) return;
+    const i=f.querySelector('input,select'); if(!i) return;
+    let bad=false;
+    if(i.required && !i.value.trim()) bad=true;
+    if(i.type==='email' && !/^\S+@\S+\.\S+$/.test(i.value)) bad=true;
+    if(i.id==='nim' && !/^\d{10}$/.test(i.value)) bad=true;
+    if(i.id==='p1' && i.value.length<8) bad=true;
+    if(i.id==='p2' && i.value!==val('p1')) bad=true;
+    if(i.type==='file' && !i.files.length && (i.id==='doc'||i.hasAttribute('data-req'))) bad=true;
+    if(i.type==='file' && i.files.length && i.files[0].size>2*1024*1024) bad=true;
+    if(i.type==='checkbox' && (i.id==='agree'||i.id==='noOut') && !i.checked) bad=true;
+    f.classList.toggle('has-err',bad); if(bad) ok=false;
+  });
+  if(!ok){ const first=pane.querySelector('.has-err input,.has-err select'); first&&first.focus(); }
+  return ok;
+}
+document.getElementById('prevBtn').addEventListener('click',()=>{ step--; render(); });
+document.getElementById('regForm').addEventListener('submit',e=>{
+  e.preventDefault();
+  if(!validate()) return;
+  if(step<3){ step++; render(); return; }
+  document.getElementById('sForm').hidden=true; document.getElementById('sDone').hidden=false;
+  document.getElementById('doneEmail').textContent=val('remail');
+  window.scrollTo(0,0);
+});
+</script>
+</body>
+</html>

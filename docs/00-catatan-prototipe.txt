@@ -1,0 +1,56 @@
+KARIRKU POLINEMA - PROTOTIPE UI/UX (HTML)
+==========================================
+
+CARA MEMBUKA
+1. Ekstrak file ZIP ini.
+2. Klik dua kali index.html (buka di Chrome/Edge). Tidak perlu server.
+3. Sambungkan internet agar font "Onest" termuat. Tanpa internet tampilan tetap jalan dengan font bawaan.
+
+ALUR DEMO UNTUK PRESENTASI
+- index.html          : Beranda (hero foto seperti contoh ITS, tanpa lowongan)
+- daftar.html         : Pilih peran lalu formulir 3 langkah
+- status-akun.html    : Halaman akun yang belum di-ACC (ada tombol "Mode demo" di kiri bawah)
+- masuk.html          : Login. Pakai tombol "Akun demo":
+                          Mahasiswa aktif      -> mahasiswa.html (muncul pop-up selamat datang)
+                          Perusahaan           -> perusahaan.html
+                          Admin                -> admin.html
+                          Akun menunggu        -> status-akun.html
+                          Akun dinonaktifkan   -> pesan peringatan di halaman login
+- info-loker.html?id=1 : Halaman pratinjau loker tanpa login (link yang dikirim ke admin jurusan)
+
+Semua menu, tab, filter, tombol, dan pop-up bisa diklik. Data masih dummy dan
+akan kembali seperti semula saat halaman di-refresh.
+
+CARA MENGGANTI FOTO (WAJIB SEBELUM PRESENTASI)
+Simpan foto asli Polinema dengan NAMA FILE YANG SAMA di folder assets/img/:
+- hero-1.jpg sampai hero-4.jpg  : foto slider beranda (1920 x 1080 px, landscape)
+- about.jpg                     : foto bagian Tentang KarirKu (1200 x 900 px)
+- login.jpg                     : foto samping halaman Masuk (1200 x 1400 px, portrait)
+- avatar-1.jpg sampai avatar-6.jpg : foto profil dummy (persegi)
+- pamflet-1.jpg sampai pamflet-6.jpg : contoh pamflet lowongan (rasio 4:5)
+- dok-ktm.jpg, dok-nib.jpg      : contoh dokumen verifikasi
+Foto di sebelah kanan hero sebaiknya berisi orang/gedung, karena sisi kiri tertutup lapisan biru.
+Gambar yang ada sekarang hanya ilustrasi sementara, tinggal ditimpa file dengan nama sama.
+
+YANG PERLU DICEK / DIGANTI
+- Logo: huruf "K" di lingkaran adalah placeholder. Ganti dengan logo resmi bila diizinkan.
+- Email dan telepon Career Center di bagian Kontak masih contoh.
+- Kotak peta di bagian Kontak: sematkan Google Maps kampus.
+- Nama perusahaan, mahasiswa, NIM, dan nomor WhatsApp semuanya fiktif.
+
+STRUKTUR FOLDER
+index.html, masuk.html, daftar.html, status-akun.html, info-loker.html
+mahasiswa.html, perusahaan.html, admin.html
+assets/css/style.css   : semua gaya (warna biru putih ada di bagian :root)
+assets/js/app.js       : ikon, navigasi, modal, notifikasi, data dummy
+assets/img/            : semua gambar
+
+REVISI TERBARU
+- Kolom cari di bar atas dihapus (mahasiswa dan admin). Cari hanya ada di dalam menu daftar.
+- Tombol Pasang lowongan hanya ada di menu Lowongan Saya (perusahaan).
+- Melamar wajib melampirkan KTM (otomatis dari akun) dan surat pengantar (PDF). Ada tab Dokumen di Profil Karier.
+- Detail pelamar di perusahaan menampilkan KTM dan surat pengantar.
+- Daftar perusahaan wajib unggah NIB, NPWP perusahaan, dan akta pendirian (surat domisili dan logo opsional).
+- Admin melihat semua dokumen legalitas tersebut di Detail Pendaftar.
+- Filter "Semua jurusan" (7 jurusan) ada di ketiga peran: Lowongan, Pelamar, Persetujuan Akun,
+  Kelola Pengguna, Monitoring Lowongan, Rekap Lamaran, dan Tracer Karier.

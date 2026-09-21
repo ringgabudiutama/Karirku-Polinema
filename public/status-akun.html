@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Status Akun | KarirKu Polinema</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body style="background:var(--sky)">
+<header class="simple-top">
+  <div class="container">
+    <a class="brand" href="index.html"><img class="brand-mark" src="assets/img/logo-polinema.png" alt="Logo Politeknik Negeri Malang"><span>KarirKu Polinema</span></a>
+    <div class="top-right">
+      <div class="wrap-rel">
+        <button class="icon-btn" aria-label="Notifikasi" data-pop="popN" data-ic="bell"><span class="dot">1</span></button>
+        <div class="pop" id="popN">
+          <div class="pop-head">Notifikasi</div>
+          <a class="item unread" href="#"><span class="list-ic" data-ic="hourglass"></span><span><b>Pendaftaran diterima</b><br><small class="muted">Datamu sedang dalam antrean verifikasi.</small></span></a>
+        </div>
+      </div>
+      <a class="btn btn-sm btn-outline" href="masuk.html"><span data-ic="logout"></span>Keluar</a>
+    </div>
+  </div>
+</header>
+
+<main class="container" style="max-width:820px;padding:36px 0 120px">
+  <p class="muted" style="margin-bottom:6px">Halo, Siti Rahma</p>
+  <h1 style="font-size:1.9rem">Status akun</h1>
+
+  <div id="banner"></div>
+
+  <div class="grid g2" style="align-items:start">
+    <div class="panel">
+      <h3>Progres verifikasi</h3>
+      <ol class="vtl" id="tl"></ol>
+    </div>
+    <div class="panel">
+      <div class="panel-head"><h3>Data yang kamu kirim</h3><span id="editWrap"></span></div>
+      <dl class="dl" style="grid-template-columns:120px 1fr">
+        <dt>Nama</dt><dd>Siti Rahma</dd>
+        <dt>NIM</dt><dd>2241760012</dd>
+        <dt>Jurusan</dt><dd>Teknologi Informasi</dd>
+        <dt>Prodi</dt><dd>D-IV Sistem Informasi Bisnis</dd>
+        <dt>Angkatan</dt><dd>2022</dd>
+        <dt>Status</dt><dd>Mahasiswa aktif</dd>
+        <dt>Email</dt><dd>siti@student.polinema.ac.id</dd>
+        <dt>Dokumen</dt><dd><a href="assets/img/dok-ktm.jpg" target="_blank">KTM_Siti.jpg</a></dd>
+      </dl>
+    </div>
+  </div>
+
+  <div class="panel" style="margin-top:18px">
+    <h3>Menu yang terbuka setelah akun aktif</h3>
+    <div class="lock-list" id="locks">
+      <span>Dashboard</span><span>Lowongan</span><span>Disimpan</span><span>Lamaran Saya</span><span>Profil Karier</span>
+    </div>
+  </div>
+</main>
+
+<div class="demo-switch" aria-label="Mode demo">
+  <b>Mode demo: ubah status</b>
+  <div>
+    <button class="btn btn-sm btn-outline" data-st="menunggu">Menunggu</button>
+    <button class="btn btn-sm btn-outline" data-st="perbaikan">Perlu perbaikan</button>
+    <button class="btn btn-sm btn-outline" data-st="ditolak">Ditolak</button>
+    <button class="btn btn-sm btn-outline" data-st="aktif">Disetujui</button>
+  </div>
+</div>
+
+<div class="modal" id="mFix" role="dialog" aria-modal="true" aria-labelledby="fxT">
+  <div class="modal-box">
+    <div class="modal-head"><h3 id="fxT">Perbaiki data</h3><button class="close" data-close aria-label="Tutup" data-ic="x"></button></div>
+    <div class="modal-body">
+      <div class="alert alert-warn"><span data-ic="info"></span><span>Catatan Admin: foto KTM buram, NIM tidak terbaca. Unggah ulang foto yang jelas.</span></div>
+      <div class="field"><label>NIM</label><input class="input" value="2241760012"></div>
+      <div class="field"><label>Unggah ulang KTM</label><label class="upload"><input type="file" accept=".pdf,.jpg,.png"><span data-ic="upload"></span><div><b>Pilih file</b></div><div class="hint">PDF, JPG, atau PNG. Maksimal 2 MB.</div></label></div>
+    </div>
+    <div class="modal-foot"><button class="btn btn-outline" data-close>Batal</button><button class="btn btn-primary" id="resend">Kirim ulang</button></div>
+  </div>
+</div>
+
+<script src="assets/js/app.js"></script>
+<script>
+const S={
+ menunggu:{cls:'alert-warn',icon:'hourglass',title:'Akunmu sedang diverifikasi',text:'Nomor pendaftaran REG-2026-0123. Career Center memeriksa datamu paling lama 2 hari kerja. Kami kirim email saat ada hasil.',
+   tl:[['done','Pendaftaran dikirim','12 Sep 2026, 09.14'],['now','Diperiksa Career Center','Sedang berlangsung'],['','Akun aktif','Menunggu']]},
+ perbaikan:{cls:'alert-warn',icon:'alert',title:'Datamu perlu diperbaiki',text:'Catatan Admin: foto KTM buram, NIM tidak terbaca. Perbaiki paling lambat 7 hari, lalu kirim ulang.',action:'<button class="btn btn-warn" data-open="mFix">Perbaiki data</button>',
+   tl:[['done','Pendaftaran dikirim','12 Sep 2026, 09.14'],['bad','Perlu perbaikan','13 Sep 2026, 10.02'],['','Akun aktif','Menunggu perbaikan']]},
+ ditolak:{cls:'alert-bad',icon:'ban',title:'Pendaftaran tidak disetujui',text:'Alasan: NIM tidak terdaftar sebagai mahasiswa atau alumni Politeknik Negeri Malang. Jika menurutmu ini keliru, hubungi Career Center di jpc@polinema.ac.id atau datang ke Graha Polinema Lantai 3.',action:'<a class="btn btn-outline" href="mailto:jpc@polinema.ac.id">Email Career Center</a> <a class="btn btn-link" href="index.html#kontak">Lihat kontak lengkap</a>',
+   tl:[['done','Pendaftaran dikirim','12 Sep 2026, 09.14'],['bad','Ditolak','13 Sep 2026, 10.02'],['','Akun aktif','Tidak tersedia']]},
+ aktif:{cls:'alert-ok',icon:'checkc',title:'Selamat, akunmu sudah aktif',text:'Akunmu disetujui Career Center dan email konfirmasi sudah dikirim. Semua menu sekarang terbuka.',action:'<a class="btn btn-ok" href="mahasiswa.html?welcome=1">Masuk ke dashboard</a>',
+   tl:[['done','Pendaftaran dikirim','12 Sep 2026, 09.14'],['done','Diperiksa Career Center','13 Sep 2026, 10.02'],['good','Akun aktif','13 Sep 2026, 10.02']]}
+};
+function set(k){
+  const s=S[k];
+  document.getElementById('banner').innerHTML=`<div class="status-hero alert ${s.cls}">${ic(s.icon)}<div style="flex:1"><h2>${s.title}</h2><p>${s.text}</p>${s.action?'<div style="margin-top:14px">'+s.action+'</div>':''}</div></div>`;
+  document.getElementById('tl').innerHTML=s.tl.map(([c,t,d],i)=>`<li class="${c}"><span class="b">${c==='done'||c==='good'?ic('check'):c==='bad'?ic('x'):i+1}</span><span><b>${t}</b><small>${d}</small></span></li>`).join('');
+  document.getElementById('locks').querySelectorAll('span').forEach(x=>{ x.innerHTML=(k==='aktif'?ic('check'):ic('lock'))+x.textContent; x.style.background=k==='aktif'?'var(--ok-bg)':''; x.style.color=k==='aktif'?'var(--ok)':''; });
+  document.getElementById('editWrap').innerHTML = k==='perbaikan' ? '<button class="btn btn-sm btn-outline" data-open="mFix">Edit</button>' : '';
+  document.querySelectorAll('[data-st]').forEach(b=>b.classList.toggle('btn-primary',b.dataset.st===k));
+}
+document.querySelectorAll('[data-st]').forEach(b=>b.addEventListener('click',()=>set(b.dataset.st)));
+document.getElementById('resend').addEventListener('click',e=>{ closeModal(e.target); set('menunggu'); toast('Perbaikan terkirim. Status kembali menunggu verifikasi'); });
+set('menunggu');
+initApp && document.querySelectorAll('[data-pop]').forEach(b=>b.addEventListener('click',ev=>{ev.stopPropagation(); document.getElementById(b.dataset.pop).classList.toggle('open');}));
+document.addEventListener('click',e=>{ if(!e.target.closest('.pop')) document.querySelectorAll('.pop').forEach(p=>p.classList.remove('open')); });
+</script>
+</body>
+</html>

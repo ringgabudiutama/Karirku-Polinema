@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>KarirKu Polinema</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+<div class="app">
+  <aside class="side" aria-label="Menu utama">
+    <a class="brand" href="#dashboard"><img class="brand-mark" src="assets/img/logo-polinema.png" alt="Logo Politeknik Negeri Malang"><span>KarirKu<small>Admin Career Center</small></span></a>
+    <ul class="menu">
+      <li><a href="#dashboard" data-ic="home">Dashboard</a></li>
+      <li><a href="#persetujuan" data-ic="clipboard">Persetujuan Akun <span class="count" id="menuCount">5</span></a></li>
+      <li><a href="#pengguna" data-ic="users">Kelola Pengguna</a></li>
+      <li><a href="#monitoring" data-ic="briefcase">Monitoring Lowongan</a></li>
+      <li><a href="#rekap" data-ic="file">Rekap Lamaran</a></li>
+      <li><a href="#kirim" data-ic="send">Kirim Loker ke Jurusan</a></li>
+      <li><a href="#tracer" data-ic="chart">Tracer Karier</a></li>
+    </ul>
+    <div class="side-label">Akun</div>
+    <ul class="menu">
+      <li><a href="#notifikasi" data-ic="bell">Notifikasi</a></li>
+      <li><a href="#pengaturan" data-ic="settings">Pengaturan</a></li>
+    </ul>
+    <div class="side-foot"><a href="masuk.html" data-ic="logout">Keluar</a></div>
+  </aside>
+
+  <div class="main">
+    <header class="topbar">
+      <button class="icon-btn menu-toggle" aria-label="Buka menu" data-ic="menu"></button>
+      <b class="top-title" id="topTitle">Dashboard</b>
+      <div class="top-right">
+        <div class="wrap-rel">
+          <button class="icon-btn" aria-label="Notifikasi, 3 belum dibaca" data-pop="popN" data-ic="bell"><span class="dot">3</span></button>
+          <div class="pop" id="popN">
+            <div class="pop-head">Notifikasi <a href="#" data-readall>Tandai dibaca</a></div>
+            <a class="item unread" href="#tracer"><span class="list-ic" data-ic="checkc"></span><span><b>Pelamar diterima</b><br>Budi Santoso (TI 2022) diterima di PT Nusantara Digital<br><small class="muted">10 menit lalu</small></span></a>
+            <a class="item unread" href="#persetujuan"><span class="list-ic" data-ic="clipboard"></span><span><b>2 pendaftar baru</b><br>1 mahasiswa, 1 perusahaan<br><small class="muted">1 jam lalu</small></span></a>
+            <a class="item unread" href="#persetujuan"><span class="list-ic" data-ic="refresh"></span><span><b>Data perbaikan dikirim ulang</b><br>Rizal Fahmi memperbarui KTM<br><small class="muted">3 jam lalu</small></span></a>
+            <div class="pop-foot"><a href="#notifikasi">Lihat semua notifikasi</a></div>
+          </div>
+        </div>
+        <div class="wrap-rel">
+          <button class="user-btn" data-pop="popU"><span class="logo-sq" style="background:var(--navy);width:36px;height:36px;border-radius:50%">CC</span><span><b>Admin Career Center</b><small>Politeknik Negeri Malang</small></span></button>
+          <div class="pop" id="popU" style="width:200px"><a class="item" href="#pengaturan">Pengaturan</a><a class="item" href="masuk.html">Keluar</a></div>
+        </div>
+      </div>
+    </header>
+
+    <div class="page">
+      <!-- DASHBOARD -->
+      <section class="view" id="v-dashboard" data-title="Dashboard Admin">
+        <div class="page-head"><div><h1>Selamat pagi, Career Center</h1><p>Ringkasan KarirKu per 17 September 2026.</p></div></div>
+        <div class="grid g4" style="margin-bottom:18px">
+          <a class="stat alert-stat" href="#persetujuan"><div class="n" id="dashPending">5</div><div class="l">Menunggu verifikasi, 1 lewat 2 hari</div></a>
+          <a class="stat" href="#pengguna"><div class="n">1.284</div><div class="l">Mahasiswa dan alumni aktif</div></a>
+          <a class="stat" href="#monitoring"><div class="n">58</div><div class="l">Lowongan aktif dari 41 perusahaan</div></a>
+          <a class="stat" href="#tracer"><div class="n" style="color:var(--ok)">72%</div><div class="l">Alumni 2025 sudah bekerja</div></a>
+        </div>
+        <div class="grid g-side">
+          <div>
+            <div class="panel">
+              <div class="panel-head"><h2>Lamaran per bulan</h2><a href="#rekap">Rekap lamaran</a></div>
+              <div class="cols">
+                <div class="c"><b>120</b><i style="height:40%"></i>Apr</div><div class="c"><b>168</b><i style="height:56%"></i>Mei</div>
+                <div class="c"><b>210</b><i style="height:70%"></i>Jun</div><div class="c"><b>184</b><i style="height:61%"></i>Jul</div>
+                <div class="c"><b>256</b><i style="height:85%"></i>Agu</div><div class="c"><b>231</b><i style="height:77%"></i>Sep</div>
+              </div>
+            </div>
+            <div class="panel">
+              <div class="panel-head"><h2>Antrean verifikasi</h2><a href="#persetujuan">Buka semua</a></div>
+              <div class="table-wrap"><table class="t" id="dashQueue"></table></div>
+            </div>
+          </div>
+          <div class="panel">
+            <h3>Aktivitas terbaru</h3>
+            <ul class="activity">
+              <li><span class="list-ic" data-ic="checkc"></span><span><b>Budi Santoso diterima</b>PT Nusantara Digital, Web Developer<small>10 menit lalu</small></span></li>
+              <li><span class="list-ic" data-ic="briefcase"></span><span><b>Lowongan baru</b>CV Sinar Elektrik, Teknisi Listrik<small>1 jam lalu</small></span></li>
+              <li><span class="list-ic" data-ic="clipboard"></span><span><b>Pendaftar baru</b>PT Mitra Logistik<small>1 jam lalu</small></span></li>
+              <li><span class="list-ic" data-ic="info"></span><span><b>Lowongan ditutup otomatis</b>PT Mesin Presisi, kuota terpenuhi<small>Kemarin</small></span></li>
+              <li><span class="list-ic" data-ic="send"></span><span><b>Info loker dikirim</b>Drafter Sipil ke admin Teknik Sipil<small>Kemarin</small></span></li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <!-- PERSETUJUAN -->
+      <section class="view" id="v-persetujuan" data-title="Persetujuan Akun">
+        <div class="page-head"><div><h1>Persetujuan akun</h1><p>Periksa data dan dokumen pendaftar. Target selesai maksimal 2 hari kerja.</p></div></div>
+        <div class="panel">
+          <div class="tabs" id="qTabs"></div>
+          <div class="filters"><input class="input grow" type="search" placeholder="Cari nama pendaftar"><select class="input jur-filter" ><option value="">Semua jurusan</option></select><select class="input"><option>Paling lama menunggu</option><option>Paling baru</option></select></div>
+          <div class="table-wrap"><table class="t" id="qTable"></table></div>
+        </div>
+      </section>
+
+      <!-- DETAIL PENDAFTAR -->
+      <section class="view" id="v-verif" data-menu="persetujuan" data-title="Detail pendaftar">
+        <div class="crumb"><a href="#persetujuan">Persetujuan Akun</a> <span>/</span> <span id="vCrumb"></span></div>
+        <div class="grid g-side" style="align-items:start" id="vBox"></div>
+      </section>
+
+      <!-- PENGGUNA -->
+      <section class="view" id="v-pengguna" data-title="Kelola Pengguna">
+        <div class="page-head"><div><h1>Kelola pengguna</h1><p>Nonaktifkan akun yang melanggar ketentuan. Pengguna diberi tahu lewat email.</p></div></div>
+        <div class="panel">
+          <div class="tabs" data-tabs="uPanes"><button class="active" data-tab="m">Mahasiswa dan alumni</button><button data-tab="p">Perusahaan</button></div>
+          <div class="filters"><input class="input grow" type="search" placeholder="Cari nama, NIM, atau email"><select class="input jur-filter" ><option value="">Semua jurusan</option></select><select class="input"><option>Semua status</option><option>Aktif</option><option>Dinonaktifkan</option></select></div>
+          <div id="uPanes">
+            <div class="table-wrap" data-pane="m"><table class="t" id="uTable"></table></div>
+            <div class="table-wrap" data-pane="p" hidden><table class="t" id="cTable"></table></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- MONITORING -->
+      <section class="view" id="v-monitoring" data-title="Monitoring Lowongan">
+        <div class="page-head"><div><h1>Monitoring lowongan</h1><p>Semua lowongan dari seluruh perusahaan mitra.</p></div><button class="btn btn-outline" data-toast="Laporan Rekap Lowongan per Perusahaan diunduh"><span data-ic="download"></span>Unduh laporan PDF</button></div>
+        <div class="panel">
+          <div class="filters"><input class="input grow" type="search" placeholder="Cari posisi atau perusahaan"><select class="input jur-filter" ><option value="">Semua jurusan</option></select><select class="input"><option>Semua status</option><option>Aktif</option><option>Ditutup</option><option>Dinonaktifkan</option></select><select class="input"><option>Semua bidang</option></select></div>
+          <div class="table-wrap"><table class="t" id="monTable"></table></div>
+        </div>
+      </section>
+
+      <!-- REKAP -->
+      <section class="view" id="v-rekap" data-title="Rekap Lamaran">
+        <div class="page-head"><div><h1>Rekap lamaran</h1><p>Seluruh lamaran dari semua perusahaan. Hanya untuk dilihat.</p></div><button class="btn btn-primary" data-toast="Laporan Rekap Lamaran (sesuai filter) diunduh"><span data-ic="download"></span>Unduh PDF</button></div>
+        <div class="grid g4" style="margin-bottom:18px">
+          <div class="stat"><div class="n">1.169</div><div class="l">Total lamaran</div></div>
+          <div class="stat"><div class="n">412</div><div class="l">Sedang diproses</div></div>
+          <div class="stat"><div class="n" style="color:var(--ok)">186</div><div class="l">Diterima</div></div>
+          <div class="stat"><div class="n" style="color:var(--bad)">571</div><div class="l">Ditolak atau dibatalkan</div></div>
+        </div>
+        <div class="grid g-side" style="align-items:start">
+          <div class="panel">
+            <div class="filters">
+              <select class="input" id="rCo" onchange="renderRekap()"><option value="">Semua perusahaan</option></select>
+              <select class="input" id="rSt" onchange="renderRekap()"><option value="">Semua status</option><option value="diajukan">Diajukan</option><option value="screening">Screening CV</option><option value="interview">Interview</option><option value="diterima">Diterima</option><option value="ditolak">Ditolak</option></select>
+<select class="input jur-filter" id="rJur" onchange="renderRekap()"><option value="">Semua jurusan</option></select>
+              <select class="input"><option>Semua prodi</option></select>
+              <select class="input"><option>Semua angkatan</option></select>
+              <select class="input"><option>Sep 2026</option><option>Agu 2026</option><option>Semester ini</option></select>
+            </div>
+            <div class="table-wrap"><table class="t" id="rTable"></table></div>
+          </div>
+          <div class="panel">
+            <h3>Per perusahaan</h3>
+            <table class="t"><tr><th>Perusahaan</th><th>Pelamar</th><th>Diterima</th></tr>
+              <tr><td>PT Nusantara Digital</td><td>75</td><td>6</td></tr>
+              <tr><td>PT Mesin Presisi</td><td>31</td><td>5</td></tr>
+              <tr><td>KAP Wijaya &amp; Rekan</td><td>15</td><td>0</td></tr>
+              <tr><td>PT Arta Konstruksi</td><td>11</td><td>0</td></tr>
+              <tr><td>CV Sinar Elektrik</td><td>9</td><td>2</td></tr>
+              <tr><td>PT Kimia Farma Jaya</td><td>6</td><td>0</td></tr>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- KIRIM LOKER -->
+      <section class="view" id="v-kirim" data-title="Kirim Loker ke Jurusan">
+        <div class="page-head"><div><h1>Kirim loker ke jurusan</h1><p>Pilih lowongan, periksa pesan, lalu klik admin jurusan tujuan. WhatsApp langsung terbuka.</p></div></div>
+        <div class="grid" style="grid-template-columns:320px 1fr;align-items:start">
+          <div class="panel">
+            <h3>1. Pilih lowongan aktif</h3>
+            <div class="pick" id="pickList"></div>
+          </div>
+          <div>
+            <div class="panel">
+              <h3>2. Periksa pamflet dan pesan</h3>
+              <div class="grid" style="grid-template-columns:200px 1fr;align-items:start">
+                <div>
+                  <img id="kPam" src="assets/img/pamflet-1.jpg" alt="Pamflet lowongan" style="border-radius:8px;border:1px solid var(--line)">
+                  <button class="btn btn-sm btn-outline" style="width:100%;margin-top:8px" id="copyPam"><span data-ic="copy"></span>Salin pamflet</button>
+                  <a class="btn btn-sm btn-link" style="width:100%" id="dlPam" href="assets/img/pamflet-1.jpg" download><span data-ic="download"></span>Unduh pamflet</a>
+                </div>
+                <div>
+                  <div class="msg-preview" id="kMsg"></div>
+                  <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px">
+                    <button class="btn btn-sm btn-outline" id="copyMsg"><span data-ic="copy"></span>Salin pesan</button>
+                    <a class="btn btn-sm btn-outline" id="kLink" href="info-loker.html?id=1" target="_blank"><span data-ic="eye"></span>Buka halaman pratinjau</a>
+                  </div>
+                  <p class="muted" style="font-size:.85rem;margin-top:12px">Tautan pratinjau bisa dibuka admin jurusan tanpa masuk. Pamflet tampil sebagai gambar pratinjau di chat dan bisa diunduh untuk diteruskan ke mahasiswa.</p>
+                </div>
+              </div>
+            </div>
+            <div class="panel">
+              <div class="panel-head"><h3>3. Kirim ke admin jurusan</h3><span class="muted" style="font-size:.88rem" id="sentInfo">0 dari 7 terkirim</span></div>
+              <div class="jur-grid" id="jurGrid"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- TRACER -->
+      <section class="view" id="v-tracer" data-title="Tracer Karier">
+        <div class="page-head"><div><h1>Tracer karier</h1><p>Data diperbarui otomatis dari lamaran diterima dan status karier alumni.</p></div><button class="btn btn-primary" data-toast="Laporan Tracer Karier diunduh"><span data-ic="download"></span>Unduh laporan PDF</button></div>
+        <div class="filters">
+<select class="input jur-filter" ><option value="">Semua jurusan</option></select>
+          <select class="input"><option>Angkatan 2021</option><option>Angkatan 2022</option><option>Semua angkatan</option></select>
+          <select class="input"><option>Semua prodi</option><option>D-IV Teknik Informatika</option><option>D-IV Sistem Informasi Bisnis</option></select>
+          <select class="input"><option>Periode 2026</option><option>Periode 2025</option></select>
+        </div>
+        <div class="grid g2">
+          <div class="panel">
+            <h3>Status karier alumni</h3>
+            <div style="display:flex;gap:28px;align-items:center;flex-wrap:wrap;margin-top:10px">
+              <div class="donut"><span><span><b>412</b>alumni</span></span></div>
+              <ul class="legend">
+                <li><i style="background:var(--navy)"></i>Bekerja, 58%</li>
+                <li><i style="background:var(--blue)"></i>Wirausaha, 12%</li>
+                <li><i style="background:#7FA6E8"></i>Studi lanjut, 10%</li>
+                <li><i style="background:#C3D5F3"></i>Mencari kerja, 12%</li>
+                <li><i style="background:#E1E8F3"></i>Belum mengisi, 8%</li>
+              </ul>
+            </div>
+          </div>
+          <div class="panel">
+            <h3>Sebaran bidang perusahaan</h3>
+            <div class="bars" style="margin-top:14px">
+              <div class="bar-row"><span>Teknologi Informasi</span><div class="bar-track"><i style="width:82%"></i></div><b>96</b></div>
+              <div class="bar-row"><span>Manufaktur</span><div class="bar-track"><i style="width:55%"></i></div><b>64</b></div>
+              <div class="bar-row"><span>Konstruksi</span><div class="bar-track"><i style="width:38%"></i></div><b>44</b></div>
+              <div class="bar-row"><span>Keuangan</span><div class="bar-track"><i style="width:26%"></i></div><b>30</b></div>
+              <div class="bar-row"><span>Kelistrikan</span><div class="bar-track"><i style="width:20%"></i></div><b>23</b></div>
+            </div>
+          </div>
+          <div class="panel">
+            <h3>Level jabatan</h3>
+            <div class="bars" style="margin-top:14px">
+              <div class="bar-row"><span>Staf atau junior</span><div class="bar-track"><i style="width:78%"></i></div><b>186</b></div>
+              <div class="bar-row"><span>Supervisor</span><div class="bar-track"><i style="width:18%"></i></div><b>42</b></div>
+              <div class="bar-row"><span>Manajer</span><div class="bar-track"><i style="width:4%"></i></div><b>9</b></div>
+            </div>
+          </div>
+          <div class="panel">
+            <h3>Pembaruan terbaru</h3>
+            <ul class="activity">
+              <li><img src="assets/img/avatar-1.jpg" alt="" style="width:36px;height:36px;border-radius:50%"><span><b>Budi Santoso, TI 2022</b>Bekerja di PT Nusantara Digital, Web Developer<small>Otomatis dari lamaran diterima, hari ini</small></span></li>
+              <li><img src="assets/img/avatar-4.jpg" alt="" style="width:36px;height:36px;border-radius:50%"><span><b>Dewi Lestari, TI 2021</b>Wirausaha, studio desain<small>Diisi sendiri, 3 hari lalu</small></span></li>
+              <li><img src="assets/img/avatar-5.jpg" alt="" style="width:36px;height:36px;border-radius:50%"><span><b>Rizky Maulana, SIB 2021</b>Mencari kerja<small>Diisi sendiri, 1 minggu lalu</small></span></li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <!-- NOTIFIKASI -->
+      <section class="view" id="v-notifikasi" data-title="Notifikasi">
+        <div class="page-head"><div><h1>Notifikasi</h1></div><button class="btn btn-outline btn-sm" data-readall>Tandai semua dibaca</button></div>
+        <div class="panel" style="padding:0">
+          <a class="notif unread" href="#tracer"><span class="list-ic" data-ic="checkc"></span><span><b class="t1">Budi Santoso (TI 2022) diterima di PT Nusantara Digital</b><br>Rekap lamaran dan tracer karier sudah diperbarui.<br><small>10 menit lalu</small></span></a>
+          <a class="notif unread" href="#persetujuan"><span class="list-ic" data-ic="clipboard"></span><span><b class="t1">2 pendaftar baru menunggu verifikasi</b><br>Siti Rahma dan PT Mitra Logistik.<br><small>1 jam lalu</small></span></a>
+          <a class="notif unread" href="#persetujuan"><span class="list-ic" data-ic="refresh"></span><span><b class="t1">Rizal Fahmi mengirim ulang data perbaikan</b><br>KTM baru sudah diunggah.<br><small>3 jam lalu</small></span></a>
+          <a class="notif" href="#persetujuan"><span class="list-ic" data-ic="alert"></span><span><b class="t1">1 pendaftar menunggu lebih dari 2 hari kerja</b><br>CV Karya Mandiri, didaftarkan 12 Sep 2026.<br><small>Kemarin</small></span></a>
+        </div>
+      </section>
+
+      <!-- PENGATURAN -->
+      <section class="view" id="v-pengaturan" data-title="Pengaturan">
+        <div class="page-head"><div><h1>Pengaturan</h1></div></div>
+        <div class="panel">
+          <div class="tabs" data-tabs="sPanes"><button class="active" data-tab="kontak">Kontak admin jurusan</button><button data-tab="wa">Template WhatsApp</button><button data-tab="email">Template email</button><button data-tab="alasan">Alasan penolakan</button><button data-tab="akun">Akun admin</button></div>
+          <div id="sPanes">
+            <form data-pane="kontak" onsubmit="event.preventDefault();toast('Kontak admin jurusan disimpan');renderJur()">
+              <p class="muted">Nomor ini dipakai tombol di menu Kirim Loker ke Jurusan. Gunakan format 62, tanpa spasi.</p>
+              <div class="table-wrap"><table class="t" id="contactTable"></table></div>
+              <button class="btn btn-primary" style="margin-top:14px">Simpan kontak</button>
+            </form>
+            <form data-pane="wa" hidden onsubmit="event.preventDefault();toast('Template WhatsApp disimpan')">
+              <div class="field"><label>Isi pesan</label><textarea class="input" rows="8">Info Loker KarirKu Polinema
+Posisi: {posisi}
+Perusahaan: {perusahaan}
+Lokasi: {lokasi}
+Batas lamaran: {deadline}
+Lihat pamflet dan detail: {tautan}
+Untuk melamar, masuk ke KarirKu dengan akun mahasiswa atau alumni.</textarea><div class="hint">Kata dalam kurung kurawal diganti otomatis.</div></div>
+              <button class="btn btn-primary">Simpan template</button>
+            </form>
+            <form data-pane="email" hidden onsubmit="event.preventDefault();toast('Template email disimpan')">
+              <div class="row2"><div class="field"><label>Nama pengirim</label><input class="input" value="KarirKu Polinema"></div><div class="field"><label>Alamat pengirim</label><input class="input" value="karirku@polinema.ac.id"></div></div>
+              <div class="field"><label>Pilih template</label><select class="input"><option>Pendaftaran diterima</option><option>Akun disetujui</option><option>Perlu perbaikan</option><option>Ditolak</option><option>Atur ulang kata sandi</option></select></div>
+              <div class="field"><label>Subjek</label><input class="input" value="[KarirKu] Pendaftaran Anda sudah kami terima"></div>
+              <button class="btn btn-primary">Simpan template</button>
+            </form>
+            <form data-pane="alasan" hidden onsubmit="event.preventDefault();toast('Daftar alasan disimpan')">
+              <div class="chips" style="margin-bottom:14px"><span class="chip" style="padding-right:12px">NIM tidak ditemukan di SIAKAD</span><span class="chip" style="padding-right:12px">Dokumen tidak terbaca</span><span class="chip" style="padding-right:12px">Perusahaan outsourcing</span><span class="chip" style="padding-right:12px">Data tidak sesuai dokumen</span><span class="chip" style="padding-right:12px">Legalitas tidak valid</span></div>
+              <div style="display:flex;gap:8px;max-width:480px"><input class="input" placeholder="Tambah alasan baru"><button class="btn btn-primary">Tambah</button></div>
+            </form>
+            <form data-pane="akun" hidden onsubmit="event.preventDefault();this.reset();toast('Kata sandi admin diperbarui')" style="max-width:420px">
+              <div class="field"><label>Kata sandi lama</label><input class="input" type="password"></div>
+              <div class="field"><label>Kata sandi baru</label><input class="input" type="password"></div>
+              <button class="btn btn-primary">Ganti kata sandi</button>
+            </form>
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
+</div>
+
+<!-- Modal keputusan -->
+<div class="modal" id="mDecide" role="dialog" aria-modal="true" aria-labelledby="dT">
+  <div class="modal-box">
+    <div class="modal-head"><h3 id="dT">Keputusan</h3><button class="close" data-close aria-label="Tutup" data-ic="x"></button></div>
+    <div class="modal-body" id="dBody"></div>
+    <div class="modal-foot"><button class="btn btn-outline" data-close>Batal</button><button class="btn" id="dBtn">Konfirmasi</button></div>
+  </div>
+</div>
+<!-- Modal nonaktif -->
+<div class="modal" id="mSuspend" role="dialog" aria-modal="true" aria-labelledby="sT">
+  <div class="modal-box">
+    <div class="modal-head"><h3 id="sT">Nonaktifkan akun?</h3><button class="close" data-close aria-label="Tutup" data-ic="x"></button></div>
+    <div class="modal-body">
+      <p>Pengguna tidak bisa masuk dan menerima email pemberitahuan. Lowongan milik perusahaan yang dinonaktifkan ikut disembunyikan.</p>
+      <div class="field"><label>Alasan</label><textarea class="input" rows="3" placeholder="Tulis alasan yang jelas"></textarea></div>
+    </div>
+    <div class="modal-foot"><button class="btn btn-outline" data-close>Batal</button><button class="btn btn-danger" id="doSuspend">Nonaktifkan</button></div>
+  </div>
+</div>
+
+<script src="assets/js/app.js"></script>
+<script>
+const QUEUE=[
+ {id:1,type:'m',name:'Siti Rahma',img:2,sub:'D-IV Sistem Informasi Bisnis, 2022',date:'16 Sep 2026',wait:'1 hari',w:'y',status:'menunggu',
+  data:[['NIM','2241760012'],['Email','siti@student.polinema.ac.id'],['WhatsApp','0812 1111 2222'],['Jurusan','Teknologi Informasi'],['Program studi','D-IV Sistem Informasi Bisnis'],['Angkatan','2022'],['Status','Mahasiswa aktif'],['Tahun lulus','-']],doc:'dok-ktm.jpg',docName:'KTM_Siti_Rahma.jpg'},
+ {id:2,type:'p',name:'PT Mitra Logistik',ini:'ML',color:'#2B6B8F',sub:'Logistik dan distribusi, Surabaya',date:'17 Sep 2026',wait:'2 jam',w:'g',status:'menunggu',
+  data:[['Email','rekrut@mitralogistik.co.id'],['Bidang usaha','Logistik dan distribusi'],['Jenis perusahaan','Swasta nasional'],['Alamat','Jl. Rungkut Industri 5, Surabaya'],['Website','mitralogistik.co.id'],['Nama PIC','Hendra Wijaya'],['Jabatan PIC','HR Supervisor'],['WhatsApp PIC','0813 3333 4444'],['Bukan outsourcing','Dicentang oleh pendaftar']],doc:'dok-nib.jpg',docName:'NIB_Mitra_Logistik.pdf',docs:[['NIB','NIB_Mitra_Logistik.pdf, 1,1 MB'],['NPWP perusahaan','NPWP_Mitra_Logistik.pdf, 640 KB'],['Akta pendirian','Akta_Pendirian.pdf, 1,8 MB'],['Surat keterangan domisili','Tidak diunggah (opsional)']]},
+ {id:3,type:'p',name:'CV Karya Mandiri',ini:'KM',color:'#6B4A2B',sub:'Konstruksi, Malang',date:'12 Sep 2026',wait:'3 hari',w:'r',status:'menunggu',
+  data:[['Email','cvkaryamandiri@gmail.com'],['Bidang usaha','Konstruksi'],['Jenis perusahaan','UMKM'],['Alamat','Jl. Sulfat 20, Malang'],['Website','-'],['Nama PIC','Agus Salim'],['Jabatan PIC','Direktur'],['WhatsApp PIC','0857 5555 6666'],['Bukan outsourcing','Dicentang oleh pendaftar']],doc:'dok-nib.jpg',docName:'NIB_Karya_Mandiri.jpg',docs:[['NIB','NIB_Karya_Mandiri.jpg, 900 KB'],['NPWP perusahaan','NPWP_Karya_Mandiri.jpg, 700 KB'],['Akta pendirian','Akta_Karya_Mandiri.pdf, 2 MB'],['Surat keterangan domisili','SKD_Karya_Mandiri.pdf, 400 KB']]},
+ {id:4,type:'m',name:'Rizal Fahmi',img:5,sub:'D-III Teknik Listrik, alumni 2025',date:'14 Sep 2026',wait:'2 hari',w:'y',status:'menunggu',hist:'Diminta perbaikan 15 Sep 2026: KTM buram. Data dikirim ulang hari ini.',
+  data:[['NIM','2131130044'],['Email','rizal.fahmi@gmail.com'],['WhatsApp','0821 7777 8888'],['Jurusan','Teknik Elektro'],['Program studi','D-III Teknik Listrik'],['Angkatan','2021'],['Status','Alumni'],['Tahun lulus','2025']],doc:'dok-ktm.jpg',docName:'Ijazah_Rizal.pdf'},
+ {id:5,type:'m',name:'Andini Maharani',img:6,sub:'D-III Akuntansi, 2024',date:'17 Sep 2026',wait:'1 jam',w:'g',status:'menunggu',
+  data:[['NIM','2431010101'],['Email','andini@student.polinema.ac.id'],['WhatsApp','0896 9999 0000'],['Jurusan','Akuntansi'],['Program studi','D-III Akuntansi'],['Angkatan','2024'],['Status','Mahasiswa aktif'],['Tahun lulus','-']],doc:'dok-ktm.jpg',docName:'KTM_Andini.jpg'},
+];
+let qFilter='m';
+const who=q=>q.type==='m'?`<img src="assets/img/avatar-${q.img}.jpg" alt="">`:`<span class="logo-sq" style="background:${q.color}">${q.ini}</span>`;
+function renderQueue(){
+  const pend=QUEUE.filter(q=>q.status==='menunggu');
+  document.getElementById('menuCount').textContent=pend.length; document.getElementById('dashPending').textContent=pend.length;
+  document.getElementById('menuCount').hidden=!pend.length;
+  document.getElementById('qTabs').innerHTML=[['m','Mahasiswa dan alumni'],['p','Perusahaan']].map(([k,l])=>`<button class="${k===qFilter?'active':''}" onclick="qFilter='${k}';renderQueue()">${l}<span class="c">${pend.filter(q=>q.type===k).length}</span></button>`).join('');
+  const row=q=>`<tr><td><a class="person" href="#verif/${q.id}">${who(q)}<div><b>${q.name}</b><small>${q.sub}</small></div></a></td><td>${q.date}</td><td><span class="wait-${q.w}">${q.wait}</span></td><td>${q.hist?'<span class="tag">Kiriman ulang</span>':'<span class="tag">Baru</span>'}</td><td><a class="btn btn-sm btn-primary" href="#verif/${q.id}">Periksa</a></td></tr>`;
+  const list=pend.filter(q=>q.type===qFilter).sort((a,b)=>({r:0,y:1,g:2}[a.w]-{r:0,y:1,g:2}[b.w]));
+  document.getElementById('qTable').innerHTML='<tr><th>Pendaftar</th><th>Tanggal daftar</th><th>Lama menunggu</th><th>Jenis</th><th></th></tr>'+(list.length?list.map(row).join(''):'<tr><td colspan="5" style="text-align:center;padding:30px" class="muted">Antrean kosong. Semua pendaftar sudah diperiksa.</td></tr>');
+  document.getElementById('dashQueue').innerHTML='<tr><th>Pendaftar</th><th>Tanggal</th><th>Menunggu</th><th>Jenis</th><th></th></tr>'+pend.slice(0,4).map(row).join('');
+}
+function renderVerif(id){
+  const q=QUEUE.find(x=>x.id==id)||QUEUE[0];
+  document.getElementById('vCrumb').textContent=q.name;
+  const done=q.status!=='menunggu';
+  document.getElementById('vBox').innerHTML=`
+  <div>
+    <div class="panel">
+      <div class="profile-head">
+        ${q.type==='m'?`<img class="avatar-lg" src="assets/img/avatar-${q.img}.jpg" alt="Foto ${q.name}">`:`<span class="logo-sq" style="background:${q.color};width:96px;height:96px;font-size:1.8rem;border-radius:18px">${q.ini}</span>`}
+        <div class="grow">
+          <h1 style="font-size:1.6rem;margin:0">${q.name}</h1>
+          <p class="muted" style="margin:2px 0 8px">${q.type==='m'?'Pendaftar mahasiswa atau alumni':'Pendaftar perusahaan'}, ${q.sub}</p>
+          <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">${pill(q.status)}<span class="muted" style="font-size:.88rem">Daftar ${q.date}, menunggu <span class="wait-${q.w}">${q.wait}</span>, No. REG-2026-01${20+q.id}</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="panel"><h3>Data pendaftaran</h3><dl class="dl">${q.data.map(([k,v])=>`<dt>${k}</dt><dd>${v}</dd>`).join('')}</dl></div>
+    <div class="panel">
+      <div class="panel-head"><h3>${q.type==='m'?'Dokumen bukti mahasiswa atau alumni':'Dokumen legalitas (NIB, NPWP, akta, domisili)'}</h3></div>
+      <div class="doc-view"><a href="assets/img/${q.doc}" target="_blank"><img src="assets/img/${q.doc}" alt="Pratinjau dokumen ${q.docName}"></a>
+      <div class="doc-bar"><span>${ic('file')} ${q.docName}</span><span><a href="assets/img/${q.doc}" target="_blank">Perbesar</a> &nbsp; <a href="assets/img/${q.doc}" download>Unduh</a></span></div></div>
+      ${q.docs?q.docs.map((d,i)=>`<div class="list-item"><span class="list-ic">${ic('file')}</span><div class="grow"><b>${d[0]}</b><div class="muted" style="font-size:.88rem">${d[1]}</div></div>${d[1].indexOf('Tidak')===0?'':`<a class="btn btn-sm btn-outline" href="assets/img/${q.doc}" target="_blank">Lihat</a>`}</div>`).join(''):''}
+      ${q.type==='m'?'<p class="muted" style="font-size:.88rem;margin-top:10px">Cocokkan NIM dan nama dengan data SIAKAD sebelum menyetujui.</p>':'<p class="muted" style="font-size:.88rem;margin-top:10px">Pastikan NIB dan NPWP valid serta perusahaan bukan penyedia jasa outsourcing.</p>'}
+    </div>
+  </div>
+  <div class="sticky">
+    <div class="panel">
+      <h3>Keputusan</h3>
+      ${done?`<div class="alert ${q.status==='aktif'?'alert-ok':q.status==='perbaikan'?'alert-warn':'alert-bad'}">${ic('info')}<span>Sudah diputuskan: <b>${STATUS_LABEL[q.status]}</b>. Email dan notifikasi sudah dikirim ke pendaftar.</span></div><a class="btn btn-outline" style="width:100%" href="#persetujuan">Kembali ke antrean</a>`:`
+      <p class="muted" style="font-size:.9rem">Pendaftar menerima email dan notifikasi otomatis sesuai keputusan.</p>
+      <div style="display:grid;gap:10px">
+        <button class="btn btn-ok" onclick="decide(${q.id},'aktif')">${ic('check')}Setujui</button>
+        <button class="btn btn-warn" onclick="decide(${q.id},'perbaikan')">${ic('edit')}Minta perbaikan</button>
+        <button class="btn btn-danger" onclick="decide(${q.id},'ditolak')">${ic('x')}Tolak</button>
+      </div>`}
+      <h3 style="margin-top:20px;font-size:1rem">Riwayat</h3>
+      <ul class="activity">
+        <li><span><b>Pendaftaran dikirim</b><small>${q.date}</small></span></li>
+        ${q.hist?`<li><span><b>Perbaikan</b><small>${q.hist}</small></span></li>`:''}
+        ${done?`<li><span><b>${STATUS_LABEL[q.status]}</b><small>Hari ini oleh Admin Career Center</small></span></li>`:''}
+      </ul>
+    </div>
+  </div>`;
+}
+let pending=null;
+function decide(id,act){
+  pending={id,act}; const q=QUEUE.find(x=>x.id===id);
+  const reasons=q.type==='m'?['NIM tidak ditemukan di SIAKAD','Dokumen tidak terbaca','Data tidak sesuai dokumen']:['Perusahaan outsourcing','Legalitas tidak valid','Dokumen tidak terbaca'];
+  const t={aktif:['Setujui pendaftar?','btn-ok','Setujui'],perbaikan:['Minta perbaikan data','btn-warn','Kirim permintaan'],ditolak:['Tolak pendaftaran','btn-danger','Tolak pendaftaran']}[act];
+  document.getElementById('dT').textContent=t[0];
+  const b=document.getElementById('dBtn'); b.className='btn '+t[1]; b.textContent=t[2];
+  document.getElementById('dBody').innerHTML= act==='aktif'
+   ? `<p>Akun <b>${q.name}</b> akan aktif. Sistem otomatis mengirim email "Akun Anda telah disetujui" dan menampilkan ucapan selamat datang saat pendaftar masuk.</p>`
+   : `<div class="field"><label>Pilih alasan cepat</label><div class="chips">${reasons.map(r=>`<button type="button" class="chip" style="border:0;cursor:pointer;padding-right:12px" onclick="document.getElementById('dNote').value='${r}. '">${r}</button>`).join('')}</div></div>
+      <div class="field" id="noteField"><label for="dNote">Catatan untuk pendaftar (wajib)</label><textarea class="input" id="dNote" rows="3" placeholder="Jelaskan apa yang perlu dilakukan pendaftar"></textarea><div class="err">Catatan minimal 10 karakter.</div></div>
+      <p class="muted" style="font-size:.88rem">${act==='perbaikan'?'Pendaftar diberi waktu 7 hari untuk memperbaiki data.':'Keputusan ini dikirim lewat email beserta alasannya.'}</p>`;
+  openModal('mDecide');
+}
+document.getElementById('dBtn').addEventListener('click',e=>{
+  const note=document.getElementById('dNote');
+  if(note && note.value.trim().length<10){ document.getElementById('noteField').classList.add('has-err'); note.focus(); return; }
+  const q=QUEUE.find(x=>x.id===pending.id); q.status=pending.act;
+  closeModal(e.target); renderQueue(); renderVerif(q.id); hydrateIcons();
+  toast({aktif:`Akun ${q.name} disetujui. Email konfirmasi terkirim`,perbaikan:`Permintaan perbaikan dikirim ke ${q.name}`,ditolak:`Pendaftaran ${q.name} ditolak. Alasan dikirim lewat email`}[pending.act]);
+});
+
+// pengguna
+const USERS=[['Budi Santoso',1,'2241720001','D-IV Teknik Informatika','aktif'],['Dewi Lestari',4,'2141720033','D-IV Teknik Informatika','aktif'],['Nabila Putri',6,'2241720087','D-IV Teknik Informatika','aktif'],['Rizky Maulana',5,'2141760021','D-IV Sistem Informasi Bisnis','aktif'],['Andi Pratama',3,'2241760045','D-IV Sistem Informasi Bisnis','nonaktif']];
+function renderUsers(){
+  document.getElementById('uTable').innerHTML='<tr><th>Nama</th><th>NIM</th><th>Prodi</th><th>Status</th><th></th></tr>'+USERS.map((u,i)=>`<tr><td><div class="person"><img src="assets/img/avatar-${u[1]}.jpg" alt=""><b>${u[0]}</b></div></td><td>${u[2]}</td><td>${u[3]}</td><td>${pill(u[4])}</td><td>${u[4]==='aktif'?`<button class="btn btn-sm btn-outline" onclick="suspendIdx=${i};openModal('mSuspend')">Nonaktifkan</button>`:`<button class="btn btn-sm btn-outline" onclick="USERS[${i}][4]='aktif';renderUsers();toast('Akun diaktifkan kembali. Email terkirim')">Aktifkan</button>`}</td></tr>`).join('');
+  document.getElementById('cTable').innerHTML='<tr><th>Perusahaan</th><th>Bidang</th><th>Lowongan</th><th>Status</th><th></th></tr>'+JOBS.map(j=>`<tr><td><div class="person">${logo(j)}<b>${j.co}</b></div></td><td>${j.field}</td><td>${j.id===1?4:1}</td><td>${pill('aktif')}</td><td><button class="btn btn-sm btn-outline" data-open="mSuspend">Nonaktifkan</button></td></tr>`).join('');
+}
+let suspendIdx=null;
+document.getElementById('doSuspend').addEventListener('click',e=>{ if(suspendIdx!==null){USERS[suspendIdx][4]='nonaktif'; renderUsers();} closeModal(e.target); toast('Akun dinonaktifkan. Pengguna menerima email'); suspendIdx=null; });
+
+// monitoring
+function renderMon(){
+  document.getElementById('monTable').innerHTML='<tr><th>Lowongan</th><th>Perusahaan</th><th>Batas</th><th>Pelamar</th><th>Kuota</th><th>Status</th><th></th></tr>'+JOBS.map(j=>`<tr><td><div class="person"><a href="assets/img/pamflet-${j.id}.jpg" target="_blank"><img src="assets/img/pamflet-${j.id}.jpg" alt="Pamflet" style="border-radius:5px;width:36px;height:45px"></a><b>${j.pos}</b></div></td><td>${j.co}</td><td>${j.dl}</td><td>${j.applicants}</td><td>${j.filled}/${j.quota}</td><td>${pill(j.status)}</td><td style="white-space:nowrap"><a class="btn btn-sm btn-outline" href="info-loker.html?id=${j.id}" target="_blank">Lihat</a> ${j.status==='aktif'?`<button class="btn btn-sm btn-link" onclick="JOBS[${j.id-1}].status='nonaktif';renderMon();renderPick();toast('Lowongan dinonaktifkan. Alasan dikirim ke perusahaan')">Nonaktifkan</button>`:''}</td></tr>`).join('');
+}
+
+// rekap
+const REKAP=[['Budi Santoso','D-IV TI',2022,1,'diterima','2 Sep','17 Sep'],['Nabila Putri','D-IV TI',2022,1,'screening','17 Sep','17 Sep'],['Dewi Lestari','D-IV TI',2021,1,'interview','8 Sep','15 Sep'],['Rizal Fahmi','D-III Listrik',2021,3,'interview','5 Sep','12 Sep'],['Andini Maharani','D-III Akuntansi',2024,5,'screening','10 Sep','16 Sep'],['Yoga Pratama','D-III Sipil',2022,2,'diajukan','16 Sep','16 Sep'],['Fitri Ayu','D-IV Kimia',2021,4,'ditolak','20 Agu','1 Sep'],['Hadi Susanto','D-III Mesin',2020,6,'diterima','25 Agu','10 Sep']];
+const rCo=document.getElementById('rCo'); JOBS.forEach(j=>rCo.add(new Option(j.co,j.id)));
+function renderRekap(){
+  const c=rCo.value, s=document.getElementById('rSt').value, jr=document.getElementById('rJur').value;
+  const JMAP={'D-IV TI':'Teknologi Informasi','D-III Listrik':'Teknik Elektro','D-III Akuntansi':'Akuntansi','D-III Sipil':'Teknik Sipil','D-IV Kimia':'Teknik Kimia','D-III Mesin':'Teknik Mesin'};
+  const list=REKAP.filter(r=>(!c||r[3]==c)&&(!s||r[4]===s)&&(!jr||JMAP[r[1]]===jr));
+  document.getElementById('rTable').innerHTML='<tr><th>Tanggal</th><th>Pelamar</th><th>Prodi</th><th>Angkatan</th><th>Perusahaan</th><th>Posisi</th><th>Status</th><th>Diperbarui</th></tr>'+(list.length?list.map(r=>{const j=jobById(r[3]);return `<tr><td>${r[5]}</td><td><b>${r[0]}</b></td><td>${r[1]}</td><td>${r[2]}</td><td>${j.co}</td><td>${j.pos}</td><td>${pill(r[4])}</td><td>${r[6]}</td></tr>`}).join(''):'<tr><td colspan="8" class="muted" style="text-align:center;padding:30px">Tidak ada lamaran dengan filter ini.</td></tr>');
+}
+
+// kirim loker
+const CONTACTS=JURUSAN.map((j,i)=>({jur:j,name:['Pak Dimas','Bu Ratna','Pak Hari','','Bu Wulan','Pak Arif','Pak Yoga'][i],wa:i===3?'':'6281'+(2345678900+i)}));
+let pickId=1, sent=new Set();
+function renderPick(){
+  const act=JOBS.filter(j=>j.status==='aktif');
+  if(!act.find(j=>j.id===pickId)) pickId=act[0]?.id;
+  document.getElementById('pickList').innerHTML=act.map(j=>`<label><input type="radio" name="pk" ${j.id===pickId?'checked':''} onchange="pickId=${j.id};sent=new Set();renderKirim()"><img src="assets/img/pamflet-${j.id}.jpg" alt=""><span><b>${j.pos}</b><br><small class="muted">${j.co}, batas ${j.dl}</small></span></label>`).join('');
+}
+function message(j){ return `Info Loker KarirKu Polinema\nPosisi: ${j.pos}\nPerusahaan: ${j.co}\nLokasi: ${j.loc}\nBatas lamaran: ${j.dl}\nLihat pamflet dan detail: karirku.polinema.ac.id/info/a8f3k${j.id}\nUntuk melamar, masuk ke KarirKu dengan akun mahasiswa atau alumni.`; }
+function renderKirim(){
+  const j=jobById(pickId);
+  document.getElementById('kPam').src=`assets/img/pamflet-${j.id}.jpg`;
+  document.getElementById('dlPam').href=`assets/img/pamflet-${j.id}.jpg`;
+  document.getElementById('kLink').href=`info-loker.html?id=${j.id}`;
+  document.getElementById('kMsg').textContent=message(j);
+  renderJur();
+}
+function renderJur(){
+  const j=jobById(pickId);
+  document.getElementById('jurGrid').innerHTML=CONTACTS.map((c,i)=>{
+    const sug=j.jur.includes(c.jur), s=sent.has(i), off=!c.wa;
+    return `<button class="jur ${s?'sent':''} ${sug?'suggest':''} ${off?'disabled':''}" ${off?'disabled':''} onclick="sendWa(${i})">
+      <span class="wa">${ic(s?'check':'whatsapp')}</span>
+      <span><b>Admin Jurusan ${c.jur}</b><small>${off?'Nomor belum diatur':s?'Terkirim':sug?'Disarankan untuk lowongan ini':c.name}</small></span></button>`;
+  }).join('');
+  document.getElementById('sentInfo').textContent=`${sent.size} dari ${CONTACTS.filter(c=>c.wa).length} terkirim`;
+}
+function sendWa(i){
+  const c=CONTACTS[i]; if(!c.wa) return;
+  window.open(`https://wa.me/${c.wa}?text=${encodeURIComponent(message(jobById(pickId)))}`,'_blank','noopener');
+  sent.add(i); renderJur(); toast(`WhatsApp dibuka untuk Admin Jurusan ${c.jur}`);
+}
+document.getElementById('copyMsg').addEventListener('click',()=>{ navigator.clipboard?.writeText(document.getElementById('kMsg').textContent).then(()=>toast('Pesan disalin'),()=>toast('Pesan disalin')); });
+document.getElementById('copyPam').addEventListener('click',async()=>{
+  try{
+    const img=document.getElementById('kPam'); const c=document.createElement('canvas'); c.width=img.naturalWidth; c.height=img.naturalHeight; c.getContext('2d').drawImage(img,0,0);
+    const blob=await new Promise(r=>c.toBlob(r,'image/png'));
+    await navigator.clipboard.write([new ClipboardItem({'image/png':blob})]);
+    toast('Pamflet disalin. Tempel dengan Ctrl+V di WhatsApp Web');
+  }catch(err){ toast('Browser tidak mengizinkan salin gambar. Gunakan Unduh pamflet'); }
+});
+function renderContacts(){
+  document.getElementById('contactTable').innerHTML='<tr><th>Jurusan</th><th>Nama admin</th><th>Nomor WhatsApp</th></tr>'+CONTACTS.map((c,i)=>`<tr><td><b>${c.jur}</b></td><td><input class="input" value="${c.name}" oninput="CONTACTS[${i}].name=this.value"></td><td><input class="input" value="${c.wa}" placeholder="62812xxxxxxx" oninput="CONTACTS[${i}].wa=this.value"></td></tr>`).join('');
+}
+
+window.onView=(view,param)=>{ const tt=document.getElementById('topTitle'); if(tt) tt.textContent=document.getElementById('v-'+view).dataset.title; if(view==='verif') renderVerif(param||1); if(view==='kirim') renderKirim(); hydrateIcons(); };
+renderQueue(); renderUsers(); renderMon(); renderRekap(); renderPick(); renderContacts(); renderKirim();
+initApp('dashboard');
+</script>
+</body>
+</html>
