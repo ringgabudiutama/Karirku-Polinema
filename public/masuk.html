@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Masuk | KarirKu Polinema</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+<div class="auth">
+  <aside class="auth-side">
+    <img src="assets/img/login.jpg" alt="">
+    <div class="shade"></div>
+    <div class="hero-pattern"></div>
+    <div class="auth-side-content">
+      <a class="brand" href="index.html" style="color:#fff"><img class="brand-mark" src="assets/img/logo-polinema.png" alt="Logo Politeknik Negeri Malang"><span>KarirKu Polinema<small>Career Center Politeknik Negeri Malang</small></span></a>
+      <div>
+        <q>Keterampilan vokasi, dipertemukan dengan industri yang tepat.</q>
+        <p style="opacity:.8;margin-top:14px">Satu akun untuk melamar, memantau lamaran, dan menyimpan data kariermu.</p>
+      </div>
+    </div>
+  </aside>
+
+  <main class="auth-main">
+    <div class="auth-box">
+      <a class="back" href="index.html"><span data-ic="left"></span>Kembali ke beranda</a>
+      <h1 style="font-size:2rem">Masuk</h1>
+      <p class="muted">Gunakan email yang kamu daftarkan. Peran akun dikenali otomatis.</p>
+
+      <div id="loginAlert" class="alert" hidden></div>
+      <div id="nextInfo" class="alert alert-info" hidden><span data-ic="info"></span><span>Masuk untuk melamar lowongan ini. Setelah berhasil, kamu langsung diarahkan ke detail lowongan.</span></div>
+
+      <form id="loginForm" novalidate>
+        <div class="field">
+          <label for="email">Email</label>
+          <input class="input" id="email" type="email" autocomplete="email" placeholder="nama@email.com" required>
+          <div class="err">Masukkan alamat email yang valid.</div>
+        </div>
+        <div class="field">
+          <label for="pw">Kata sandi</label>
+          <div class="pw"><input class="input" id="pw" type="password" autocomplete="current-password" placeholder="Minimal 8 karakter" required><button type="button" aria-label="Tampilkan kata sandi" data-ic="eye"></button></div>
+          <div class="err">Kata sandi wajib diisi.</div>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px">
+          <label class="check" style="margin:0"><input type="checkbox"> Ingat saya</label>
+          <a href="#" data-open="mForgot">Lupa kata sandi?</a>
+        </div>
+        <button class="btn btn-primary" style="width:100%;padding:13px" type="submit">Masuk</button>
+      </form>
+      <p style="text-align:center;margin-top:20px">Belum punya akun? <a href="daftar.html"><b>Daftar</b></a></p>
+
+      <div class="demo-accounts">
+        <b style="font-size:.9rem">Akun demo prototipe</b>
+        <p class="muted" style="font-size:.85rem;margin:4px 0 0">Klik untuk mengisi otomatis, lalu tekan Masuk. Kata sandi apa saja.</p>
+        <div class="list">
+          <button class="btn btn-sm btn-outline" data-demo="budi@student.polinema.ac.id">Mahasiswa aktif</button>
+          <button class="btn btn-sm btn-outline" data-demo="hrd@nusantaradigital.co.id">Perusahaan</button>
+          <button class="btn btn-sm btn-outline" data-demo="admin@polinema.ac.id">Admin</button>
+          <button class="btn btn-sm btn-outline" data-demo="siti@student.polinema.ac.id">Akun menunggu</button>
+          <button class="btn btn-sm btn-outline" data-demo="nonaktif@contoh.com">Akun dinonaktifkan</button>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<div class="modal" id="mForgot" role="dialog" aria-modal="true" aria-labelledby="fgT">
+  <div class="modal-box">
+    <div class="modal-head"><h3 id="fgT">Atur ulang kata sandi</h3><button class="close" data-close aria-label="Tutup" data-ic="x"></button></div>
+    <div class="modal-body">
+      <p class="muted">Masukkan email akunmu. Kami kirim tautan untuk membuat kata sandi baru, berlaku 60 menit.</p>
+      <div class="field"><label for="fgEmail">Email</label><input class="input" id="fgEmail" type="email" placeholder="nama@email.com"></div>
+    </div>
+    <div class="modal-foot"><button class="btn btn-outline" data-close>Batal</button><button class="btn btn-primary" data-close data-toast="Tautan atur ulang kata sandi sudah dikirim ke email">Kirim tautan</button></div>
+  </div>
+</div>
+
+<script src="assets/js/app.js"></script>
+<script>
+const params=new URLSearchParams(location.search);
+const next=params.get('next');
+if(next) document.getElementById('nextInfo').hidden=false;
+document.querySelectorAll('[data-demo]').forEach(b=>b.addEventListener('click',()=>{
+  document.getElementById('email').value=b.dataset.demo; document.getElementById('pw').value='demo12345';
+  document.getElementById('email').focus();
+}));
+const alertBox=document.getElementById('loginAlert');
+function showAlert(type,html){ alertBox.className='alert alert-'+type; alertBox.innerHTML=html; alertBox.hidden=false; }
+document.getElementById('loginForm').addEventListener('submit',e=>{
+  e.preventDefault();
+  const email=document.getElementById('email'), pw=document.getElementById('pw');
+  let ok=true;
+  [email,pw].forEach(i=>{ const bad=!i.value || (i.type==='email' && !/^\S+@\S+\.\S+$/.test(i.value)); i.closest('.field').classList.toggle('has-err',bad); if(bad) ok=false; });
+  if(!ok) return;
+  const v=email.value.toLowerCase();
+  if(v.startsWith('budi')) location.href = next ? 'mahasiswa.html#detail/'+next : 'mahasiswa.html?welcome=1';
+  else if(v.startsWith('hrd')) location.href='perusahaan.html';
+  else if(v.startsWith('admin')) location.href='admin.html';
+  else if(v.startsWith('siti')) location.href='status-akun.html';
+  else if(v.startsWith('nonaktif')) showAlert('warn', ic('alert')+'<span><b>Akun kamu dinonaktifkan oleh Admin.</b><br>Hubungi Career Center di jpc@polinema.ac.id atau datang ke Graha Polinema Lantai 3 pukul 08.00 sampai 16.00 WIB.</span>');
+  else showAlert('bad', ic('alert')+'<span>Email atau kata sandi salah. Periksa kembali, lalu coba lagi.</span>');
+});
+</script>
+</body>
+</html>

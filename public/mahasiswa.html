@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>KarirKu Polinema</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+<div class="app">
+  <aside class="side" aria-label="Menu utama">
+    <a class="brand" href="#dashboard"><img class="brand-mark" src="assets/img/logo-polinema.png" alt="Logo Politeknik Negeri Malang"><span>KarirKu<small>Mahasiswa dan alumni</small></span></a>
+    <ul class="menu">
+      <li><a href="#dashboard" data-ic="home">Dashboard</a></li>
+      <li><a href="#lowongan" data-ic="briefcase">Lowongan</a></li>
+      <li><a href="#disimpan" data-ic="bookmark">Disimpan</a></li>
+      <li><a href="#lamaran" data-ic="file">Lamaran Saya</a></li>
+      <li><a href="#profil" data-ic="user">Profil Karier</a></li>
+    </ul>
+    <div class="side-label">Akun</div>
+    <ul class="menu">
+      <li><a href="#notifikasi" data-ic="bell">Notifikasi <span class="count">3</span></a></li>
+      <li><a href="#pengaturan" data-ic="settings">Pengaturan Akun</a></li>
+    </ul>
+    <div class="side-foot"><a href="masuk.html" data-ic="logout">Keluar</a></div>
+  </aside>
+
+  <div class="main">
+    <header class="topbar">
+      <button class="icon-btn menu-toggle" aria-label="Buka menu" data-ic="menu"></button>
+      <b class="top-title" id="topTitle">Dashboard</b>
+      <div class="top-right">
+        <div class="wrap-rel">
+          <button class="icon-btn" aria-label="Notifikasi, 3 belum dibaca" data-pop="popN" data-ic="bell"><span class="dot">3</span></button>
+          <div class="pop" id="popN">
+            <div class="pop-head">Notifikasi <a href="#" data-readall>Tandai dibaca</a></div>
+            <a class="item unread" href="#lamaran"><span class="list-ic" data-ic="checkc"></span><span><b>Selamat! Kamu diterima</b><br>PT Nusantara Digital, Web Developer. Status kariermu sudah diperbarui.<br><small class="muted">10 menit lalu</small></span></a>
+            <a class="item unread" href="#lamaran"><span class="list-ic" data-ic="calendar"></span><span><b>Jadwal interview</b><br>CV Sinar Elektrik, 22 Sep 2026 pukul 09.00<br><small class="muted">2 jam lalu</small></span></a>
+            <a class="item unread" href="#detail/2"><span class="list-ic" data-ic="clock"></span><span><b>Lowongan disimpan segera ditutup</b><br>Drafter Sipil, tersisa 2 hari<br><small class="muted">Hari ini</small></span></a>
+            <div class="pop-foot"><a href="#notifikasi">Lihat semua notifikasi</a></div>
+          </div>
+        </div>
+        <div class="wrap-rel">
+          <button class="user-btn" data-pop="popU"><img src="assets/img/avatar-1.jpg" alt=""><span><b>Budi Santoso</b><small>D-IV Teknik Informatika</small></span></button>
+          <div class="pop" id="popU" style="width:220px">
+            <a class="item" href="#profil">Profil Karier</a>
+            <a class="item" href="#pengaturan">Pengaturan Akun</a>
+            <a class="item" href="masuk.html">Keluar</a>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <div class="page">
+      <!-- DASHBOARD -->
+      <section class="view" id="v-dashboard" data-title="Dashboard">
+        <div class="welcome">
+          <div class="hero-pattern"></div>
+          <img src="assets/img/avatar-1.jpg" alt="">
+          <div style="position:relative">
+            <h1>Halo, Budi</h1>
+            <p>D-IV Teknik Informatika, angkatan 2022 <span class="verified" data-ic="check">Terverifikasi</span></p>
+          </div>
+          <div class="welcome-actions">
+            <a class="btn btn-white btn-sm" href="#profil">Lengkapi profil</a>
+            <a class="btn btn-ghost-light btn-sm" href="#lowongan">Cari lowongan</a>
+          </div>
+        </div>
+        <div class="grid g4" style="margin-bottom:18px">
+          <a class="stat" href="#lamaran"><div class="n">3</div><div class="l">Lamaran sedang diproses</div></a>
+          <a class="stat" href="#disimpan"><div class="n" id="savedCount">3</div><div class="l">Lowongan disimpan</div></a>
+          <a class="stat" href="#lowongan"><div class="n">8</div><div class="l">Lowongan baru sesuai minat</div></a>
+          <a class="stat" href="#profil"><div class="n" style="color:var(--ok)">Bekerja</div><div class="l">PT Nusantara Digital</div></a>
+        </div>
+        <div class="grid g-side">
+          <div>
+            <div class="panel">
+              <div class="panel-head"><h2>Rekomendasi untukmu</h2><a href="#lowongan">Lihat semua</a></div>
+              <div class="jobs" id="recoList"></div>
+            </div>
+            <div class="panel">
+              <div class="panel-head"><h2>Lamaran terbaru</h2><a href="#lamaran">Lihat semua</a></div>
+              <div class="table-wrap"><table class="t" id="recentApps"></table></div>
+            </div>
+          </div>
+          <div>
+            <div class="panel">
+              <h3>Kelengkapan profil</h3>
+              <div style="display:flex;justify-content:space-between;font-size:.9rem;margin-bottom:6px"><span class="muted">Hampir selesai</span><b>85%</b></div>
+              <div class="progress"><i style="width:85%"></i></div>
+              <ul class="checklist">
+                <li><span class="ok" data-ic="checkc"></span>Foto profil</li>
+                <li><span class="ok" data-ic="checkc"></span>Data diri dan pendidikan</li>
+                <li><span class="ok" data-ic="checkc"></span>Skill dan pengalaman</li>
+                <li><span class="ok" data-ic="checkc"></span>CV tersedia</li>
+                <li><span class="no" data-ic="checkc"></span><a href="#profil/sertifikat">Tambahkan sertifikat</a></li>
+              </ul>
+            </div>
+            <div class="panel">
+              <h3>Segera ditutup</h3>
+              <ul class="activity">
+                <li><span class="list-ic" data-ic="clock"></span><span><a href="#detail/2"><b>Drafter Sipil</b></a><small>PT Arta Konstruksi, tersisa 2 hari</small></span></li>
+                <li><span class="list-ic" data-ic="clock"></span><span><a href="#detail/5"><b>Staf Akuntansi</b></a><small>KAP Wijaya &amp; Rekan, tersisa 3 hari</small></span></li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- LOWONGAN -->
+      <section class="view" id="v-lowongan" data-title="Lowongan">
+        <div class="page-head"><div><h1>Lowongan</h1><p>Lowongan dari perusahaan mitra terverifikasi Career Center.</p></div></div>
+        <div class="filters">
+          <input class="input grow" id="q" type="search" placeholder="Cari posisi atau perusahaan" oninput="renderJobs()">
+<select class="input jur-filter" id="fJur" onchange="renderJobs()"><option value="">Semua jurusan</option></select>
+          <select class="input" id="fField" onchange="renderJobs()"><option value="">Semua bidang</option></select>
+          <select class="input" id="fLoc" onchange="renderJobs()"><option value="">Semua lokasi</option></select>
+          <select class="input" id="fType" onchange="renderJobs()"><option value="">Semua jenis</option></select>
+          <select class="input" id="fSort" onchange="renderJobs()"><option value="new">Terbaru</option><option value="dl">Deadline terdekat</option></select>
+        </div>
+        <p class="muted" id="jobCount" style="font-size:.9rem"></p>
+        <div class="jobs" id="jobList"></div>
+      </section>
+
+      <!-- DETAIL LOWONGAN -->
+      <section class="view" id="v-detail" data-menu="lowongan" data-title="Detail lowongan">
+        <div class="crumb"><a href="#lowongan">Lowongan</a> <span>/</span> <span id="dCrumb"></span></div>
+        <div class="detail" id="detailBox"></div>
+      </section>
+
+      <!-- DISIMPAN -->
+      <section class="view" id="v-disimpan" data-title="Disimpan">
+        <div class="page-head"><div><h1>Disimpan</h1><p>Lowongan yang kamu tandai. Perhatikan batas lamarannya.</p></div></div>
+        <div class="jobs" id="savedList"></div>
+      </section>
+
+      <!-- LAMARAN -->
+      <section class="view" id="v-lamaran" data-title="Lamaran Saya">
+        <div class="page-head"><div><h1>Lamaran Saya</h1><p>Pantau setiap lamaran dari diajukan sampai hasil akhir.</p></div></div>
+        <div class="tabs" data-tabs="x" id="appTabs"></div>
+        <div id="appList"></div>
+      </section>
+
+      <!-- PROFIL -->
+      <section class="view" id="v-profil" data-title="Profil Karier">
+        <div class="panel">
+          <div class="profile-head">
+            <div class="avatar-edit"><img class="avatar-lg" id="avatarImg" src="assets/img/avatar-1.jpg" alt="Foto profil Budi"><label title="Ganti foto"><input type="file" accept="image/*" data-preview="avatarImg"><span data-ic="image"></span></label></div>
+            <div class="grow">
+              <h1 style="font-size:1.6rem;margin:0">Budi Santoso <span class="verified" data-ic="check">Terverifikasi</span></h1>
+              <p class="muted" style="margin:2px 0 10px">NIM 2241720001, D-IV Teknik Informatika, angkatan 2022</p>
+              <div style="display:flex;justify-content:space-between;font-size:.85rem;margin-bottom:4px;max-width:360px"><span class="muted">Kelengkapan profil</span><b>85%</b></div>
+              <div class="progress" style="max-width:360px"><i style="width:85%"></i></div>
+            </div>
+          </div>
+          <div class="cv-box">
+            <div class="cv-opt"><span class="feature-ic" data-ic="wand"></span><div class="grow"><b>CV otomatis</b><div class="muted" style="font-size:.88rem">Dibuat dari data profil terbaru</div></div><button class="btn btn-primary btn-sm" data-open="mCV">Buat CV</button></div>
+            <div class="cv-opt"><span class="feature-ic" data-ic="upload"></span><div class="grow"><b>CV unggahan</b><div class="muted" style="font-size:.88rem" id="cvName">CV_Budi_Santoso.pdf</div></div><label class="btn btn-outline btn-sm">Ganti<input type="file" accept=".pdf" hidden onchange="document.getElementById('cvName').textContent=this.files[0].name;toast('CV unggahan diperbarui')"></label></div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="tabs" data-tabs="profPanes" id="profTabs">
+            <button class="active" data-tab="diri">Data diri</button>
+            <button data-tab="pendidikan">Pendidikan</button>
+            <button data-tab="skill">Skills</button>
+            <button data-tab="pengalaman">Pengalaman</button>
+            <button data-tab="sertifikat">Sertifikat</button>
+            <button data-tab="portofolio">Portofolio</button>
+            <button data-tab="dokumen">Dokumen</button>
+            <button data-tab="minat">Bidang minat</button>
+            <button data-tab="karier">Status karier</button>
+          </div>
+          <div id="profPanes">
+            <form data-pane="diri" onsubmit="event.preventDefault();toast('Data diri disimpan')">
+              <div class="row2">
+                <div class="field"><label>Nama lengkap</label><input class="input" value="Budi Santoso"></div>
+                <div class="field"><label>Email</label><input class="input" value="budi@student.polinema.ac.id"></div>
+                <div class="field"><label>Nomor WhatsApp</label><input class="input" value="081234567890"></div>
+                <div class="field"><label>Domisili</label><input class="input" value="Lowokwaru, Malang"></div>
+              </div>
+              <div class="field"><label>Tentang saya</label><textarea class="input" rows="3">Mahasiswa Teknik Informatika yang suka membangun aplikasi web dan belajar hal baru lewat proyek nyata.</textarea></div>
+              <button class="btn btn-primary">Simpan data diri</button>
+            </form>
+            <div data-pane="pendidikan" hidden>
+              <div class="list-item"><span class="list-ic" data-ic="graduation"></span><div class="grow"><b>Politeknik Negeri Malang</b><div class="muted">D-IV Teknik Informatika, 2022 sampai sekarang, IPK 3,62</div></div><button class="btn btn-sm btn-outline" data-open="mItem">Edit</button></div>
+              <div class="list-item"><span class="list-ic" data-ic="graduation"></span><div class="grow"><b>SMK Negeri 4 Malang</b><div class="muted">Rekayasa Perangkat Lunak, 2019 sampai 2022</div></div><button class="btn btn-sm btn-outline" data-open="mItem">Edit</button></div>
+              <button class="btn btn-outline" data-open="mItem" style="margin-top:12px"><span data-ic="plus"></span>Tambah pendidikan</button>
+            </div>
+            <div data-pane="skill" hidden>
+              <div class="chips" id="chips"></div>
+              <form style="display:flex;gap:8px;margin-top:16px;max-width:420px" onsubmit="event.preventDefault();addSkill(this.sk)">
+                <input class="input" name="sk" placeholder="Tambah skill, misalnya Laravel">
+                <button class="btn btn-primary">Tambah</button>
+              </form>
+            </div>
+            <div data-pane="pengalaman" hidden>
+              <div class="list-item"><span class="list-ic" data-ic="briefcase"></span><div class="grow"><b>Magang Frontend Developer</b><div class="muted">PT Solusi Kreatif, Jan sampai Jun 2025</div><p style="margin:6px 0 0">Membangun halaman dashboard dengan HTML, CSS, dan JavaScript.</p></div><button class="btn btn-sm btn-outline" data-open="mItem">Edit</button></div>
+              <div class="list-item"><span class="list-ic" data-ic="users"></span><div class="grow"><b>Ketua Divisi Web, HMTI</b><div class="muted">Himpunan Mahasiswa TI Polinema, 2024</div></div><button class="btn btn-sm btn-outline" data-open="mItem">Edit</button></div>
+              <button class="btn btn-outline" data-open="mItem" style="margin-top:12px"><span data-ic="plus"></span>Tambah pengalaman</button>
+            </div>
+            <div data-pane="sertifikat" hidden>
+              <div class="list-item"><span class="list-ic" data-ic="shield"></span><div class="grow"><b>Junior Web Developer (BNSP)</b><div class="muted">Diterbitkan 2025</div></div><a class="btn btn-sm btn-outline" href="assets/img/dok-ktm.jpg" target="_blank">Lihat file</a></div>
+              <label class="upload" style="margin-top:14px"><input type="file" accept=".pdf,.jpg,.png"><span data-ic="upload"></span><div><b>Unggah sertifikat baru</b></div><div class="hint">PDF atau gambar, maksimal 2 MB</div></label>
+            </div>
+            <div data-pane="portofolio" hidden>
+              <p class="muted">Tautan ini ikut terkirim otomatis setiap kali kamu melamar.</p>
+              <div id="links"></div>
+              <form style="display:grid;grid-template-columns:180px 1fr auto;gap:8px;margin-top:14px" onsubmit="event.preventDefault();addLink(this)">
+                <select class="input" name="t"><option>GitHub</option><option>Behance</option><option>Google Drive</option><option>Website pribadi</option><option>LinkedIn</option></select>
+                <input class="input" name="u" type="url" placeholder="https://" required>
+                <button class="btn btn-primary">Tambah</button>
+              </form>
+            </div>
+            <div data-pane="dokumen" hidden>
+              <p class="muted">Dokumen ini otomatis terlampir saat kamu melamar. Surat pengantar bisa diganti setiap kali melamar.</p>
+              <div class="row2">
+                <div class="field"><label>KTM atau ijazah</label><label class="upload"><input type="file" accept=".pdf,.jpg,.jpeg,.png"><span data-ic="checkc"></span><div class="name">KTM_Budi.jpg</div><div class="hint">Klik untuk mengganti. PDF, JPG, PNG maks. 2 MB</div></label></div>
+                <div class="field"><label>Surat pengantar umum</label><label class="upload"><input type="file" accept=".pdf"><span data-ic="checkc"></span><div class="name">Surat_Pengantar_Budi.pdf</div><div class="hint">Klik untuk mengganti. PDF maks. 2 MB</div></label></div>
+              </div>
+              <button class="btn btn-primary" data-toast="Dokumen disimpan">Simpan dokumen</button>
+            </div>
+            <form data-pane="minat" hidden onsubmit="event.preventDefault();toast('Bidang minat disimpan. Rekomendasi lowongan diperbarui')">
+              <p class="muted">Kamu akan menerima notifikasi saat ada lowongan baru di bidang ini.</p>
+              <div class="chips" style="margin-bottom:16px">
+                <label class="chip"><input type="checkbox" checked> Teknologi Informasi</label>
+                <label class="chip"><input type="checkbox" checked> Desain UI/UX</label>
+                <label class="chip"><input type="checkbox"> Data dan analitik</label>
+                <label class="chip"><input type="checkbox"> Jaringan komputer</label>
+                <label class="chip"><input type="checkbox"> Kelistrikan</label>
+              </div>
+              <button class="btn btn-primary">Simpan minat</button>
+            </form>
+            <form data-pane="karier" hidden onsubmit="event.preventDefault();toast('Status karier disimpan')">
+              <div class="alert alert-ok"><span data-ic="checkc"></span><span>Diperbarui otomatis pada 17 Sep 2026 karena lamaranmu di PT Nusantara Digital diterima. Kamu bisa melengkapi level jabatan.</span></div>
+              <div class="row2">
+                <div class="field"><label>Status karier</label><select class="input"><option selected>Bekerja</option><option>Wirausaha</option><option>Studi lanjut</option><option>Mencari kerja</option><option>Belum bekerja</option></select></div>
+                <div class="field"><label>Nama perusahaan</label><input class="input" value="PT Nusantara Digital"></div>
+                <div class="field"><label>Posisi</label><input class="input" value="Web Developer"></div>
+                <div class="field"><label>Level jabatan</label><select class="input"><option>Pilih level</option><option selected>Staf / junior</option><option>Supervisor</option><option>Manajer</option></select></div>
+                <div class="field"><label>Tanggal mulai</label><input class="input" type="date" value="2026-10-01"></div>
+              </div>
+              <button class="btn btn-primary">Simpan status karier</button>
+            </form>
+          </div>
+        </div>
+      </section>
+
+      <!-- NOTIFIKASI -->
+      <section class="view" id="v-notifikasi" data-title="Notifikasi">
+        <div class="page-head"><div><h1>Notifikasi</h1></div><button class="btn btn-outline btn-sm" data-readall>Tandai semua dibaca</button></div>
+        <div class="panel" style="padding:0">
+          <a class="notif unread" href="#lamaran"><span class="list-ic" data-ic="checkc"></span><span><b class="t1">Selamat! Kamu diterima di PT Nusantara Digital</b><br>Posisi Web Developer. Status kariermu otomatis menjadi Bekerja.<br><small>10 menit lalu</small></span></a>
+          <a class="notif unread" href="#lamaran"><span class="list-ic" data-ic="calendar"></span><span><b class="t1">Jadwal interview dari CV Sinar Elektrik</b><br>Senin, 22 Sep 2026 pukul 09.00 di kantor Jl. Borobudur 12, Malang.<br><small>2 jam lalu</small></span></a>
+          <a class="notif unread" href="#detail/2"><span class="list-ic" data-ic="clock"></span><span><b class="t1">Lowongan yang kamu simpan segera ditutup</b><br>Drafter Sipil di PT Arta Konstruksi, tersisa 2 hari.<br><small>Hari ini</small></span></a>
+          <a class="notif" href="#lamaran"><span class="list-ic" data-ic="eye"></span><span><b class="t1">CV kamu sedang ditinjau</b><br>KAP Wijaya &amp; Rekan membuka lamaranmu.<br><small>Kemarin</small></span></a>
+          <a class="notif" href="#lowongan"><span class="list-ic" data-ic="briefcase"></span><span><b class="t1">Lowongan baru sesuai minatmu</b><br>Web Developer di PT Nusantara Digital.<br><small>3 hari lalu</small></span></a>
+          <a class="notif" href="#dashboard"><span class="list-ic" data-ic="shield"></span><span><b class="t1">Akunmu sudah disetujui</b><br>Selamat datang di KarirKu Polinema.<br><small>13 Sep 2026</small></span></a>
+        </div>
+      </section>
+
+      <!-- PENGATURAN -->
+      <section class="view" id="v-pengaturan" data-title="Pengaturan Akun">
+        <div class="page-head"><div><h1>Pengaturan akun</h1></div></div>
+        <div class="grid g2" style="align-items:start">
+          <form class="panel" onsubmit="event.preventDefault();toast('Kontak akun disimpan')">
+            <h3>Kontak akun</h3>
+            <div class="field"><label>Email</label><input class="input" value="budi@student.polinema.ac.id"></div>
+            <div class="field"><label>Nomor WhatsApp</label><input class="input" value="081234567890"></div>
+            <button class="btn btn-primary">Simpan kontak</button>
+          </form>
+          <form class="panel" onsubmit="event.preventDefault();this.reset();toast('Kata sandi diperbarui')">
+            <h3>Ganti kata sandi</h3>
+            <div class="field"><label>Kata sandi lama</label><input class="input" type="password"></div>
+            <div class="field"><label>Kata sandi baru</label><input class="input" type="password"></div>
+            <div class="field"><label>Ulangi kata sandi baru</label><input class="input" type="password"></div>
+            <button class="btn btn-primary">Ganti kata sandi</button>
+          </form>
+        </div>
+      </section>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: selamat datang -->
+<div class="modal" id="mWelcome" role="dialog" aria-modal="true" aria-labelledby="wT">
+  <div class="modal-box" style="text-align:center">
+    <div class="modal-body" style="padding:36px 30px">
+      <img src="assets/img/avatar-1.jpg" alt="" style="width:84px;height:84px;border-radius:50%;margin:0 auto 14px;border:4px solid var(--ok-bg)">
+      <span class="verified" data-ic="check">Terverifikasi</span>
+      <h2 id="wT" style="margin-top:12px">Selamat datang di KarirKu, Budi</h2>
+      <p class="muted">Akunmu sudah disetujui Career Center. Lengkapi profil agar CV otomatis siap dan rekomendasi lowongan lebih tepat.</p>
+      <div style="display:flex;gap:10px;justify-content:center;margin-top:20px;flex-wrap:wrap">
+        <a class="btn btn-primary" href="#profil" data-close>Lengkapi profil</a>
+        <button class="btn btn-outline" data-close>Nanti saja</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: lamar -->
+<div class="modal" id="mApply" role="dialog" aria-modal="true" aria-labelledby="aT">
+  <div class="modal-box">
+    <div class="modal-head"><h3 id="aT">Kirim lamaran</h3><button class="close" data-close aria-label="Tutup" data-ic="x"></button></div>
+    <div class="modal-body">
+      <div class="person" id="applyJob" style="margin-bottom:16px"></div>
+      <p style="font-weight:600;margin-bottom:8px">Pilih CV yang dikirim</p>
+      <label class="radio-card"><input type="radio" name="cv" checked><span><b>CV otomatis</b><br><span class="muted" style="font-size:.88rem">Template Klasik, dibuat dari profil terbaru</span></span></label>
+      <label class="radio-card"><input type="radio" name="cv"><span><b>CV unggahan</b><br><span class="muted" style="font-size:.88rem">CV_Budi_Santoso.pdf</span></span></label>
+      <p style="font-weight:600;margin:16px 0 8px">Dokumen pendukung</p>
+      <div class="row2">
+        <div class="field"><label>KTM atau ijazah <span style="color:var(--bad)">*</span></label>
+          <label class="upload"><input type="file" id="aKtm" accept=".pdf,.jpg,.jpeg,.png"><span data-ic="checkc"></span><div class="name">KTM_Budi.jpg (dari data akun)</div><div class="hint">Klik untuk mengganti</div></label></div>
+        <div class="field" id="suratField"><label>Surat pengantar <span style="color:var(--bad)">*</span></label>
+          <label class="upload"><input type="file" id="aSurat" accept=".pdf"><span data-ic="upload"></span><div><b>Unggah surat pengantar</b></div><div class="hint">PDF, maksimal 2 MB</div></label>
+          <div class="err">Surat pengantar wajib diunggah sebelum melamar.</div></div>
+      </div>
+      <div class="alert alert-info"><span data-ic="link"></span><span>Profil, foto, CV, KTM, surat pengantar, dan tautan portofolio terkirim ke perusahaan dan tercatat di Career Center.</span></div>
+      <div class="field"><label for="cover">Catatan tambahan <span class="muted">(opsional)</span></label><textarea class="input" id="cover" rows="2" placeholder="Pesan singkat untuk perusahaan"></textarea></div>
+    </div>
+    <div class="modal-foot"><button class="btn btn-outline" data-close>Batal</button><button class="btn btn-primary" id="sendApply">Kirim lamaran</button></div>
+  </div>
+</div>
+
+<!-- Modal: generate CV -->
+<div class="modal" id="mCV" role="dialog" aria-modal="true" aria-labelledby="cT">
+  <div class="modal-box lg">
+    <div class="modal-head"><h3 id="cT">Buat CV otomatis</h3><button class="close" data-close aria-label="Tutup" data-ic="x"></button></div>
+    <div class="modal-body grid g2">
+      <div>
+        <p style="font-weight:600">Pilih template</p>
+        <div class="tpl">
+          <label><input type="radio" name="tpl" checked><div class="mini"><i class="h"></i><i></i><i></i><i style="width:70%"></i><i></i><i style="width:50%"></i></div>Klasik</label>
+          <label><input type="radio" name="tpl"><div class="mini side-l"><i style="height:100px;background:var(--blue-soft)"></i><div style="display:grid;gap:6px;align-content:start"><i class="h"></i><i></i><i></i><i style="width:60%"></i></div></div>Modern</label>
+        </div>
+        <p class="muted" style="font-size:.88rem;margin-top:14px">Data diambil dari Profil Karier. Ubah profil untuk memperbarui isi CV.</p>
+      </div>
+      <div class="cv-paper">
+        <div style="display:flex;gap:12px;align-items:center"><img src="assets/img/avatar-1.jpg" alt="" style="width:54px;height:54px;border-radius:50%"><div><b style="font-size:1.1rem">Budi Santoso</b><br><span class="muted">budi@student.polinema.ac.id, 081234567890</span></div></div>
+        <h4>Pendidikan</h4><p style="margin:0">D-IV Teknik Informatika, Politeknik Negeri Malang (IPK 3,62)</p>
+        <h4>Pengalaman</h4><p style="margin:0">Magang Frontend Developer, PT Solusi Kreatif (2025)</p>
+        <h4>Skills</h4><p style="margin:0">HTML, CSS, JavaScript, PHP, PostgreSQL, Figma</p>
+        <h4>Sertifikat</h4><p style="margin:0">Junior Web Developer (BNSP)</p>
+      </div>
+    </div>
+    <div class="modal-foot"><button class="btn btn-outline" data-close>Tutup</button><button class="btn btn-primary" data-close data-toast="CV_Budi_Santoso_Klasik.pdf berhasil diunduh"><span data-ic="download"></span>Unduh PDF</button></div>
+  </div>
+</div>
+
+<!-- Modal: tambah item -->
+<div class="modal" id="mItem" role="dialog" aria-modal="true" aria-labelledby="iT">
+  <div class="modal-box">
+    <div class="modal-head"><h3 id="iT">Tambah atau edit data</h3><button class="close" data-close aria-label="Tutup" data-ic="x"></button></div>
+    <div class="modal-body">
+      <div class="field"><label>Judul atau posisi</label><input class="input" placeholder="Misalnya Magang Frontend Developer"></div>
+      <div class="field"><label>Instansi</label><input class="input" placeholder="Nama perusahaan atau sekolah"></div>
+      <div class="row2"><div class="field"><label>Mulai</label><input class="input" type="month"></div><div class="field"><label>Selesai</label><input class="input" type="month"></div></div>
+      <div class="field"><label>Deskripsi</label><textarea class="input" rows="3"></textarea></div>
+    </div>
+    <div class="modal-foot"><button class="btn btn-outline" data-close>Batal</button><button class="btn btn-primary" data-close data-toast="Data profil disimpan">Simpan</button></div>
+  </div>
+</div>
+
+<!-- Modal: batalkan lamaran -->
+<div class="modal" id="mCancel" role="dialog" aria-modal="true" aria-labelledby="xT">
+  <div class="modal-box">
+    <div class="modal-head"><h3 id="xT">Batalkan lamaran?</h3><button class="close" data-close aria-label="Tutup" data-ic="x"></button></div>
+    <div class="modal-body"><p>Lamaran yang dibatalkan tidak bisa dikirim ulang untuk lowongan yang sama. Perusahaan akan diberi tahu.</p></div>
+    <div class="modal-foot"><button class="btn btn-outline" data-close>Tidak jadi</button><button class="btn btn-danger" id="doCancel">Batalkan lamaran</button></div>
+  </div>
+</div>
+
+<script src="assets/js/app.js"></script>
+<script>
+const saved=new Set([2,4,5]);
+let APPS=[
+ {id:101,job:1,status:'diterima',date:'2 Sep 2026',cv:'CV otomatis',note:'Selamat bergabung. Tim HR akan menghubungi untuk proses berikutnya.'},
+ {id:102,job:3,status:'interview',date:'5 Sep 2026',cv:'CV unggahan',interview:'Senin, 22 Sep 2026 pukul 09.00, luring di Jl. Borobudur 12, Malang'},
+ {id:103,job:5,status:'screening',date:'10 Sep 2026',cv:'CV otomatis'},
+ {id:104,job:2,status:'diajukan',date:'16 Sep 2026',cv:'CV otomatis'},
+ {id:105,job:4,status:'ditolak',date:'20 Agu 2026',cv:'CV unggahan',note:'Terima kasih. Kami mencari kandidat dengan pengalaman laboratorium klinis.'},
+];
+let skills=['HTML','CSS','JavaScript','PHP','PostgreSQL','Figma'];
+let links=[['GitHub','https://github.com/budisantoso'],['Behance','https://behance.net/budisantoso']];
+const applied=id=>APPS.find(a=>a.job==id && a.status!=='dibatalkan');
+
+['field','loc','type'].forEach(k=>{ const sel=document.getElementById('f'+k[0].toUpperCase()+k.slice(1)); [...new Set(JOBS.map(j=>j[k]))].forEach(v=>sel.add(new Option(v,v))); });
+
+function jobCard(j){
+  const a=applied(j.id), closed=j.status!=='aktif';
+  return `<article class="job">
+    <a href="#detail/${j.id}"><img class="thumb" src="assets/img/pamflet-${j.id}.jpg" alt="Pamflet ${j.pos}"></a>
+    <div>
+      <h3><a href="#detail/${j.id}">${j.pos}</a></h3>
+      <div class="person" style="gap:6px"><span class="muted">${j.co}</span> <span title="Mitra terverifikasi" style="color:var(--ok);display:inline-flex">${ic('shield')}</span></div>
+      <div class="meta"><span>${ic('pin')}${j.loc}</span><span>${ic('briefcase')}${j.type}</span><span>${ic('calendar')}Batas ${j.dl}</span></div>
+      <div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap"><span class="tag">${j.field}</span>${j.days<=3&&!closed?'<span class="tag tag-urgent">Segera ditutup</span>':''}${closed?pill('ditutup'):''}</div>
+    </div>
+    <div class="job-actions">
+      <button class="btn btn-sm btn-outline save-btn ${saved.has(j.id)?'saved':''}" onclick="toggleSave(${j.id})" aria-pressed="${saved.has(j.id)}">${ic('bookmark')}${saved.has(j.id)?'Disimpan':'Simpan'}</button>
+      ${a?pill(a.status):`<a class="btn btn-sm btn-primary" href="#detail/${j.id}">Lihat detail</a>`}
+    </div>
+  </article>`;
+}
+function toggleSave(id){
+  if(saved.has(id)){ saved.delete(id); toast('Lowongan dihapus dari Disimpan'); } else { saved.add(id); toast('Lowongan disimpan'); }
+  refresh();
+}
+function renderJobs(){
+  const jr=document.getElementById('fJur').value, q=document.getElementById('q').value.toLowerCase(), f=document.getElementById('fField').value, l=document.getElementById('fLoc').value, t=document.getElementById('fType').value, s=document.getElementById('fSort').value;
+  let list=JOBS.filter(j=>(!jr||j.jur.includes(jr))&&(!q||(j.pos+j.co).toLowerCase().includes(q))&&(!f||j.field===f)&&(!l||j.loc===l)&&(!t||j.type===t));
+  if(s==='dl') list=[...list].sort((a,b)=>a.days-b.days);
+  document.getElementById('jobCount').textContent=`${list.length} lowongan ditemukan`;
+  document.getElementById('jobList').innerHTML=list.length?list.map(jobCard).join(''):`<div class="panel" style="text-align:center"><h3>Belum ada lowongan yang cocok</h3><p class="muted">Coba ubah kata kunci atau hapus filter.</p><button class="btn btn-outline" onclick="document.querySelectorAll('#v-lowongan .filters .input').forEach(i=>i.value='');renderJobs()">Hapus filter</button></div>`;
+}
+function renderSaved(){
+  const list=JOBS.filter(j=>saved.has(j.id)).sort((a,b)=>a.days-b.days);
+  document.getElementById('savedCount').textContent=list.length;
+  document.getElementById('savedList').innerHTML=list.length?list.map(jobCard).join(''):`<div class="panel" style="text-align:center"><h3>Belum ada lowongan disimpan</h3><p class="muted">Tekan Simpan pada lowongan yang menarik agar mudah ditemukan lagi.</p><a class="btn btn-primary" href="#lowongan">Cari lowongan</a></div>`;
+}
+function renderReco(){
+  document.getElementById('recoList').innerHTML=JOBS.filter(j=>j.status==='aktif').slice(0,3).map(jobCard).join('');
+  document.getElementById('recentApps').innerHTML='<tr><th>Posisi</th><th>Perusahaan</th><th>Status</th></tr>'+APPS.slice(0,4).map(a=>{const j=jobById(a.job);return `<tr><td><a href="#lamaran"><b>${j.pos}</b></a></td><td>${j.co}</td><td>${pill(a.status)}</td></tr>`}).join('');
+}
+function renderDetail(id){
+  const j=jobById(id), a=applied(j.id), closed=j.status!=='aktif';
+  document.getElementById('dCrumb').textContent=j.pos;
+  let action;
+  if(a) action=`<div class="alert alert-info">${ic('checkc')}<span>Kamu sudah melamar pada ${a.date}. Status: <b>${STATUS_LABEL[a.status]}</b>. <a href="#lamaran">Lihat lamaran</a></span></div>`;
+  else if(closed) action=`<div class="alert alert-warn">${ic('info')}<span>Lowongan ini sudah ditutup karena kuota terpenuhi.</span></div>`;
+  else action=`<button class="btn btn-primary" style="padding:12px 28px" onclick="openApply(${j.id})">Lamar sekarang</button>`;
+  document.getElementById('detailBox').innerHTML=`
+    <div><div class="poster"><img src="assets/img/pamflet-${j.id}.jpg" alt="Pamflet ${j.pos}"><div class="actions"><a class="btn btn-outline btn-sm" style="flex:1" href="assets/img/pamflet-${j.id}.jpg" download>${ic('download')}Unduh pamflet</a></div></div></div>
+    <div>
+      <div class="panel">
+        <div class="person" style="margin-bottom:12px">${logo(j)}<div><b>${j.co}</b><small style="color:var(--ok)">Mitra terverifikasi Career Center</small></div></div>
+        <h1 style="font-size:1.9rem;margin-bottom:4px">${j.pos}</h1>
+        <div class="meta"><span>${ic('pin')}${j.loc}</span><span>${ic('briefcase')}${j.type}</span><span>${ic('calendar')}Batas ${j.dl}</span><span>${ic('users')}${j.applicants} pelamar</span></div>
+        <div class="kv">
+          <div><small>Sistem kerja</small><b>${j.mode}</b></div><div><small>Gaji</small><b>${j.salary}</b></div>
+          <div><small>Kuota</small><b>${j.quota} orang, sisa ${j.quota-j.filled}</b></div><div><small>Jurusan sasaran</small><b>${j.jur.join(', ')}</b></div>
+        </div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">${action}<button class="btn btn-outline save-btn ${saved.has(j.id)?'saved':''}" onclick="toggleSave(${j.id})">${ic('bookmark')}${saved.has(j.id)?'Disimpan':'Simpan'}</button></div>
+      </div>
+      <div class="panel">
+        <h3>Deskripsi pekerjaan</h3>
+        <p>${j.co} membuka posisi ${j.pos} untuk lulusan vokasi yang siap terjun langsung ke pekerjaan di bidang ${j.field.toLowerCase()}.</p>
+        <h3>Kualifikasi</h3>
+        <ul class="bullets"><li>Lulusan D-III atau D-IV Politeknik Negeri Malang, jurusan ${j.jur.join(' atau ')}</li><li>Menguasai dasar-dasar ${j.field.toLowerCase()} dan terbiasa bekerja berbasis proyek</li><li>Komunikatif, teliti, dan mampu bekerja dalam tim</li><li>Fresh graduate dipersilakan melamar</li></ul>
+        <h3>Tentang perusahaan</h3>
+        <p class="muted">${j.co} berkantor di ${j.loc} dan telah bermitra dengan Career Center Politeknik Negeri Malang.</p>
+      </div>
+    </div>`;
+}
+let applyJobId=null;
+function openApply(id){
+  applyJobId=id; const j=jobById(id);
+  document.getElementById('applyJob').innerHTML=`${logo(j)}<div><b>${j.pos}</b><small>${j.co}</small></div>`;
+  openModal('mApply');
+}
+document.getElementById('aSurat').addEventListener('change',()=>document.getElementById('suratField').classList.remove('has-err'));
+document.getElementById('sendApply').addEventListener('click',e=>{
+  const sf=document.getElementById('aSurat');
+  if(!sf.files.length){ document.getElementById('suratField').classList.add('has-err'); toast('Unggah surat pengantar terlebih dulu'); return; }
+  APPS.unshift({id:Date.now(),job:applyJobId,status:'diajukan',date:'17 Sep 2026',cv:document.querySelector('[name=cv]:checked').closest('label').querySelector('b').textContent});
+  closeModal(e.target); toast('Lamaran terkirim. Pantau statusnya di Lamaran Saya'); go('lamaran');
+});
+
+let appFilter='semua';
+function renderApps(){
+  const groups=[['semua','Semua'],['proses','Diproses'],['diterima','Diterima'],['ditolak','Ditolak'],['dibatalkan','Dibatalkan']];
+  const inGroup=(a,g)=>g==='semua'||(g==='proses'?['diajukan','screening','interview'].includes(a.status):a.status===g);
+  document.getElementById('appTabs').innerHTML=groups.map(([k,l])=>`<button class="${k===appFilter?'active':''}" onclick="appFilter='${k}';renderApps()">${l}<span class="c">${APPS.filter(a=>inGroup(a,k)).length}</span></button>`).join('');
+  const order=['diajukan','screening','interview','hasil'];
+  const list=APPS.filter(a=>inGroup(a,appFilter));
+  document.getElementById('appList').innerHTML=list.length?list.map(a=>{
+    const j=jobById(a.job);
+    const idx={diajukan:0,screening:1,interview:2,diterima:3,ditolak:3,dibatalkan:0}[a.status];
+    const labels=['Diajukan','Screening CV','Interview',a.status==='diterima'?'Diterima':a.status==='ditolak'?'Ditolak':'Hasil'];
+    const tl=labels.map((l,i)=>{let c=i<=idx?'done':''; if(i===3&&a.status==='diterima')c='done good'; if(i===3&&a.status==='ditolak')c='done bad'; if(a.status==='dibatalkan'&&i>0)c=''; return `<div class="tl ${c}">${l}</div>`}).join('');
+    let extra='';
+    if(a.status==='interview') extra=`<div class="info-box">${ic('calendar')}<span><b>Jadwal interview</b><br>${a.interview}</span></div>`;
+    if(a.status==='diterima') extra=`<div class="info-box ok">${ic('checkc')}<span><b>Selamat, kamu diterima!</b> ${a.note}<br>Status kariermu otomatis diperbarui menjadi Bekerja di ${j.co}. <a href="#profil/karier">Lihat status karier</a></span></div>`;
+    if(a.status==='ditolak') extra=`<div class="info-box gray">${ic('info')}<span><b>Catatan perusahaan:</b> ${a.note} <a href="#lowongan">Lihat lowongan serupa</a></span></div>`;
+    if(a.status==='dibatalkan') extra=`<div class="info-box gray">${ic('info')}<span>Kamu membatalkan lamaran ini.</span></div>`;
+    return `<article class="app-card">
+      <div class="app-card-head">${logo(j)}<div class="grow"><a href="#detail/${j.id}"><b>${j.pos}</b></a><div class="muted" style="font-size:.9rem">${j.co}, dilamar ${a.date}, dengan ${a.cv}</div></div>${pill(a.status)}</div>
+      <div class="timeline">${tl}</div>
+      ${extra}
+      ${a.status==='diajukan'?`<div style="text-align:right;margin-top:10px"><button class="btn btn-sm btn-outline" onclick="askCancel(${a.id})">Batalkan lamaran</button></div>`:''}
+    </article>`;
+  }).join(''):`<div class="panel" style="text-align:center"><h3>Belum ada lamaran di sini</h3><p class="muted">Temukan lowongan yang sesuai dan kirim lamaran pertamamu.</p><a class="btn btn-primary" href="#lowongan">Cari lowongan</a></div>`;
+}
+let cancelId=null;
+function askCancel(id){ cancelId=id; openModal('mCancel'); }
+document.getElementById('doCancel').addEventListener('click',e=>{ APPS.find(a=>a.id===cancelId).status='dibatalkan'; closeModal(e.target); toast('Lamaran dibatalkan'); refresh(); });
+
+function renderSkills(){ document.getElementById('chips').innerHTML=skills.map((s,i)=>`<span class="chip">${s}<button aria-label="Hapus ${s}" onclick="skills.splice(${i},1);renderSkills()">${ic('x')}</button></span>`).join(''); }
+function addSkill(inp){ const v=inp.value.trim(); if(!v) return; skills.push(v); inp.value=''; renderSkills(); toast('Skill ditambahkan'); }
+function renderLinks(){ document.getElementById('links').innerHTML=links.map(([t,u],i)=>`<div class="list-item"><span class="list-ic">${ic('link')}</span><div class="grow"><b>${t}</b><div><a href="${u}" target="_blank" rel="noopener">${u}</a></div></div><button class="btn btn-sm btn-outline" onclick="links.splice(${i},1);renderLinks()">Hapus</button></div>`).join(''); }
+function addLink(f){ links.push([f.t.value,f.u.value]); f.u.value=''; renderLinks(); toast('Tautan portofolio ditambahkan'); }
+
+function refresh(){ renderJobs(); renderSaved(); renderReco(); renderApps(); const v=location.hash.split('/'); if(v[0]==='#detail') renderDetail(v[1]); hydrateIcons(); }
+window.onView=(view,param)=>{
+  const tt=document.getElementById('topTitle'); if(tt) tt.textContent=document.getElementById('v-'+view).dataset.title;
+  if(view==='detail') renderDetail(param||1);
+  if(view==='profil' && param){ const b=document.querySelector(`#profTabs [data-tab="${param}"]`); b&&b.click(); }
+};
+renderSkills(); renderLinks(); refresh();
+initApp('dashboard');
+if(new URLSearchParams(location.search).get('welcome')) setTimeout(()=>openModal('mWelcome'),300);
+</script>
+</body>
+</html>

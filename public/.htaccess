@@ -1,0 +1,11 @@
+# Arahkan semua request yang bukan file/folder asli ke index.php,
+# lalu path aslinya dikirim lewat query string "url" (dibaca Router.php).
+RewriteEngine On
+
+# Kalau ada yang tanpa sengaja membuka .html lama, arahkan ke rute PHP
+# baru supaya link lama (kalau sempat dibagikan) tidak 404 begitu saja.
+RewriteRule ^index\.html$ index.php [L,R=301]
+
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^(.*)$ index.php?url=$1 [QSA,L]
