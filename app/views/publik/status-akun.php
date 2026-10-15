@@ -1,14 +1,11 @@
 <?php
-/**
- * View: publik/status-akun
- * Dipanggil oleh: AuthController::statusAkun()
- * Variabel tersedia: $pengguna, $profil (mahasiswa atau perusahaan), $riwayat, $dokumen
- */
+// ===== FRONTEND · PUBLIK · Status akun (menunggu verifikasi) =========
 $f = flashAmbil();
 $role = $pengguna['role'];
 $status = $pengguna['status_akun'];
 $nama = $role === 'mahasiswa' ? ($profil['nama'] ?? $pengguna['email']) : ($role === 'perusahaan' ? ($profil['nama_perusahaan'] ?? $pengguna['email']) : $pengguna['email']);
 
+// --- Data banner & menu terkunci ---
 $petaBanner = [
     'menunggu'  => ['alert-warn', 'hourglass', 'Akunmu sedang diverifikasi', 'Nomor pendaftaran ' . e($pengguna['no_pendaftaran'] ?? '-') . '. Career Center memeriksa datamu paling lama 2 hari kerja. Kami kirim email saat ada hasil.'],
     'perbaikan' => ['alert-warn', 'alert', 'Datamu perlu diperbaiki', 'Lihat catatan Admin di bawah, lalu kirim ulang dokumen yang diminta.'],
@@ -43,7 +40,8 @@ $jumlahNotif = jumlahNotifBelumDibaca($pengguna['id']);
 <link href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="<?= url('assets/css/style.css') ?>">
 </head>
-<body style="background:var(--sky)">
+<body class="bg-sky">
+<!-- ===== Header ===== -->
 <header class="simple-top">
   <div class="container">
     <a class="brand" href="<?= url('beranda') ?>"><img class="brand-mark" src="<?= asetUrl('assets/img/logo-polinema.png') ?>" alt="Logo Politeknik Negeri Malang"><span>KarirKu Polinema</span></a>
@@ -62,23 +60,24 @@ $jumlahNotif = jumlahNotifBelumDibaca($pengguna['id']);
   </div>
 </header>
 
-<main class="container" style="max-width:820px;padding:36px 0 120px">
-  <p class="muted" style="margin-bottom:6px">Halo, <?= e($nama) ?></p>
-  <h1 style="font-size:1.9rem">Status akun</h1>
+<main class="container halaman-status">
+  <p class="muted mb-6">Halo, <?= e($nama) ?></p>
+  <h1 class="fs-190">Status akun</h1>
 
   <?php if ($f): ?>
     <div class="alert alert-<?= $f['tipe'] === 'ok' ? 'ok' : 'bad' ?>"><span data-ic="alert"></span><span><?= e($f['pesan']) ?></span></div>
   <?php endif; ?>
 
+  <!-- ===== Banner status ===== -->
   <div class="status-hero alert <?= $bannerKelas ?>">
     <span data-ic="<?= $bannerIkon ?>"></span>
-    <div style="flex:1">
+    <div class="flex-1">
       <h2><?= e($bannerJudul) ?></h2>
       <p><?= $bannerTeks ?></p>
       <?php if ($catatanTerbaru): ?>
-        <p style="margin-top:8px"><b>Catatan Admin:</b> <?= e($catatanTerbaru['catatan']) ?></p>
+        <p class="mt-8"><b>Catatan Admin:</b> <?= e($catatanTerbaru['catatan']) ?></p>
       <?php endif; ?>
-      <div style="margin-top:14px">
+      <div class="mt-14">
         <?php if ($status === 'perbaikan'): ?>
           <button class="btn btn-warn" data-open="mFix">Perbaiki data</button>
         <?php elseif ($status === 'ditolak' || $status === 'nonaktif'): ?>
@@ -90,7 +89,8 @@ $jumlahNotif = jumlahNotifBelumDibaca($pengguna['id']);
     </div>
   </div>
 
-  <div class="grid g2" style="align-items:start">
+  <!-- ===== Linimasa & data yang dikirim ===== -->
+  <div class="grid g2 items-start">
     <div class="panel">
       <h3>Progres verifikasi</h3>
       <ol class="vtl">
@@ -109,7 +109,7 @@ $jumlahNotif = jumlahNotifBelumDibaca($pengguna['id']);
 
     <div class="panel">
       <div class="panel-head"><h3>Data yang kamu kirim</h3><span><?php if ($status === 'perbaikan'): ?><button class="btn btn-sm btn-outline" data-open="mFix">Edit</button><?php endif; ?></span></div>
-      <dl class="dl" style="grid-template-columns:120px 1fr">
+      <dl class="dl dl-120">
         <?php if ($role === 'mahasiswa' && $profil): ?>
           <dt>Nama</dt><dd><?= e($profil['nama']) ?></dd>
           <dt>NIM</dt><dd><?= e($profil['nim']) ?></dd>
@@ -134,16 +134,18 @@ $jumlahNotif = jumlahNotifBelumDibaca($pengguna['id']);
     </div>
   </div>
 
-  <div class="panel" style="margin-top:18px">
+  <!-- ===== Menu yang terkunci ===== -->
+  <div class="panel mt-18">
     <h3>Menu yang terbuka setelah akun aktif</h3>
     <div class="lock-list">
       <?php foreach ($menuTerkunci as $m): ?>
-        <span style="<?= $status === 'aktif' ? 'background:var(--ok-bg);color:var(--ok)' : '' ?>"><span data-ic="<?= $status === 'aktif' ? 'check' : 'lock' ?>"></span><?= e($m) ?></span>
+        <span class="<?= $status === 'aktif' ? 'terbuka' : '' ?>"><span data-ic="<?= $status === 'aktif' ? 'check' : 'lock' ?>"></span><?= e($m) ?></span>
       <?php endforeach; ?>
     </div>
   </div>
 </main>
 
+<!-- ===== Modal kirim perbaikan ===== -->
 <?php if ($status === 'perbaikan'): ?>
 <div class="modal" id="mFix" role="dialog" aria-modal="true" aria-labelledby="fxT">
   <div class="modal-box">

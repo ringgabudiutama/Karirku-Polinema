@@ -1,9 +1,5 @@
 <?php
-/**
- * View: admin/persetujuan-detail
- * Dipanggil oleh: AdminController::detailPendaftar($penggunaId)
- * Variabel: $pengguna, $profil, $dokumen, $riwayat
- */
+// ===== FRONTEND · ADMIN · Detail pendaftar & keputusan ===============
 $page_title = 'Detail Pendaftar';
 $active_menu = 'persetujuan';
 require __DIR__ . '/../layouts/app-header.php';
@@ -32,15 +28,16 @@ $labelKeputusan = ['disetujui' => 'Disetujui', 'perbaikan' => 'Minta perbaikan',
 ?>
 <section class="view active">
   <div class="crumb"><a href="<?= url('admin/persetujuan') ?>">Persetujuan Akun</a> <span>/</span> <span><?= e($nama) ?></span></div>
-  <div class="grid g-side" style="align-items:start">
+  <!-- ===== Kolom kiri: data & dokumen ===== -->
+  <div class="grid g-side items-start">
     <div>
       <div class="panel">
-        <div class="person" style="margin-bottom:14px">
-          <span class="avatar" style="display:inline-flex;align-items:center;justify-content:center;background:var(--blue-soft);color:var(--navy);font-weight:700;width:52px;height:52px;border-radius:50%"><?= e(inisial($nama)) ?></span>
-          <div><b style="font-size:1.15rem"><?= e($nama) ?></b><small><?= e($sub) ?></small></div>
+        <div class="person mb-14">
+          <span class="avatar avatar-inisial avatar-52"><?= e(inisial($nama)) ?></span>
+          <div><b class="fs-115"><?= e($nama) ?></b><small><?= e($sub) ?></small></div>
         </div>
         <?= badgeHtml(labelStatusAkun($pengguna['status_akun'])) ?>
-        <span class="muted" style="font-size:.88rem;margin-left:8px">Mendaftar <?= tanggalIndo($pengguna['dibuat_pada']) ?>, no. <?= e($pengguna['no_pendaftaran'] ?? '-') ?></span>
+        <span class="muted fs-88 ml-8">Mendaftar <?= tanggalIndo($pengguna['dibuat_pada']) ?>, no. <?= e($pengguna['no_pendaftaran'] ?? '-') ?></span>
       </div>
 
       <div class="panel"><h3>Data pendaftaran</h3>
@@ -70,6 +67,7 @@ $labelKeputusan = ['disetujui' => 'Disetujui', 'perbaikan' => 'Minta perbaikan',
       <?php endif; ?>
     </div>
 
+    <!-- ===== Kolom kanan: keputusan ===== -->
     <div class="sticky">
       <div class="panel">
         <h3>Keputusan</h3>
@@ -79,16 +77,17 @@ $labelKeputusan = ['disetujui' => 'Disetujui', 'perbaikan' => 'Minta perbaikan',
         <form method="post" action="<?= url('admin/putuskan/' . $pengguna['id']) ?>" id="formPutuskan">
           <?= csrfField() ?>
           <div class="field"><label>Catatan <span class="muted" id="catWajib">(wajib untuk Minta Perbaikan/Tolak)</span></label><textarea class="input" name="catatan" id="catatanInput" rows="3" placeholder="Jelaskan alasan atau bagian yang perlu diperbaiki"></textarea></div>
-          <div style="display:grid;gap:8px">
+          <div class="d-grid gap-8">
             <button class="btn btn-ok" type="submit" name="keputusan" value="disetujui">Setujui</button>
             <button class="btn btn-warn" type="submit" name="keputusan" value="perbaikan" onclick="return wajibCatatan()">Minta perbaikan</button>
-            <button class="btn btn-outline" style="color:var(--bad);border-color:var(--bad)" type="submit" name="keputusan" value="ditolak" onclick="return wajibCatatan()">Tolak</button>
+            <button class="btn btn-outline btn-outline-bad" type="submit" name="keputusan" value="ditolak" onclick="return wajibCatatan()">Tolak</button>
           </div>
         </form>
       </div>
     </div>
   </div>
 </section>
+<!-- ===== Script wajib catatan ===== -->
 <script>
 function wajibCatatan(){ const c=document.getElementById('catatanInput'); if(!c.value.trim()){ alert('Catatan wajib diisi untuk keputusan ini.'); c.focus(); return false; } return true; }
 </script>

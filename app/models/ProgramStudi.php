@@ -1,9 +1,5 @@
 <?php
-/**
- * Model tabel program_studi
- * PIC   : M. Ubaidillah (Backend dan Database)
- * Status: DIISI.
- */
+// ===== BACKEND · MODEL · ProgramStudi (tabel program_studi) ==========
 
 class ProgramStudi extends Model
 {

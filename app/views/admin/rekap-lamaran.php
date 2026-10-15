@@ -1,9 +1,5 @@
 <?php
-/**
- * View: admin/rekap-lamaran
- * Dipanggil oleh: AdminController::rekapLamaran()
- * Variabel: $lamaran, $perusahaan, $jurusan, $prodi, $angkatan, $bulan, $filter
- */
+// ===== FRONTEND · ADMIN · Rekap lamaran ==============================
 $page_title = 'Rekap Lamaran';
 $active_menu = 'rekap';
 require __DIR__ . '/../layouts/app-header.php';
@@ -25,17 +21,19 @@ arsort($perPerusahaan);
   <div class="page-head"><div><h1>Rekap lamaran</h1><p>Seluruh lamaran dari semua perusahaan. Hanya untuk dilihat.</p></div>
     <a class="btn btn-primary" href="<?= url('admin/unduh-rekap-lamaran?' . http_build_query($filter)) ?>" target="_blank"><span data-ic="download"></span>Unduh PDF</a>
   </div>
-  <div class="grid g4" style="margin-bottom:18px">
+  <!-- ===== Kartu statistik ===== -->
+  <div class="grid g4 mb-18">
     <div class="stat"><div class="n"><?= number_format($totalLamaran) ?></div><div class="l">Total lamaran</div></div>
     <div class="stat"><div class="n"><?= number_format($diproses) ?></div><div class="l">Sedang diproses</div></div>
-    <div class="stat"><div class="n" style="color:var(--ok)"><?= number_format($diterima) ?></div><div class="l">Diterima</div></div>
-    <div class="stat"><div class="n" style="color:var(--bad)"><?= number_format($ditolakBatal) ?></div><div class="l">Ditolak atau dibatalkan</div></div>
+    <div class="stat"><div class="n text-ok"><?= number_format($diterima) ?></div><div class="l">Diterima</div></div>
+    <div class="stat"><div class="n text-bad"><?= number_format($ditolakBatal) ?></div><div class="l">Ditolak atau dibatalkan</div></div>
   </div>
-  <div class="grid g-side" style="align-items:start">
+  <div class="grid g-side items-start">
     <div class="panel">
+      <!-- ===== Filter & tabel lamaran ===== -->
       <form class="filters" method="get" action="<?= url('admin/rekap-lamaran') ?>" id="formFilterLamaran">
-        <div style="flex-basis:100%;display:flex;gap:8px;margin-bottom:6px">
-          <input class="input" type="search" name="q" id="cariLamaran" style="flex:1"
+        <div class="basis-full d-flex gap-8 mb-6">
+          <input class="input flex-1" type="search" name="q" id="cariLamaran"
                  value="<?= e($filter['q'] ?? '') ?>"
                  placeholder="Cari nama pelamar, NIM, perusahaan, atau posisi" autocomplete="off">
           <button class="btn btn-primary" type="submit">Cari</button>
@@ -55,7 +53,7 @@ arsort($perPerusahaan);
           <option value="">Semua jurusan</option>
           <?php foreach ($jurusan as $j): ?><option value="<?= (int) $j['id'] ?>" <?= (string) $filter['jurusan_id'] === (string) $j['id'] ? 'selected' : '' ?>><?= e($j['nama']) ?></option><?php endforeach; ?>
         </select>
-        <div style="flex-basis:100%;height:0"></div>
+        <div class="basis-full h-0"></div>
         <select class="input" name="prodi_id" id="filterProdi" onchange="this.form.submit()">
           <option value="">Semua prodi</option>
           <?php foreach ($prodi as $ps): ?><option value="<?= (int) $ps['id'] ?>" data-jurusan="<?= (int) $ps['jurusan_id'] ?>" <?= (string) $filter['prodi_id'] === (string) $ps['id'] ? 'selected' : '' ?>><?= e(trim(($ps['jenjang'] ?? '') . ' ' . $ps['nama'])) ?></option><?php endforeach; ?>
@@ -72,7 +70,7 @@ arsort($perPerusahaan);
       </form>
       <div class="table-wrap"><table class="t" id="tabelLamaran">
         <tr><th>Tanggal</th><th>Pelamar</th><th>Prodi</th><th>Angkatan</th><th>Perusahaan</th><th>Posisi</th><th>Status</th><th>Diperbarui</th></tr>
-        <?php if (empty($lamaran)): ?><tr><td colspan="8" class="muted" style="text-align:center;padding:30px">Tidak ada data.</td></tr><?php endif; ?>
+        <?php if (empty($lamaran)): ?><tr><td colspan="8" class="muted kosong">Tidak ada data.</td></tr><?php endif; ?>
         <?php foreach (array_slice($lamaran, 0, 200) as $l): ?>
           <tr data-cari="<?= e(mb_strtolower($l['nama_mahasiswa'] . ' ' . $l['nama_perusahaan'] . ' ' . $l['posisi'])) ?>">
             <td><?= tanggalIndo($l['tanggal_lamar']) ?></td>
@@ -85,10 +83,11 @@ arsort($perPerusahaan);
             <td><?= tanggalIndo($l['diperbarui_pada']) ?></td>
           </tr>
         <?php endforeach; ?>
-        <tr id="barisKosongCari" class="muted" hidden><td colspan="8" style="text-align:center;padding:30px">Tidak ada hasil yang cocok dengan pencarian.</td></tr>
+        <tr id="barisKosongCari" class="muted" hidden><td class="kosong" colspan="8">Tidak ada hasil yang cocok dengan pencarian.</td></tr>
       </table></div>
-      <?php if (count($lamaran) > 200): ?><p class="muted" style="font-size:.85rem;margin-top:10px">Menampilkan 200 dari <?= count($lamaran) ?> baris. Unduh PDF untuk data lengkap.</p><?php endif; ?>
+      <?php if (count($lamaran) > 200): ?><p class="muted fs-85 mt-10">Menampilkan 200 dari <?= count($lamaran) ?> baris. Unduh PDF untuk data lengkap.</p><?php endif; ?>
     </div>
+    <!-- ===== Ringkasan per perusahaan ===== -->
     <div class="panel">
       <h3>Per perusahaan</h3>
       <table class="t"><tr><th>Perusahaan</th><th>Pelamar</th><th>Diterima</th></tr>
@@ -99,9 +98,9 @@ arsort($perPerusahaan);
     </div>
   </div>
 </section>
+<!-- ===== Script cari & filter prodi ===== -->
 <script>
 (function(){
-  // Cari langsung mengubah tampilan tabel tanpa reload halaman.
   var cari = document.getElementById('cariLamaran');
   var tabel = document.getElementById('tabelLamaran');
   var kosong = document.getElementById('barisKosongCari');
@@ -118,11 +117,10 @@ arsort($perPerusahaan);
     });
   }
 
-  // Dropdown Prodi hanya menampilkan prodi milik Jurusan yang dipilih.
   window.ubahJurusan = function(){
     var jurusan = document.getElementById('filterJurusan');
     var prodi = document.getElementById('filterProdi');
-    prodi.value = ''; // reset supaya tidak ada kombinasi jurusan+prodi yang tidak sesuai
+    prodi.value = '';
     saringProdi();
     jurusan.form.submit();
   };

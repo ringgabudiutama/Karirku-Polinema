@@ -1,17 +1,6 @@
--- Data uji KarirKu Polinema
--- PIC: M. Ubaidillah (Backend dan Database)
--- Jalankan setelah 01-schema.sql
---
--- Target data uji sesuai kriteria keberhasilan proposal:
---   50 akun mahasiswa dan alumni, 15 akun perusahaan, 40 lowongan, 30 lamaran
---   dengan variasi status.
+-- ===== DATA AWAL & DATA UJI KarirKu Polinema ===============================
 
--- ---------------------------------------------------------------------------
--- Jurusan dan program studi, mengikuti daftar resmi Politeknik Negeri Malang.
--- Kolom nama program studi TIDAK memuat jenjang, karena jenjang disimpan di
--- kolomnya sendiri dan tampilan menggabungkan keduanya ("D-IV Teknik
--- Informatika"). Kalau jenjang ikut ditulis di nama, labelnya jadi ganda.
--- ---------------------------------------------------------------------------
+-- ----- Jurusan dan program studi -----------------------------------------
 INSERT INTO jurusan (nama) VALUES
   ('Teknik Sipil'),
   ('Teknik Mesin'),
@@ -25,15 +14,13 @@ INSERT INTO bidang (nama) VALUES
   ('Teknologi Informasi'), ('Konstruksi'), ('Manufaktur'), ('Kelistrikan'),
   ('Kimia'), ('Keuangan'), ('Perdagangan dan Jasa');
 
--- Daftar skill awal. Mahasiswa tetap bisa menambah skill baru sendiri
--- lewat Profil Karier > tab Skills.
+-- ----- Daftar skill awal -------------------------------------------------
 INSERT INTO skill (nama) VALUES
   ('HTML'), ('CSS'), ('JavaScript'), ('PHP'), ('Laravel'), ('CodeIgniter'),
   ('PostgreSQL'), ('MySQL'), ('Git'), ('Figma'), ('UI/UX Design'),
   ('Python'), ('Java'), ('Microsoft Excel'), ('AutoCAD'), ('SolidWorks'),
   ('Komunikasi'), ('Kerja sama tim'), ('Manajemen waktu'), ('Bahasa Inggris')
 ON CONFLICT (nama) DO NOTHING;
-
 
 INSERT INTO program_studi (jurusan_id, nama, jenjang)
   -- Teknik Sipil
@@ -76,14 +63,14 @@ INSERT INTO program_studi (jurusan_id, nama, jenjang)
   UNION ALL SELECT id, 'Pengelolaan Arsip dan Rekaman Informasi', 'D-IV' FROM jurusan WHERE nama = 'Administrasi Niaga'
   UNION ALL SELECT id, 'Bahasa Inggris untuk Komunikasi Bisnis dan Profesional', 'D-IV' FROM jurusan WHERE nama = 'Administrasi Niaga';
 
--- Akun admin Career Center (email: admin@polinema.ac.id, password: admin123)
+-- ----- Akun demo admin (admin@polinema.ac.id / admin123) -----------------
 INSERT INTO pengguna (email, password_hash, role, status_akun) VALUES
   ('admin@polinema.ac.id', '$2b$10$LbjPEzhFoNJuATXOvuQerOvwA1y5y0V3pITQKzX.xWqwgYj.icK7a', 'admin', 'aktif');
 
 INSERT INTO admin (pengguna_id, nama)
   SELECT id, 'Admin Career Center' FROM pengguna WHERE email = 'admin@polinema.ac.id';
 
--- Akun uji mahasiswa aktif (email: mahasiswa@polinema.ac.id, password: mahasiswa123)
+-- ----- Akun demo mahasiswa (mahasiswa@polinema.ac.id / mahasiswa123) -----
 INSERT INTO pengguna (email, password_hash, role, status_akun) VALUES
   ('mahasiswa@polinema.ac.id', '$2b$10$5OLeCYv6YBC5QqR0Qf7C0OnpEMBOtcioLNFMQfuOkzW5ymJJ3D/0.', 'mahasiswa', 'aktif');
 
@@ -92,7 +79,7 @@ INSERT INTO mahasiswa (pengguna_id, program_studi_id, nama, nim, no_whatsapp, st
   FROM pengguna p, program_studi ps
   WHERE p.email = 'mahasiswa@polinema.ac.id' AND ps.nama = 'Teknik Informatika';
 
--- Akun uji perusahaan aktif (email: perusahaan@polinema.ac.id, password: perusahaan123)
+-- ----- Akun demo perusahaan (perusahaan@polinema.ac.id / perusahaan123) ----
 INSERT INTO pengguna (email, password_hash, role, status_akun) VALUES
   ('perusahaan@polinema.ac.id', '$2b$10$E8ouzEPuzpc9moztG.PYkuQhsjQMZlDEeOXxRGjIjvgArT3ojj7My', 'perusahaan', 'aktif');
 
@@ -100,21 +87,9 @@ INSERT INTO perusahaan (pengguna_id, nama_perusahaan, bidang_usaha, jenis_perusa
   SELECT id, 'PT Nusantara Digital', 'Teknologi Informasi', 'Swasta nasional', 'Jl. Soekarno Hatta 10', 'Malang', 'Hendra Wijaya', 'HR Manager', '081298765432', true
   FROM pengguna WHERE email = 'perusahaan@polinema.ac.id';
 
--- ===========================================================================
--- DATA UJI LENGKAP
--- Jumlahnya mengikuti kriteria keberhasilan pada proposal:
---   50 akun mahasiswa dan alumni, 15 akun perusahaan, 40 lowongan,
---   dan 30 lamaran dengan status yang bervariasi.
---
--- Semua akun mahasiswa memakai kata sandi: mahasiswa123
--- Semua akun perusahaan memakai kata sandi: perusahaan123
---
--- Bagian ini dihasilkan ulang lewat skrip, jadi isinya konsisten:
--- jurusan pada lowongan selalu cocok dengan jurusan pelamarnya, dan
--- lamaran berstatus interview selalu punya jadwal interview.
--- ===========================================================================
+-- ===== DATA UJI LENGKAP ==================================================
 
--- 50 akun mahasiswa dan alumni ------------------------------------------
+-- ----- 50 akun mahasiswa dan alumni --------------------------------------
 INSERT INTO pengguna (email, password_hash, role, status_akun) VALUES
   ('ahmad.pratama@student.polinema.ac.id', '$2b$10$5OLeCYv6YBC5QqR0Qf7C0OnpEMBOtcioLNFMQfuOkzW5ymJJ3D/0.', 'mahasiswa', 'aktif'),
   ('siti.nuraini@student.polinema.ac.id', '$2b$10$5OLeCYv6YBC5QqR0Qf7C0OnpEMBOtcioLNFMQfuOkzW5ymJJ3D/0.', 'mahasiswa', 'aktif'),
@@ -473,7 +448,7 @@ INSERT INTO mahasiswa (pengguna_id, program_studi_id, nama, nim, no_whatsapp,
     FROM pengguna p, program_studi ps JOIN jurusan j ON j.id = ps.jurusan_id
    WHERE p.email = 'ratna.safitri@student.polinema.ac.id' AND ps.nama = 'Keuangan' AND ps.jenjang = 'D-IV' AND j.nama = 'Akuntansi';
 
--- Skill dan minat bidang untuk sebagian mahasiswa -----------------------
+-- ----- Skill dan minat bidang untuk sebagian mahasiswa -------------------
 INSERT INTO mahasiswa_skill (mahasiswa_id, skill_id)
   SELECT m.id, s.id FROM mahasiswa m, skill s WHERE m.nim = '2441720010' AND s.nama = 'Git'
   UNION ALL
@@ -838,7 +813,7 @@ INSERT INTO mahasiswa_minat (mahasiswa_id, bidang_id)
   SELECT m.id, b.id FROM mahasiswa m, bidang b WHERE m.nim = '1941720039' AND b.nama = 'Kelistrikan'
   ON CONFLICT DO NOTHING;
 
--- Riwayat pendidikan, pengalaman, dan sertifikat -----------------------
+-- ----- Riwayat pendidikan, pengalaman, dan sertifikat --------------------
 INSERT INTO profil_item (mahasiswa_id, tipe, judul, instansi, mulai, selesai, deskripsi, file, tautan)
   SELECT m.id, 'pendidikan', 'Akuntansi', 'SMK Negeri 1 Malang', '2021-07-15'::date, '2024-06-10'::date, NULL::text, NULL::varchar, NULL::varchar FROM mahasiswa m WHERE m.nim = '2441720010'
   UNION ALL
@@ -984,7 +959,7 @@ INSERT INTO profil_item (mahasiswa_id, tipe, judul, instansi, mulai, selesai, de
   UNION ALL
   SELECT m.id, 'sertifikat', 'TOEIC 650', 'Lembaga Sertifikasi Profesi', '2025-11-20'::date, NULL::date, NULL::text, NULL::varchar, NULL::varchar FROM mahasiswa m WHERE m.nim = '2341720033';
 
--- 15 akun perusahaan ---------------------------------------------------
+-- ----- 15 akun perusahaan ------------------------------------------------
 INSERT INTO pengguna (email, password_hash, role, status_akun) VALUES
   ('hrd@astraotoparts.co.id', '$2b$10$E8ouzEPuzpc9moztG.PYkuQhsjQMZlDEeOXxRGjIjvgArT3ojj7My', 'perusahaan', 'aktif'),
   ('hrd@telkomindonesia.co.id', '$2b$10$E8ouzEPuzpc9moztG.PYkuQhsjQMZlDEeOXxRGjIjvgArT3ojj7My', 'perusahaan', 'aktif'),
@@ -1049,7 +1024,7 @@ INSERT INTO perusahaan (pengguna_id, nama_perusahaan, bidang_usaha, jenis_perusa
   SELECT id, 'PT Energi Listrik Mandiri', 'Kelistrikan', 'Swasta nasional', 'Jl. Ahmad Yani 88', 'Sidoarjo', 'Joko Susilo', 'HRD Supervisor', '087519950363', true, 'PT Energi Listrik Mandiri bergerak di bidang kelistrikan dan rutin membuka kesempatan bagi lulusan vokasi Politeknik Negeri Malang.'
     FROM pengguna WHERE email = 'hrd@energilistrikmandiri.co.id';
 
--- 40 lowongan ---------------------------------------------------------
+-- ----- 40 lowongan -------------------------------------------------------
 INSERT INTO lowongan (perusahaan_id, bidang_id, posisi, jenis_pekerjaan, sistem_kerja,
     lokasi, gaji, kuota, batas_lamaran, deskripsi, kualifikasi, skill_dibutuhkan,
     pamflet, kode_pratinjau, status, alasan_nonaktif)
@@ -1213,7 +1188,7 @@ INSERT INTO lowongan (perusahaan_id, bidang_id, posisi, jenis_pekerjaan, sistem_
          'Bergabung sebagai Customer Relation Officer di PT Barata Indonesia. Kamu akan terlibat langsung pada pekerjaan harian tim, didampingi mentor, dan mendapat pengalaman kerja nyata sesuai bidang vokasi.', 'Lulusan atau mahasiswa tingkat akhir program vokasi yang relevan. Terbiasa bekerja dalam tim, teliti, dan mau belajar hal baru. Bersedia bekerja di Gresik.', 'Bahasa Inggris, Komunikasi', 'contoh-pamflet.jpg', 'b50459b1cf100959f03a06e111559ae0', 'nonaktif', 'Lowongan tidak sesuai ketentuan Career Center.'
     FROM perusahaan pr, bidang b WHERE pr.nama_perusahaan = 'PT Barata Indonesia' AND b.nama = 'Perdagangan dan Jasa';
 
--- Jurusan sasaran tiap lowongan
+-- ----- Jurusan sasaran tiap lowongan -------------------------------------
 INSERT INTO lowongan_jurusan (lowongan_id, jurusan_id)
   SELECT l.id, j.id FROM lowongan l, jurusan j WHERE l.kode_pratinjau = '34db9deffcac44e4c1cb1737a921dce6' AND j.nama = 'Teknologi Informasi'
   UNION ALL
@@ -1312,7 +1287,7 @@ INSERT INTO lowongan_jurusan (lowongan_id, jurusan_id)
   SELECT l.id, j.id FROM lowongan l, jurusan j WHERE l.kode_pratinjau = 'b50459b1cf100959f03a06e111559ae0' AND j.nama = 'Administrasi Niaga'
   ON CONFLICT DO NOTHING;
 
--- 30 lamaran dengan status bervariasi ----------------------------------
+-- ----- 30 lamaran dengan status bervariasi -------------------------------
 INSERT INTO lamaran (mahasiswa_id, lowongan_id, tanggal_lamar, status, jenis_cv,
     file_cv, file_ktm, file_surat_pengantar, catatan_pelamar, snapshot_profil, catatan_perusahaan)
   SELECT m.id, l.id, '2026-09-08'::timestamp, 'diajukan', 'generate', 'cv-sistem.pdf', 'contoh-ktm.pdf',
@@ -1435,7 +1410,7 @@ INSERT INTO lamaran (mahasiswa_id, lowongan_id, tanggal_lamar, status, jenis_cv,
          'contoh-surat-pengantar.pdf', 'Mohon dipertimbangkan, saya siap mulai setelah yudisium.', '{"nama":"Maya Wulandari","nim":"1941720039","prodi":"Teknologi Pertambangan","jenjang":"D-III","jurusan":"Teknik Sipil","angkatan":2019,"ipk":3.69}'::jsonb, NULL::varchar
     FROM mahasiswa m, lowongan l WHERE m.nim = '1941720039' AND l.kode_pratinjau = 'a2ba4c3d7671cdc6b595a1921165e453';
 
--- Riwayat perubahan status lamaran
+-- ----- Riwayat perubahan status lamaran ----------------------------------
 INSERT INTO riwayat_lamaran (lamaran_id, status, catatan, diubah_oleh, tanggal)
   SELECT la.id, 'diajukan', 'Lamaran dikirim oleh pelamar.', m.pengguna_id, la.tanggal_lamar
     FROM lamaran la JOIN mahasiswa m ON m.id = la.mahasiswa_id;
@@ -1446,8 +1421,7 @@ INSERT INTO riwayat_lamaran (lamaran_id, status, catatan, diubah_oleh, tanggal)
          JOIN perusahaan pr ON pr.id = lo.perusahaan_id
    WHERE la.status <> 'diajukan';
 
--- Jadwal interview: luring memakai kolom tempat, ruangan, dresscode,
--- yang dibawa, dan narahubung. Daring hanya memakai tautan meeting.
+-- ----- Jadwal interview --------------------------------------------------
 INSERT INTO interview (lamaran_id, tanggal, jam, mode, lokasi_tautan, tempat, ruangan,
     dresscode, yang_dibawa, narahubung, catatan)
   SELECT la.id, '2026-10-19'::date, '11:00'::time, 'luring', 'Kantor Pusat, Jl. MH Thamrin 55', 'Kantor Pusat PT Pertamina Patra Niaga', 'Ruang Interview A', 'Kemeja putih, bawahan hitam, bersepatu formal', 'Kartu identitas, berkas CV cetak, transkrip nilai, dan pulpen', 'Nadia Rahmi (087454068093)', 'Mohon hadir 20 menit sebelum jadwal untuk registrasi.'
@@ -1480,7 +1454,7 @@ INSERT INTO interview (lamaran_id, tanggal, jam, mode, lokasi_tautan, tempat, ru
          JOIN lowongan lo ON lo.id = la.lowongan_id
    WHERE m.nim = '2441720037' AND lo.kode_pratinjau = 'c4a2d4ce8dc6b6270876c772fdadef7f';
 
--- Lowongan yang disimpan mahasiswa -------------------------------------
+-- ----- Lowongan yang disimpan mahasiswa ----------------------------------
 INSERT INTO lowongan_disimpan (mahasiswa_id, lowongan_id)
   SELECT m.id, l.id FROM mahasiswa m, lowongan l WHERE m.nim = '2141720040' AND l.kode_pratinjau = '88afac51604a28babb6ba3f8d5596ddd'
   UNION ALL
@@ -1555,23 +1529,15 @@ INSERT INTO lowongan_disimpan (mahasiswa_id, lowongan_id)
   SELECT m.id, l.id FROM mahasiswa m, lowongan l WHERE m.nim = '2241720020' AND l.kode_pratinjau = 'ee10d1437a04c9e38fe430838fe5e4b7'
   ON CONFLICT DO NOTHING;
 
--- Hitung ulang kolom terisi pada lowongan supaya cocok dengan lamaran diterima
+-- ----- Hitung ulang kolom terisi -----------------------------------------
 UPDATE lowongan l
    SET terisi = LEAST(l.kuota, (
          SELECT count(*) FROM lamaran la
           WHERE la.lowongan_id = l.id AND la.status = 'diterima'));
 
--- ===========================================================================
--- ISI UNTUK TIGA AKUN DEMO
---
--- Tanpa bagian ini, akun demo bisa masuk tetapi halamannya kosong: perusahaan
--- demo belum punya lowongan, dan mahasiswa demo belum punya lamaran. Jadi
--- sebagian data di atas dipindahkan ke akun demo supaya begitu login semua
--- menu langsung ada isinya dan siap dipakai saat presentasi.
--- ===========================================================================
+-- ===== ISI UNTUK TIGA AKUN DEMO ==========================================
 
--- 1. Lima lowongan yang paling banyak pelamarnya dipindah ke perusahaan demo.
---    Lamaran dan interview-nya ikut pindah karena mengacu ke lowongan.
+-- ----- 1. Lowongan untuk perusahaan demo ---------------------------------
 UPDATE lowongan SET perusahaan_id = (
          SELECT pr.id FROM perusahaan pr JOIN pengguna p ON p.id = pr.pengguna_id
           WHERE p.email = 'perusahaan@polinema.ac.id')
@@ -1583,14 +1549,11 @@ UPDATE lowongan SET perusahaan_id = (
     ORDER BY count(la.id) DESC, l.id
     LIMIT 5);
 
--- 2. Mahasiswa demo (Budi Santoso) diberi empat lamaran dengan status berbeda,
---    supaya halaman "Lamaran saya" langsung memperlihatkan semua tahap.
+-- ----- 2. Lamaran untuk mahasiswa demo -----------------------------------
 WITH budi AS (
   SELECT m.id FROM mahasiswa m JOIN pengguna p ON p.id = m.pengguna_id
    WHERE p.email = 'mahasiswa@polinema.ac.id'
 ), sasaran AS (
-  -- Lowongan milik perusahaan demo didahulukan, supaya saat login sebagai
-  -- perusahaan demo, mahasiswa demo memang terlihat di daftar pelamarnya.
   SELECT l.id,
          row_number() OVER (
            ORDER BY (pr.pengguna_id = (SELECT id FROM pengguna
@@ -1624,8 +1587,7 @@ SELECT (SELECT id FROM budi), s.id,
   FROM sasaran s
  ON CONFLICT DO NOTHING;
 
--- 3. Satu interview luring untuk lamaran Budi yang berstatus interview,
---    lengkap dengan tempat, ruangan, dresscode, bawaan, dan narahubung.
+-- ----- 3. Interview luring untuk mahasiswa demo --------------------------
 INSERT INTO interview (lamaran_id, tanggal, jam, mode, lokasi_tautan, tempat, ruangan,
     dresscode, yang_dibawa, narahubung, catatan)
 SELECT la.id, '2026-10-14'::date, '09:00'::time, 'luring',
@@ -1642,7 +1604,7 @@ SELECT la.id, '2026-10-14'::date, '09:00'::time, 'luring',
  WHERE p.email = 'mahasiswa@polinema.ac.id' AND la.status = 'interview'
  ON CONFLICT (lamaran_id) DO NOTHING;
 
--- 4. Skill, minat, dan riwayat untuk mahasiswa demo supaya profilnya terisi.
+-- ----- 4. Profil mahasiswa demo ------------------------------------------
 INSERT INTO mahasiswa_skill (mahasiswa_id, skill_id)
   SELECT m.id, s.id FROM mahasiswa m JOIN pengguna p ON p.id = m.pengguna_id, skill s
    WHERE p.email = 'mahasiswa@polinema.ac.id'
@@ -1687,8 +1649,7 @@ UPDATE mahasiswa SET ipk = 3.61, domisili = 'Malang',
        karier_diperbarui_pada = '2026-09-20'
  WHERE pengguna_id = (SELECT id FROM pengguna WHERE email = 'mahasiswa@polinema.ac.id');
 
--- 5. Beberapa akun yang masih menunggu verifikasi, supaya menu Persetujuan
---    di sisi admin ada isinya saat didemokan.
+-- ----- 5. Akun yang menunggu verifikasi ----------------------------------
 INSERT INTO pengguna (email, password_hash, role, status_akun) VALUES
   ('calon.mahasiswa@student.polinema.ac.id', '$2b$10$5OLeCYv6YBC5QqR0Qf7C0OnpEMBOtcioLNFMQfuOkzW5ymJJ3D/0.', 'mahasiswa', 'menunggu'),
   ('hrd@mitrasejahtera.co.id', '$2b$10$E8ouzEPuzpc9moztG.PYkuQhsjQMZlDEeOXxRGjIjvgArT3ojj7My', 'perusahaan', 'menunggu'),
@@ -1711,24 +1672,15 @@ INSERT INTO perusahaan (pengguna_id, nama_perusahaan, bidang_usaha, jenis_perusa
          'Jl. Industri Raya 7', 'Sidoarjo', 'Samsul Arifin', 'Manajer SDM', '081344455566', true
     FROM pengguna WHERE email = 'hrd@karyaabadi.co.id';
 
--- Hitung ulang kolom terisi sekali lagi setelah lamaran akun demo masuk.
+-- ----- Hitung ulang kolom terisi -----------------------------------------
 UPDATE lowongan l
    SET terisi = LEAST(l.kuota, (
          SELECT count(*) FROM lamaran la
           WHERE la.lowongan_id = l.id AND la.status = 'diterima'));
 
--- ===========================================================================
--- NOTIFIKASI
---
--- Diisi supaya lonceng dan halaman Notifikasi ada isinya saat didemokan, dan
--- supaya tautan "tandai dibaca" benar-benar bisa diuji.
---
--- Kolom tautan HARUS berisi alamat yang benar-benar ada. Alamat halaman
--- notifikasi adalah 'notifikasi/semua' untuk semua peran, bukan
--- 'mahasiswa/notifikasi'.
--- ===========================================================================
+-- ===== NOTIFIKASI ========================================================
 
--- Untuk mahasiswa demo
+-- ----- Untuk mahasiswa demo ----------------------------------------------
 INSERT INTO notifikasi (pengguna_id, tipe, judul, pesan, tautan, dibaca, dibuat_pada)
   SELECT p.id, 'interview', 'Jadwal interview sudah ditentukan',
          'PT Nusantara Digital menjadwalkan interview luring pada 14 Oktober 2026 pukul 09.00 di Ruang Meeting 2.',
@@ -1750,7 +1702,7 @@ INSERT INTO notifikasi (pengguna_id, tipe, judul, pesan, tautan, dibaca, dibuat_
          NULL, true, now() - interval '6 days'
     FROM pengguna p WHERE p.email = 'mahasiswa@polinema.ac.id';
 
--- Untuk perusahaan demo
+-- ----- Untuk perusahaan demo ---------------------------------------------
 INSERT INTO notifikasi (pengguna_id, tipe, judul, pesan, tautan, dibaca, dibuat_pada)
   SELECT p.id, 'lamaran_masuk', 'Pelamar baru masuk',
          'Ada pelamar baru untuk posisi Junior Web Developer.',
@@ -1767,7 +1719,7 @@ INSERT INTO notifikasi (pengguna_id, tipe, judul, pesan, tautan, dibaca, dibuat_
          'perusahaan/lowongan', true, now() - interval '9 days'
     FROM pengguna p WHERE p.email = 'perusahaan@polinema.ac.id';
 
--- Untuk admin
+-- ----- Untuk admin -------------------------------------------------------
 INSERT INTO notifikasi (pengguna_id, tipe, judul, pesan, tautan, dibaca, dibuat_pada)
   SELECT p.id, 'verifikasi', 'Pendaftar baru menunggu verifikasi',
          'Nabila Ramadhani mendaftar sebagai mahasiswa dan menunggu persetujuan.',
@@ -1784,45 +1736,33 @@ INSERT INTO notifikasi (pengguna_id, tipe, judul, pesan, tautan, dibaca, dibuat_
          'admin/monitoring-lowongan', true, now() - interval '3 days'
     FROM pengguna p WHERE p.email = 'admin@polinema.ac.id';
 
--- ===========================================================================
--- BERKAS CONTOH PADA DATA UJI
---
--- Nama berkas di bawah menunjuk ke berkas yang benar-benar ada di
--- storage/uploads/. Tanpa ini, tombol seperti "Lihat file" pada sertifikat
--- atau "Lihat" pada dokumen legalitas akan berakhir di halaman
--- "Berkas tidak ditemukan" saat didemokan.
--- ===========================================================================
+-- ===== BERKAS CONTOH PADA DATA UJI =======================================
 
--- PENTING: nama berkas dibuat BERBEDA untuk tiap orang, memakai NIM atau
--- nomor perusahaan. Kalau semua memakai satu nama yang sama, pemeriksaan hak
--- akses di unduh.php tidak bisa membedakan pemiliknya, sehingga berkas orang
--- lain ikut terbuka. Berkasnya sudah tersedia di storage/uploads/.
-
--- Foto profil dan logo
+-- ----- Foto profil dan logo ----------------------------------------------
 UPDATE mahasiswa SET foto = 'contoh-foto.jpg' WHERE id % 3 = 0
     OR pengguna_id = (SELECT id FROM pengguna WHERE email = 'mahasiswa@polinema.ac.id');
 UPDATE perusahaan SET logo = 'contoh-logo.jpg';
 
--- Sertifikat dan portofolio ikut punya berkas, bukan hanya judul
+-- ----- Sertifikat dan portofolio -----------------------------------------
 UPDATE profil_item SET file = 'contoh-sertifikat.pdf' WHERE tipe = 'sertifikat';
 UPDATE profil_item SET file = 'contoh-portofolio.pdf' WHERE tipe = 'portofolio';
 
--- KTM untuk mahasiswa aktif, ijazah untuk alumni, masing-masing satu berkas
+-- ----- KTM dan ijazah ----------------------------------------------------
 UPDATE mahasiswa SET file_ktm = 'ktm-' || nim || '.pdf' WHERE status_mahasiswa = 'aktif';
 UPDATE mahasiswa SET file_ktm = 'ijazah-' || nim || '.pdf' WHERE status_mahasiswa = 'alumni';
 UPDATE mahasiswa SET file_surat_pengantar = 'surat-' || nim || '.pdf';
 
--- Surat pengantar pada tiap lamaran mengikuti milik pelamarnya
+-- ----- Surat pengantar lamaran -------------------------------------------
 UPDATE lamaran la SET file_surat_pengantar = m.file_surat_pengantar, file_ktm = m.file_ktm
   FROM mahasiswa m WHERE m.id = la.mahasiswa_id;
 
--- Dokumen legalitas perusahaan, dipakai Admin saat memverifikasi
+-- ----- Dokumen legalitas perusahaan --------------------------------------
 INSERT INTO dokumen_verifikasi (pengguna_id, tipe, file, ukuran_kb)
   SELECT pr.pengguna_id, t.tipe, t.tipe || '-pt' || pr.id || '.pdf', 2
     FROM perusahaan pr
     CROSS JOIN (VALUES ('nib'), ('npwp'), ('akta'), ('domisili')) AS t(tipe);
 
--- Dokumen mahasiswa yang menunggu verifikasi, supaya Admin bisa meninjaunya
+-- ----- Dokumen mahasiswa yang menunggu verifikasi ------------------------
 INSERT INTO dokumen_verifikasi (pengguna_id, tipe, file, ukuran_kb)
   SELECT m.pengguna_id, 'ktm', m.file_ktm, 2
     FROM mahasiswa m JOIN pengguna p ON p.id = m.pengguna_id

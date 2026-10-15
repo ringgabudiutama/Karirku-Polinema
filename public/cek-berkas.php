@@ -1,23 +1,10 @@
 <?php
-/**
- * Pemeriksa kecocokan database dengan berkas di penyimpanan.
- *
- * Dipakai saat ada tombol berkas yang berakhir di "Berkas tidak ditemukan".
- * Halaman ini membandingkan nama berkas yang tercatat di database dengan isi
- * folder storage/uploads/, lalu menunjukkan mana yang hilang.
- *
- * Penyebab paling sering: folder proyek diganti dengan versi baru, sedangkan
- * berkas yang pernah diunggah masih tertinggal di folder proyek yang lama.
- * Database tetap mencatat namanya, tetapi berkasnya sudah tidak ada di sini.
- *
- * HAPUS berkas ini sebelum aplikasi dipakai sungguhan.
- */
+// ===== ALAT BANTU · Cek berkas unggahan ==============================
 
 require __DIR__ . '/../app/core/bootstrap.php';
 
 $upload = rtrim((require __DIR__ . '/../app/config/config.php')['upload_dir'], '/');
 
-/* Daftar sumber: dari tabel mana, kolom apa, dan disimpan di folder mana. */
 $sumber = [
     ['Foto profil mahasiswa', 'SELECT foto AS berkas, nama AS pemilik FROM mahasiswa WHERE foto IS NOT NULL', ['foto']],
     ['KTM atau ijazah',       'SELECT file_ktm AS berkas, nama AS pemilik FROM mahasiswa WHERE file_ktm IS NOT NULL', ['ktm', 'ijazah']],
@@ -58,7 +45,6 @@ try {
     $galatDb = $e->getMessage();
 }
 
-/* Berkas yang ada di penyimpanan tetapi tidak tercatat di database */
 $yatim = [];
 foreach (glob($upload . '/*', GLOB_ONLYDIR) as $dir) {
     foreach (glob($dir . '/*') as $f) {

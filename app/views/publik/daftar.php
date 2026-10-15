@@ -1,12 +1,7 @@
 <?php
-/**
- * View: publik/daftar
- * Dipanggil oleh: AuthController::formDaftar()
- * Variabel tersedia: $jurusan, $prodi, $peranTerpilih
- */
+// ===== FRONTEND · PUBLIK · Halaman daftar (registrasi 3 langkah) =====
 $f = flashAmbil();
 
-// Kelompokkan prodi per jurusan_id untuk dropdown bertingkat di JS.
 $prodiPerJurusan = [];
 foreach ($prodi as $p) {
     $prodiPerJurusan[$p['jurusan_id']][] = $p;
@@ -25,36 +20,37 @@ $tahunSekarang = (int) date('Y');
 <link rel="stylesheet" href="<?= url('assets/css/style.css') ?>">
 </head>
 <body>
+<!-- ===== Header ===== -->
 <header class="simple-top">
   <div class="container">
     <a class="brand" href="<?= url('beranda') ?>"><img class="brand-mark" src="<?= asetUrl('assets/img/logo-polinema.png') ?>" alt="Logo Politeknik Negeri Malang"><span>KarirKu Polinema</span></a>
-    <span style="margin-left:auto" class="muted">Sudah punya akun? <a href="<?= url('masuk') ?>"><b>Masuk</b></a></span>
+    <span class="muted ml-auto">Sudah punya akun? <a href="<?= url('masuk') ?>"><b>Masuk</b></a></span>
   </div>
 </header>
 
-<main class="auth-main" style="align-items:flex-start;padding-top:40px;background:var(--sky);min-height:calc(100vh - 68px)">
+<main class="auth-main auth-daftar">
   <div class="auth-box wide">
 
     <?php if ($f): ?>
       <div class="alert alert-<?= $f['tipe'] === 'ok' ? 'ok' : 'bad' ?>"><span data-ic="alert"></span><span><?= e($f['pesan']) ?></span></div>
     <?php endif; ?>
 
-    <!-- Step 0: pilih peran -->
+    <!-- ===== Langkah 0: pilih peran ===== -->
     <section id="s0" <?= $peranTerpilih ? 'hidden' : '' ?>>
       <a class="back" href="<?= url('beranda') ?>"><span data-ic="left"></span>Kembali ke beranda</a>
-      <h1 style="font-size:2rem">Daftar ke KarirKu</h1>
+      <h1 class="fs-200">Daftar ke KarirKu</h1>
       <p class="muted">Pilih peranmu. Data yang diminta berbeda untuk setiap peran.</p>
       <div class="role-cards">
         <button type="button" class="role-card" data-role="mahasiswa"><span class="feature-ic" data-ic="graduation"></span><b>Mahasiswa atau alumni</b><span>Khusus civitas Politeknik Negeri Malang. Cari dan lamar lowongan.</span></button>
         <button type="button" class="role-card" data-role="perusahaan"><span class="feature-ic" data-ic="building"></span><b>Perusahaan</b><span>Pasang lowongan dan rekrut lulusan vokasi Polinema.</span></button>
       </div>
-      <button type="button" class="btn btn-primary" id="startBtn" disabled style="width:100%;padding:13px">Lanjut</button>
+      <button type="button" class="btn btn-primary btn-block" id="startBtn" disabled>Lanjut</button>
     </section>
 
-    <!-- Form -->
+    <!-- ===== Form pendaftaran ===== -->
     <section id="sForm" <?= $peranTerpilih ? '' : 'hidden' ?>>
-      <button type="button" class="back btn-link" id="changeRole" style="padding:0"><span data-ic="left"></span>Ganti peran</button>
-      <h1 style="font-size:1.8rem" id="formTitle">Daftar sebagai mahasiswa atau alumni</h1>
+      <button type="button" class="back btn-link p-0" id="changeRole"><span data-ic="left"></span>Ganti peran</button>
+      <h1 class="fs-180" id="formTitle">Daftar sebagai mahasiswa atau alumni</h1>
       <div class="stepper" aria-label="Langkah pendaftaran">
         <div class="s on" data-s="1"><i>1</i><span>Akun</span></div><div class="ln"></div>
         <div class="s" data-s="2"><i>2</i><span id="st2">Data diri</span></div><div class="ln"></div>
@@ -65,7 +61,7 @@ $tahunSekarang = (int) date('Y');
           <?= csrfField() ?>
           <input type="hidden" name="peran" id="peranInput" value="<?= e($peranTerpilih ?: '') ?>">
 
-          <!-- langkah 1 -->
+          <!-- ===== Langkah 1: akun ===== -->
           <div data-step="1">
             <div class="field mhs-only"><label for="nama">Nama lengkap</label><input class="input" id="nama" name="nama" required placeholder="Sesuai KTM atau ijazah"><div class="err">Nama lengkap wajib diisi.</div></div>
             <div class="field"><label for="remail" id="lblEmail">Email</label><input class="input" id="remail" name="email" type="email" required placeholder="nama@email.com"><div class="err">Masukkan email yang valid.</div><div class="hint">Info status akun dikirim ke email ini.</div></div>
@@ -76,7 +72,7 @@ $tahunSekarang = (int) date('Y');
             </div>
           </div>
 
-          <!-- langkah 2 mahasiswa -->
+          <!-- ===== Langkah 2: data mahasiswa ===== -->
           <div data-step="2" class="mhs-only" hidden>
             <div class="row2">
               <div class="field"><label for="nim">NIM</label><input class="input" id="nim" name="nim" required inputmode="numeric" placeholder="8-20 digit"><div class="err">NIM harus 8-20 digit angka.</div></div>
@@ -115,7 +111,7 @@ $tahunSekarang = (int) date('Y');
             </div>
           </div>
 
-          <!-- langkah 2 perusahaan -->
+          <!-- ===== Langkah 2: data perusahaan ===== -->
           <div data-step="2" class="pt-only" hidden>
             <div class="field"><label for="ptnama">Nama perusahaan</label><input class="input" id="ptnama" name="nama_perusahaan" required placeholder="PT Contoh Sejahtera"><div class="err">Nama perusahaan wajib diisi.</div></div>
             <div class="row2">
@@ -140,7 +136,7 @@ $tahunSekarang = (int) date('Y');
             </div>
           </div>
 
-          <!-- langkah 3 -->
+          <!-- ===== Langkah 3: dokumen & persetujuan ===== -->
           <div data-step="3" hidden>
             <div class="field mhs-only">
               <label id="docLabel">Unggah KTM</label>
@@ -149,15 +145,15 @@ $tahunSekarang = (int) date('Y');
             </div>
             <div class="pt-only">
               <h3>Dokumen legalitas perusahaan</h3>
-              <p class="muted" style="font-size:.9rem">PDF, JPG, atau PNG. Maksimal 2 MB per file.</p>
+              <p class="muted fs-90">PDF, JPG, atau PNG. Maksimal 2 MB per file.</p>
               <div class="row2">
-                <div class="field"><label>NIB <span style="color:var(--bad)">*</span></label>
+                <div class="field"><label>NIB <span class="text-bad">*</span></label>
                   <label class="upload"><input type="file" id="docpt" name="file_nib" data-req accept=".pdf,.jpg,.jpeg,.png"><span data-ic="upload"></span><div><b>Pilih file NIB</b></div></label>
                   <div class="err">NIB wajib diunggah.</div></div>
-                <div class="field"><label>NPWP perusahaan <span style="color:var(--bad)">*</span></label>
+                <div class="field"><label>NPWP perusahaan <span class="text-bad">*</span></label>
                   <label class="upload"><input type="file" id="docnpwp" name="file_npwp" data-req accept=".pdf,.jpg,.jpeg,.png"><span data-ic="upload"></span><div><b>Pilih file NPWP</b></div></label>
                   <div class="err">NPWP perusahaan wajib diunggah.</div></div>
-                <div class="field"><label>Akta pendirian <span style="color:var(--bad)">*</span></label>
+                <div class="field"><label>Akta pendirian <span class="text-bad">*</span></label>
                   <label class="upload"><input type="file" id="docakta" name="file_akta" data-req accept=".pdf,.jpg,.jpeg,.png"><span data-ic="upload"></span><div><b>Pilih file akta</b></div></label>
                   <div class="err">Akta pendirian wajib diunggah.</div></div>
                 <div class="field"><label>Surat keterangan domisili <span class="muted">(opsional)</span></label>
@@ -166,12 +162,12 @@ $tahunSekarang = (int) date('Y');
               <div class="field"><label>Logo perusahaan <span class="muted">(opsional)</span></label><label class="upload"><input type="file" name="file_logo" accept=".jpg,.jpeg,.png"><span data-ic="image"></span><div><b>Pilih logo</b></div><div class="hint">PNG atau JPG persegi.</div></label></div>
               <div class="field"><label class="check"><input type="checkbox" id="noOut" name="bukan_outsourcing" value="1"> Saya menyatakan perusahaan ini bukan perusahaan outsourcing.</label><div class="err">Pernyataan ini wajib dicentang.</div></div>
             </div>
-            <h3 style="margin-top:8px">Periksa datamu</h3>
+            <h3 class="mt-8">Periksa datamu</h3>
             <div class="summary"><dl id="sumList"></dl></div>
-            <div class="field" style="margin-top:14px"><label class="check"><input type="checkbox" id="agree" name="setuju_syarat" value="1"> Saya menyetujui syarat penggunaan dan kebijakan privasi KarirKu Polinema.</label><div class="err">Setujui syarat penggunaan untuk melanjutkan.</div></div>
+            <div class="field mt-14"><label class="check"><input type="checkbox" id="agree" name="setuju_syarat" value="1"> Saya menyetujui syarat penggunaan dan kebijakan privasi KarirKu Polinema.</label><div class="err">Setujui syarat penggunaan untuk melanjutkan.</div></div>
           </div>
 
-          <div style="display:flex;justify-content:space-between;gap:12px;margin-top:10px">
+          <div class="d-flex justify-between gap-12 mt-10">
             <button type="button" class="btn btn-outline" id="prevBtn">Kembali</button>
             <button type="submit" class="btn btn-primary" id="nextBtn">Lanjut</button>
           </div>
@@ -182,6 +178,7 @@ $tahunSekarang = (int) date('Y');
 </main>
 
 <script src="<?= url('assets/js/app.js') ?>"></script>
+<!-- ===== Script langkah pendaftaran ===== -->
 <script>
 const PRODI_PER_JURUSAN = <?= json_encode($prodiPerJurusan, JSON_UNESCAPED_UNICODE) ?>;
 const jurSel = document.getElementById('jur'), prodiSel = document.getElementById('prodi');
@@ -261,7 +258,6 @@ document.getElementById('prevBtn').addEventListener('click', () => { step--; ren
 document.getElementById('regForm').addEventListener('submit', e => {
   if (!validate()) { e.preventDefault(); return; }
   if (step < 3) { e.preventDefault(); step++; render(); return; }
-  // step === 3 dan lolos validasi -> biarkan form benar-benar ter-submit ke server.
 });
 if (role) render();
 </script>

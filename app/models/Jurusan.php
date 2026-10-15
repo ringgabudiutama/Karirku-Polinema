@@ -1,9 +1,5 @@
 <?php
-/**
- * Model tabel jurusan
- * PIC   : M. Ubaidillah (Backend dan Database)
- * Status: DIISI.
- */
+// ===== BACKEND · MODEL · Jurusan (tabel jurusan) =====================
 
 class Jurusan extends Model
 {

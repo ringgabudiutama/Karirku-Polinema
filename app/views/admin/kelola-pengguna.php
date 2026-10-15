@@ -1,9 +1,5 @@
 <?php
-/**
- * View: admin/kelola-pengguna
- * Dipanggil oleh: AdminController::kelolaPengguna()
- * Variabel: $mahasiswa, $perusahaan, $jurusan, $filter
- */
+// ===== FRONTEND · ADMIN · Kelola pengguna ============================
 $page_title = 'Kelola Pengguna';
 $active_menu = 'pengguna';
 require __DIR__ . '/../layouts/app-header.php';
@@ -17,6 +13,7 @@ $tabAktif = trim($_GET['tab'] ?? 'm');
       <button class="<?= $tabAktif === 'p' ? 'active' : '' ?>" data-tab="p">Perusahaan</button>
     </div>
 
+    <!-- ===== Filter ===== -->
     <form class="filters" method="get" action="<?= url('admin/kelola-pengguna') ?>">
       <input class="input grow" name="q" type="search" placeholder="Cari nama, NIM, atau email" value="<?= e($filter['keyword']) ?>">
       <select class="input jur-filter" name="jurusan_id" onchange="this.form.submit()">
@@ -32,10 +29,11 @@ $tabAktif = trim($_GET['tab'] ?? 'm');
     </form>
 
     <div id="uPanes">
+      <!-- ===== Tabel mahasiswa ===== -->
       <div class="table-wrap" data-pane="m" <?= $tabAktif !== 'm' ? 'hidden' : '' ?>>
         <table class="t">
           <tr><th>Nama</th><th>NIM</th><th>Jurusan</th><th>Status</th><th></th></tr>
-          <?php if (empty($mahasiswa)): ?><tr><td colspan="5" class="muted" style="text-align:center;padding:30px">Tidak ada data.</td></tr><?php endif; ?>
+          <?php if (empty($mahasiswa)): ?><tr><td colspan="5" class="muted kosong">Tidak ada data.</td></tr><?php endif; ?>
           <?php foreach ($mahasiswa as $m): ?>
             <tr>
               <td>
@@ -47,22 +45,23 @@ $tabAktif = trim($_GET['tab'] ?? 'm');
               <td><?= e($m['nim']) ?></td>
               <td><?= e($m['nama_jurusan']) ?></td>
               <td><?= badgeHtml(labelStatusAkun($m['status_akun'])) ?></td>
-              <td style="white-space:nowrap">
+              <td class="nowrap">
                 <a class="btn btn-sm btn-outline" href="<?= url('admin/profil-mahasiswa/' . $m['id']) ?>">Lihat profil</a>
                 <?php if ($m['status_akun'] === 'nonaktif'): ?>
-                  <form method="post" action="<?= url('admin/aktifkan-pengguna/' . $m['pengguna_id']) ?>" style="display:inline"><?= csrfField() ?><button class="btn btn-sm btn-outline" type="submit">Aktifkan</button></form>
+                  <form class="d-inline" method="post" action="<?= url('admin/aktifkan-pengguna/' . $m['pengguna_id']) ?>"><?= csrfField() ?><button class="btn btn-sm btn-outline" type="submit">Aktifkan</button></form>
                 <?php else: ?>
-                  <button class="btn btn-sm btn-outline" type="button" style="color:var(--bad);border-color:var(--bad)" data-open="mSuspend<?= (int) $m['pengguna_id'] ?>">Nonaktifkan</button>
+                  <button class="btn btn-sm btn-outline btn-outline-bad" type="button" data-open="mSuspend<?= (int) $m['pengguna_id'] ?>">Nonaktifkan</button>
                 <?php endif; ?>
               </td>
             </tr>
           <?php endforeach; ?>
         </table>
       </div>
+      <!-- ===== Tabel perusahaan ===== -->
       <div class="table-wrap" data-pane="p" <?= $tabAktif !== 'p' ? 'hidden' : '' ?>>
         <table class="t">
           <tr><th>Perusahaan</th><th>Bidang</th><th>Kota</th><th>Status</th><th></th></tr>
-          <?php if (empty($perusahaan)): ?><tr><td colspan="5" class="muted" style="text-align:center;padding:30px">Tidak ada data.</td></tr><?php endif; ?>
+          <?php if (empty($perusahaan)): ?><tr><td colspan="5" class="muted kosong">Tidak ada data.</td></tr><?php endif; ?>
           <?php foreach ($perusahaan as $p): ?>
             <tr>
               <td><b><?= e($p['nama_perusahaan']) ?></b><br><small class="muted"><?= e($p['email']) ?></small></td>
@@ -71,9 +70,9 @@ $tabAktif = trim($_GET['tab'] ?? 'm');
               <td><?= badgeHtml(labelStatusAkun($p['status_akun'])) ?></td>
               <td>
                 <?php if ($p['status_akun'] === 'nonaktif'): ?>
-                  <form method="post" action="<?= url('admin/aktifkan-pengguna/' . $p['pengguna_id']) ?>" style="display:inline"><?= csrfField() ?><button class="btn btn-sm btn-outline" type="submit">Aktifkan</button></form>
+                  <form class="d-inline" method="post" action="<?= url('admin/aktifkan-pengguna/' . $p['pengguna_id']) ?>"><?= csrfField() ?><button class="btn btn-sm btn-outline" type="submit">Aktifkan</button></form>
                 <?php else: ?>
-                  <button class="btn btn-sm btn-outline" type="button" style="color:var(--bad);border-color:var(--bad)" data-open="mSuspend<?= (int) $p['pengguna_id'] ?>">Nonaktifkan</button>
+                  <button class="btn btn-sm btn-outline btn-outline-bad" type="button" data-open="mSuspend<?= (int) $p['pengguna_id'] ?>">Nonaktifkan</button>
                 <?php endif; ?>
               </td>
             </tr>
@@ -84,6 +83,7 @@ $tabAktif = trim($_GET['tab'] ?? 'm');
   </div>
 </section>
 
+<!-- ===== Modal nonaktifkan ===== -->
 <?php foreach (array_merge($mahasiswa, $perusahaan) as $u): if ($u['status_akun'] === 'nonaktif') continue; ?>
 <div class="modal" id="mSuspend<?= (int) $u['pengguna_id'] ?>" role="dialog" aria-modal="true">
   <div class="modal-box">

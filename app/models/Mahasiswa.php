@@ -1,14 +1,11 @@
 <?php
-/**
- * Model tabel mahasiswa
- * PIC   : Muhamad Nafi' Hanif (Modul Mahasiswa dan Alumni)
- * Status: DIISI.
- */
+// ===== BACKEND · MODEL · Mahasiswa (tabel mahasiswa) =================
 
 class Mahasiswa extends Model
 {
     protected string $tabel = 'mahasiswa';
 
+    // --- Registrasi --------------------------------------------------
     public function buat(array $d): int
     {
         return $this->simpan([
@@ -28,6 +25,7 @@ class Mahasiswa extends Model
         return $this->satuBerdasarkan('nim', $nim) !== null;
     }
 
+    // --- Baca data ---------------------------------------------------
     public function cariByPenggunaId(int $penggunaId): ?array
     {
         return Database::fetch(
@@ -54,6 +52,7 @@ class Mahasiswa extends Model
         );
     }
 
+    // --- Ubah profil & berkas ----------------------------------------
     public function perbaruiProfil(int $id, array $d): void
     {
         $this->ubah($id, [
@@ -85,17 +84,11 @@ class Mahasiswa extends Model
         $this->ubah($id, ['file_surat_pengantar' => $namaFile]);
     }
 
-    /**
-     * Simpan status karier. Kolom yang diisi berbeda-beda tergantung status,
-     * dan kolom milik status lain sengaja dikosongkan supaya tidak ada sisa
-     * data yang menyesatkan (misal nama perusahaan masih tersimpan padahal
-     * mahasiswa sudah mengubah statusnya jadi "belum bekerja").
-     */
+    // --- Status karier -----------------------------------------------
     public function perbaruiStatusKarier(int $id, array $d): void
     {
         $status = $d['status_karier'];
 
-        // Semua kolom dinolkan dulu, lalu diisi ulang sesuai status terpilih.
         $isi = [
             'status_karier'          => $status,
             'tempat_kerja'           => null,
@@ -121,15 +114,15 @@ class Mahasiswa extends Model
                 break;
 
             case 'wirausaha':
-                $isi['tempat_kerja']        = $ambil($d, 'tempat_kerja');   // nama usaha
-                $isi['posisi_kerja']        = $ambil($d, 'posisi_kerja');   // peran di usaha
+                $isi['tempat_kerja']        = $ambil($d, 'tempat_kerja');
+                $isi['posisi_kerja']        = $ambil($d, 'posisi_kerja');
                 $isi['tanggal_mulai_kerja'] = $ambil($d, 'tanggal_mulai_kerja');
                 break;
 
             case 'studi lanjut':
-                $isi['tempat_kerja']        = $ambil($d, 'tempat_kerja');   // nama kampus
+                $isi['tempat_kerja']        = $ambil($d, 'tempat_kerja');
                 $isi['karier_fakultas']     = $ambil($d, 'karier_fakultas');
-                $isi['posisi_kerja']        = $ambil($d, 'posisi_kerja');   // program studi
+                $isi['posisi_kerja']        = $ambil($d, 'posisi_kerja');
                 $isi['karier_tahap_studi']  = $ambil($d, 'karier_tahap_studi');
                 $isi['tanggal_mulai_kerja'] = $ambil($d, 'tanggal_mulai_kerja');
                 break;
@@ -148,10 +141,6 @@ class Mahasiswa extends Model
         $this->ubah($id, $isi);
     }
 
-    /**
-     * Ringkasan status karier dalam satu kalimat, dipakai di tabel Admin dan
-     * halaman Tracer Karier supaya isinya menyesuaikan status masing-masing.
-     */
     public static function ringkasanKarier(array $m): string
     {
         $status = $m['status_karier'] ?? '';
@@ -176,7 +165,6 @@ class Mahasiswa extends Model
         return '-';
     }
 
-    /** Dipanggil otomatis dari Lamaran::terima() saat pelamar dinyatakan diterima. */
     public function tandaiDiterimaKerja(int $id, string $namaPerusahaan, string $posisi): void
     {
         $this->ubah($id, [
@@ -188,7 +176,7 @@ class Mahasiswa extends Model
         ]);
     }
 
-    /** Persentase kelengkapan profil untuk bilah progres di Dashboard. */
+    // --- Kelengkapan profil ------------------------------------------
     public function kelengkapanProfil(array $mhs, int $jumlahProfilItem, int $jumlahSkill): int
     {
         $total = 6;
@@ -202,8 +190,7 @@ class Mahasiswa extends Model
         return (int) round($terisi / $total * 100);
     }
 
-    /* --------------------- untuk Admin: Kelola Pengguna & Tracer Karier --------------------- */
-
+    // --- Admin: daftar mahasiswa -------------------------------------
     public function semuaDenganFilter(array $filter = []): array
     {
         $where = ['1=1'];
@@ -239,14 +226,6 @@ class Mahasiswa extends Model
         return Database::fetchAll($sql, $params);
     }
 
-    /** Daftar angkatan yang ada di data mahasiswa, terbaru dulu, untuk <select> filter. */
-    /**
-     * Daftar angkatan untuk dropdown filter.
-     *
-     * Kalau $jurusanId diisi, yang dikembalikan hanya angkatan yang benar-benar
-     * punya mahasiswa di jurusan tersebut. Tujuannya supaya Admin tidak memilih
-     * kombinasi jurusan dan angkatan yang pasti kosong hasilnya.
-     */
     public function semuaAngkatan($jurusanId = null): array
     {
         if ($jurusanId !== null && $jurusanId !== '') {
@@ -266,7 +245,6 @@ class Mahasiswa extends Model
         );
     }
 
-    /** Program studi yang ada di satu jurusan, untuk filter bertingkat. */
     public function prodiDiJurusan($jurusanId = null): array
     {
         if ($jurusanId !== null && $jurusanId !== '') {
@@ -278,10 +256,6 @@ class Mahasiswa extends Model
         return Database::fetchAll('SELECT id, nama, jenjang, jurusan_id FROM program_studi ORDER BY jenjang, nama');
     }
 
-    /**
-     * Profil lengkap satu mahasiswa untuk halaman Admin (kelola pengguna ->
-     * lihat profil). Menggabungkan data akun, prodi, dan jurusan.
-     */
     public function profilLengkapUntukAdmin(int $mahasiswaId): ?array
     {
         return Database::fetch(
@@ -296,16 +270,7 @@ class Mahasiswa extends Model
         );
     }
 
-    /**
-     * Menyusun syarat status mahasiswa untuk halaman Tracer Karier.
-     *
-     * Tracer memang dimaksudkan untuk alumni, jadi bawaannya tetap alumni
-     * supaya angka seperti "55% alumni sudah bekerja" tidak berubah artinya.
-     * Tetapi mahasiswa aktif juga boleh mengisi status kariernya, misalnya
-     * yang sudah bekerja paruh waktu atau sudah diterima studi lanjut.
-     * Datanya tidak boleh hilang begitu saja, jadi Admin bisa memilih
-     * "Mahasiswa aktif" atau "Semua" lewat filter di halaman itu.
-     */
+    // --- Admin: tracer karier ----------------------------------------
     private function syaratStatusMahasiswa(array $filter): ?string
     {
         $pilihan = $filter['status_mahasiswa'] ?? 'alumni';
@@ -339,7 +304,6 @@ class Mahasiswa extends Model
         return Database::fetchAll($sql, $params);
     }
 
-    /** Sebaran bidang perusahaan tempat alumni bekerja (dari lamaran yang diterima), untuk Tracer Karier. */
     public function sebaranBidangKerja(array $filter = []): array
     {
         $where = array_filter([$this->syaratStatusMahasiswa($filter), "la.status = 'diterima'"]);
@@ -364,7 +328,6 @@ class Mahasiswa extends Model
         return Database::fetchAll($sql, $params);
     }
 
-    /** Alumni dengan status karier yang paling baru diperbarui, untuk panel "Pembaruan terbaru" di Tracer Karier. */
     public function pembaruanTerbaru(array $filter = [], int $limit = 6): array
     {
         $where = array_filter([$this->syaratStatusMahasiswa($filter), 'm.karier_diperbarui_pada IS NOT NULL']);

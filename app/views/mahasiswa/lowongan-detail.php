@@ -1,9 +1,5 @@
 <?php
-/**
- * View: mahasiswa/lowongan-detail
- * Dipanggil oleh: LowonganController::detail($id)
- * Variabel: $lowongan, $jurusanSasaran, $sudahDisimpan, $sudahMelamar, $profilLengkap
- */
+// ===== FRONTEND · MAHASISWA · Detail lowongan ========================
 $page_title = 'Detail lowongan';
 $active_menu = 'lowongan';
 require __DIR__ . '/../layouts/app-header.php';
@@ -17,20 +13,22 @@ $logoUrl = !empty($lowongan['logo']) ? url('unduh.php?tipe=logo&file=' . urlenco
 
   <div class="detail">
     <div>
+      <!-- ===== Pamflet ===== -->
       <div class="poster">
         <img src="<?= e($pamfletUrl) ?>" alt="Pamflet <?= e($lowongan['posisi']) ?>">
-        <div class="actions"><a class="btn btn-outline btn-sm" style="flex:1" href="<?= e($pamfletUrl) ?>" download><span data-ic="download"></span>Unduh pamflet</a></div>
+        <div class="actions"><a class="btn btn-outline btn-sm flex-1" href="<?= e($pamfletUrl) ?>" download><span data-ic="download"></span>Unduh pamflet</a></div>
       </div>
     </div>
     <div>
+      <!-- ===== Ringkasan & tombol lamar ===== -->
       <div class="panel">
-        <div class="person" style="margin-bottom:12px">
+        <div class="person mb-12">
           <?php if ($logoUrl): ?><img class="avatar" src="<?= e($logoUrl) ?>" alt=""><?php else: ?>
-            <span class="avatar" style="display:inline-flex;align-items:center;justify-content:center;background:var(--blue-soft);color:var(--navy);font-weight:700"><?= e(inisial($lowongan['nama_perusahaan'])) ?></span>
+            <span class="avatar avatar-inisial"><?= e(inisial($lowongan['nama_perusahaan'])) ?></span>
           <?php endif; ?>
-          <div><b><?= e($lowongan['nama_perusahaan']) ?></b><small style="color:var(--ok)">Mitra terverifikasi Career Center</small></div>
+          <div><b><?= e($lowongan['nama_perusahaan']) ?></b><small class="text-ok">Mitra terverifikasi Career Center</small></div>
         </div>
-        <h1 style="font-size:1.9rem;margin-bottom:4px"><?= e($lowongan['posisi']) ?></h1>
+        <h1 class="fs-190 mb-4"><?= e($lowongan['posisi']) ?></h1>
         <div class="meta">
           <span><span data-ic="pin"></span><?= e($lowongan['lokasi']) ?></span>
           <span><span data-ic="briefcase"></span><?= e(ucwords(str_replace('_', ' ', $lowongan['jenis_pekerjaan']))) ?></span>
@@ -43,18 +41,18 @@ $logoUrl = !empty($lowongan['logo']) ? url('unduh.php?tipe=logo&file=' . urlenco
           <div><small>Jurusan sasaran</small><b><?= e(implode(', ', array_column($jurusanSasaran, 'nama')) ?: 'Semua jurusan') ?></b></div>
         </div>
 
-        <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+        <div class="d-flex flex-wrap items-center gap-10">
           <?php if ($sudahMelamar): ?>
-            <div class="alert alert-info" style="margin:0"><span data-ic="checkc"></span><span>Kamu sudah melamar lowongan ini. <a href="<?= url('lamaran/lamaran-saya') ?>">Lihat lamaran</a></span></div>
+            <div class="alert alert-info m-0"><span data-ic="checkc"></span><span>Kamu sudah melamar lowongan ini. <a href="<?= url('lamaran/lamaran-saya') ?>">Lihat lamaran</a></span></div>
           <?php elseif ($tutup): ?>
-            <div class="alert alert-warn" style="margin:0"><span data-ic="info"></span><span>Lowongan ini sudah ditutup<?= $lowongan['status'] === 'ditutup' && (int) $lowongan['terisi'] >= (int) $lowongan['kuota'] ? ' karena kuota terpenuhi.' : '.' ?></span></div>
+            <div class="alert alert-warn m-0"><span data-ic="info"></span><span>Lowongan ini sudah ditutup<?= $lowongan['status'] === 'ditutup' && (int) $lowongan['terisi'] >= (int) $lowongan['kuota'] ? ' karena kuota terpenuhi.' : '.' ?></span></div>
           <?php elseif (!$profilLengkap): ?>
-            <div class="alert alert-warn" style="margin:0"><span data-ic="info"></span><span>Lengkapi KTM/ijazah dan CV di <a href="<?= url('mahasiswa/profil') ?>">Profil Karier</a> sebelum bisa melamar.</span></div>
+            <div class="alert alert-warn m-0"><span data-ic="info"></span><span>Lengkapi KTM/ijazah dan CV di <a href="<?= url('mahasiswa/profil') ?>">Profil Karier</a> sebelum bisa melamar.</span></div>
           <?php else: ?>
-            <a class="btn btn-primary" style="padding:12px 28px" href="<?= url('lamaran/kirim/' . $lowongan['id']) ?>">Lamar sekarang</a>
+            <a class="btn btn-primary btn-lg" href="<?= url('lamaran/kirim/' . $lowongan['id']) ?>">Lamar sekarang</a>
           <?php endif; ?>
 
-          <form method="post" action="<?= url('lowongan/simpan/' . $lowongan['id']) ?>" style="display:inline">
+          <form class="d-inline" method="post" action="<?= url('lowongan/simpan/' . $lowongan['id']) ?>">
             <?= csrfField() ?>
             <input type="hidden" name="kembali" value="<?= e($_SERVER['REQUEST_URI'] ?? '') ?>">
             <button class="btn btn-outline save-btn <?= $sudahDisimpan ? 'saved' : '' ?>" type="submit"><span data-ic="bookmark"></span><?= $sudahDisimpan ? 'Disimpan' : 'Simpan' ?></button>
@@ -62,6 +60,7 @@ $logoUrl = !empty($lowongan['logo']) ? url('unduh.php?tipe=logo&file=' . urlenco
         </div>
       </div>
 
+      <!-- ===== Deskripsi, kualifikasi, perusahaan ===== -->
       <div class="panel">
         <h3>Deskripsi pekerjaan</h3>
         <p><?= nl2br(e($lowongan['deskripsi'])) ?></p>

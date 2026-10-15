@@ -1,14 +1,11 @@
 <?php
-/**
- * Model tabel pengguna
- * PIC   : M. Ubaidillah (Backend dan Database)
- * Status: DIISI.
- */
+// ===== BACKEND · MODEL · Pengguna (tabel pengguna) ===================
 
 class Pengguna extends Model
 {
     protected string $tabel = 'pengguna';
 
+    // --- Akun --------------------------------------------------------
     public function cariByEmail(string $email): ?array
     {
         return $this->satuBerdasarkan('email', $email);
@@ -19,7 +16,6 @@ class Pengguna extends Model
         return $this->cariByEmail($email) !== null;
     }
 
-    /** Buat akun baru berstatus 'menunggu'. Mengembalikan id pengguna baru. */
     public function buat(string $email, string $passwordPlain, string $role): int
     {
         return $this->simpan([
@@ -50,7 +46,7 @@ class Pengguna extends Model
         $this->ubah($id, ['email' => $emailBaru]);
     }
 
-    /** Nama tampilan (mahasiswa/perusahaan/admin) untuk satu baris pengguna. */
+    // --- Tampilan ----------------------------------------------------
     public function namaTampilan(int $penggunaId, string $role): string
     {
         $kolom = $role === 'mahasiswa' ? 'nama' : ($role === 'perusahaan' ? 'nama_perusahaan' : 'nama');
@@ -59,15 +55,7 @@ class Pengguna extends Model
         return $baris['nama'] ?? '(tanpa nama)';
     }
 
-    /* ---------------------------------------------------------------------------
-     * LUPA KATA SANDI
-     * Butuh tabel reset_kata_sandi dari database/03-tambahan-reset-password.sql.
-     * Semua method di bawah membungkus query dengan try/catch: kalau tabel itu
-     * belum dijalankan, method mengembalikan null/false alih-alih meledak
-     * dengan error SQL yang membingungkan, dan AuthController menampilkan
-     * pesan "fitur belum aktif" ke pengguna.
-     * ------------------------------------------------------------------------ */
-
+    // --- Reset kata sandi --------------------------------------------
     public function fiturResetTersedia(): bool
     {
         try {
@@ -78,7 +66,6 @@ class Pengguna extends Model
         }
     }
 
-    /** Mengembalikan token ASLI (dikirim lewat email), hash-nya yang disimpan di DB. */
     public function buatTokenReset(int $penggunaId): ?string
     {
         if (!$this->fiturResetTersedia()) {
@@ -110,11 +97,7 @@ class Pengguna extends Model
         Database::execute('UPDATE reset_kata_sandi SET dipakai_pada = now() WHERE id = ?', [$resetId]);
     }
 
-    /**
-     * Antrean Persetujuan Akun untuk Admin: pendaftar berstatus 'menunggu',
-     * lengkap dengan nama tampilan dan jurusan (kalau mahasiswa) supaya bisa
-     * difilter. Perusahaan tidak punya jurusan, jadi jurusan_id-nya NULL.
-     */
+    // --- Antrean verifikasi ------------------------------------------
     public function antreanVerifikasi(?int $jurusanId = null): array
     {
         $sql = "SELECT p.id AS pengguna_id, p.email, p.role, p.dibuat_pada,

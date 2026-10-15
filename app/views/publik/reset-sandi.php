@@ -1,9 +1,5 @@
 <?php
-/**
- * View: publik/reset-sandi
- * Dipanggil oleh: AuthController::resetSandi($token)
- * Variabel tersedia: $token
- */
+// ===== FRONTEND · PUBLIK · Buat kata sandi baru ======================
 $f = flashAmbil();
 ?>
 <!DOCTYPE html>
@@ -18,17 +14,19 @@ $f = flashAmbil();
 </head>
 <body>
 <div class="auth">
+  <!-- ===== Panel gambar kiri ===== -->
   <aside class="auth-side">
     <img src="<?= url('assets/img/login.jpg') ?>" alt="">
     <div class="shade"></div>
     <div class="hero-pattern"></div>
     <div class="auth-side-content">
-      <a class="brand" href="<?= url('beranda') ?>" style="color:#fff"><img class="brand-mark" src="<?= asetUrl('assets/img/logo-polinema.png') ?>" alt="Logo Politeknik Negeri Malang"><span>KarirKu Polinema<small>Career Center Politeknik Negeri Malang</small></span></a>
+      <a class="brand" href="<?= url('beranda') ?>"><img class="brand-mark" src="<?= asetUrl('assets/img/logo-polinema.png') ?>" alt="Logo Politeknik Negeri Malang"><span>KarirKu Polinema<small>Career Center Politeknik Negeri Malang</small></span></a>
     </div>
   </aside>
+  <!-- ===== Form kata sandi baru ===== -->
   <main class="auth-main">
     <div class="auth-box">
-      <h1 style="font-size:1.8rem">Buat kata sandi baru</h1>
+      <h1 class="fs-180">Buat kata sandi baru</h1>
       <p class="muted">Tautan ini berlaku sekali pakai. Kata sandi baru minimal 8 karakter.</p>
 
       <?php if ($f): ?>
@@ -39,7 +37,7 @@ $f = flashAmbil();
         <?= csrfField() ?>
         <div class="field"><label for="password">Kata sandi baru</label><div class="pw"><input class="input" id="password" name="password" type="password" required minlength="8" placeholder="Minimal 8 karakter"><button type="button" data-ic="eye"></button></div></div>
         <div class="field"><label for="konfirmasi">Ulangi kata sandi</label><div class="pw"><input class="input" id="konfirmasi" name="konfirmasi_password" type="password" required placeholder="Ketik ulang"><button type="button" data-ic="eye"></button></div></div>
-        <button class="btn btn-primary" style="width:100%;padding:13px" type="submit">Simpan kata sandi baru</button>
+        <button class="btn btn-primary btn-block" type="submit">Simpan kata sandi baru</button>
       </form>
     </div>
   </main>

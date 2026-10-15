@@ -1,9 +1,5 @@
 <?php
-/**
- * View: mahasiswa/lowongan
- * Dipanggil oleh: LowonganController::daftar()
- * Variabel: $lowongan, $total, $halaman, $totalHalaman, $filter, $jurusan, $bidang
- */
+// ===== FRONTEND · MAHASISWA · Cari lowongan ==========================
 $page_title = 'Lowongan';
 $active_menu = 'lowongan';
 require __DIR__ . '/../layouts/app-header.php';
@@ -13,6 +9,7 @@ $jenisPekerjaanOpsi = ['full_time' => 'Penuh waktu', 'part_time' => 'Paruh waktu
 <section class="view active">
   <div class="page-head"><div><h1>Lowongan</h1><p>Lowongan dari perusahaan mitra terverifikasi Career Center.</p></div></div>
 
+  <!-- ===== Filter pencarian ===== -->
   <form class="filters" method="get" action="<?= url('lowongan/daftar') ?>">
     <input class="input grow" name="q" type="search" placeholder="Cari posisi atau perusahaan" value="<?= e($filter['keyword']) ?>">
     <select class="input jur-filter" name="jurusan_id" onchange="this.form.submit()">
@@ -38,11 +35,12 @@ $jenisPekerjaanOpsi = ['full_time' => 'Penuh waktu', 'part_time' => 'Paruh waktu
     <noscript><button class="btn btn-outline" type="submit">Terapkan</button></noscript>
   </form>
 
-  <p class="muted" style="font-size:.9rem"><?= (int) $total ?> lowongan ditemukan</p>
+  <p class="muted fs-90"><?= (int) $total ?> lowongan ditemukan</p>
 
+  <!-- ===== Daftar lowongan ===== -->
   <div class="jobs">
     <?php if (empty($lowongan)): ?>
-      <div class="panel" style="text-align:center">
+      <div class="panel text-center">
         <h3>Belum ada lowongan yang cocok</h3>
         <p class="muted">Coba ubah kata kunci atau hapus filter.</p>
         <a class="btn btn-outline" href="<?= url('lowongan/daftar') ?>">Hapus filter</a>

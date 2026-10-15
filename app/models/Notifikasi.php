@@ -1,9 +1,5 @@
 <?php
-/**
- * Model tabel notifikasi
- * PIC   : M. Ubaidillah (Backend dan Database)
- * Status: DIISI.
- */
+// ===== BACKEND · MODEL · Notifikasi (tabel notifikasi) ===============
 
 class Notifikasi extends Model
 {
@@ -35,7 +31,6 @@ class Notifikasi extends Model
 
     public function tandaiDibaca(int $id, int $penggunaId): void
     {
-        // syarat pengguna_id memastikan orang tidak bisa menandai notifikasi milik orang lain
         Database::execute('UPDATE notifikasi SET dibaca = TRUE WHERE id = ? AND pengguna_id = ?', [$id, $penggunaId]);
     }
 

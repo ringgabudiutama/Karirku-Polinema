@@ -1,9 +1,5 @@
 <?php
-/**
- * Model tabel admin
- * PIC   : Atha Rasya Farras (Modul Operator dan Career Center)
- * Status: DIISI.
- */
+// ===== BACKEND · MODEL · Admin (tabel admin) =========================
 
 class Admin extends Model
 {

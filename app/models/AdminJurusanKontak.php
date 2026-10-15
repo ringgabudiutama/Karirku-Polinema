@@ -1,9 +1,5 @@
 <?php
-/**
- * Model tabel admin_jurusan_kontak
- * PIC   : Aqillah (UI/UX, Frontend, dan Integrasi)
- * Status: DIISI.
- */
+// ===== BACKEND · MODEL · AdminJurusanKontak (tabel admin_jurusan_kontak) ====
 
 class AdminJurusanKontak extends Model
 {
@@ -11,10 +7,6 @@ class AdminJurusanKontak extends Model
 
     public function semuaDenganJurusan(): array
     {
-        // LEFT JOIN dari jurusan (bukan INNER JOIN dari admin_jurusan_kontak):
-        // jurusan yang belum pernah diisi kontaknya tetap harus muncul di
-        // tabel Pengaturan > Kontak admin jurusan, dengan nama_kontak/nomor_wa
-        // kosong (null), supaya adminnya bisa mengisi lewat baris itu.
         return Database::fetchAll(
             'SELECT j.id AS jurusan_id, j.nama AS nama_jurusan,
                     ajk.nama_kontak, ajk.nomor_wa

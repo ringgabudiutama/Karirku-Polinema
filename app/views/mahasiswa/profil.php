@@ -1,14 +1,5 @@
 <?php
-/**
- * View: mahasiswa/profil
- * Dipanggil oleh: MahasiswaController::profil()
- * Variabel: $mahasiswa, $pendidikan, $pengalaman, $sertifikat, $portofolio,
- *           $skillTerpilih, $semuaSkill, $minatTerpilih, $semuaBidang
- *
- * Catatan: item pendidikan/pengalaman/sertifikat/portofolio bisa Ditambah
- * dan Dihapus dari sini. Untuk versi pertama, item tidak bisa diedit
- * langsung (hapus lalu tambah ulang) supaya tidak perlu JS pengisi form.
- */
+// ===== FRONTEND · MAHASISWA · Profil karier ==========================
 $page_title = 'Profil Karier';
 $active_menu = 'profil';
 require __DIR__ . '/../layouts/app-header.php';
@@ -22,10 +13,10 @@ $labelLevelJabatan = ['magang' => 'Magang', 'staf' => 'Staf / junior', 'supervis
 
 function tanggalPendekAman(?string $t): string { return $t ? tanggalIndo($t) : ''; }
 
-/** Tombol hapus kecil untuk item pendidikan/pengalaman/sertifikat/portofolio. */
+// --- Helper tombol hapus item ---
 function tombolHapusItem(int $id): string
 {
-    return '<form method="post" action="' . url('mahasiswa/simpan-profil') . '" onsubmit="return confirm(\'Hapus item ini?\')" style="display:inline">'
+    return '<form class="d-inline" method="post" action="' . url('mahasiswa/simpan-profil') . '" onsubmit="return confirm(\'Hapus item ini?\')">'
         . csrfField()
         . '<input type="hidden" name="aksi" value="item_hapus"><input type="hidden" name="id" value="' . (int) $id . '">'
         . '<button class="btn btn-sm btn-outline" type="submit">Hapus</button></form>';
@@ -33,6 +24,7 @@ function tombolHapusItem(int $id): string
 ?>
 <section class="view active">
   <div class="panel">
+    <!-- ===== Kepala profil & CV ===== -->
     <div class="profile-head">
       <div class="avatar-edit">
         <img class="avatar-lg" id="avatarImg" src="<?= e($fotoUrl) ?>" alt="Foto profil <?= e($mahasiswa['nama']) ?>">
@@ -42,16 +34,16 @@ function tombolHapusItem(int $id): string
         </form>
       </div>
       <div class="grow">
-        <h1 style="font-size:1.6rem;margin:0"><?= e($mahasiswa['nama']) ?> <span class="verified" data-ic="check">Terverifikasi</span></h1>
-        <p class="muted" style="margin:2px 0 10px">NIM <?= e($mahasiswa['nim']) ?>, <?= e($mahasiswa['jenjang'] . ' ' . $mahasiswa['nama_prodi']) ?>, angkatan <?= e((string) $mahasiswa['angkatan']) ?></p>
-        <div style="display:flex;justify-content:space-between;font-size:.9rem;margin-bottom:6px"><span class="muted">Kelengkapan profil</span><b><?= (int) $kelengkapan ?>%</b></div>
+        <h1 class="fs-160 m-0"><?= e($mahasiswa['nama']) ?> <span class="verified" data-ic="check">Terverifikasi</span></h1>
+        <p class="muted m-0 mt-2 mb-10">NIM <?= e($mahasiswa['nim']) ?>, <?= e($mahasiswa['jenjang'] . ' ' . $mahasiswa['nama_prodi']) ?>, angkatan <?= e((string) $mahasiswa['angkatan']) ?></p>
+        <div class="progress-label"><span class="muted">Kelengkapan profil</span><b><?= (int) $kelengkapan ?>%</b></div>
         <div class="progress"><i style="width:<?= (int) $kelengkapan ?>%"></i></div>
       </div>
     </div>
     <div class="cv-box">
-      <div class="cv-opt"><span class="feature-ic" data-ic="wand"></span><div class="grow"><b>CV otomatis</b><div class="muted" style="font-size:.88rem">Dibuat dari data profil terbaru</div></div><a class="btn btn-primary btn-sm" href="<?= url('mahasiswa/generate-cv') ?>" target="_blank">Buat &amp; unduh CV</a></div>
+      <div class="cv-opt"><span class="feature-ic" data-ic="wand"></span><div class="grow"><b>CV otomatis</b><div class="muted fs-88">Dibuat dari data profil terbaru</div></div><a class="btn btn-primary btn-sm" href="<?= url('mahasiswa/generate-cv') ?>" target="_blank">Buat &amp; unduh CV</a></div>
       <div class="cv-opt">
-        <span class="feature-ic" data-ic="upload"></span><div class="grow"><b>CV unggahan</b><div class="muted" style="font-size:.88rem" id="cvName"><?= !empty($mahasiswa['file_cv']) ? 'Sudah diunggah' : 'Belum ada CV diunggah' ?></div></div>
+        <span class="feature-ic" data-ic="upload"></span><div class="grow"><b>CV unggahan</b><div class="muted fs-88" id="cvName"><?= !empty($mahasiswa['file_cv']) ? 'Sudah diunggah' : 'Belum ada CV diunggah' ?></div></div>
         <form method="post" action="<?= url('mahasiswa/unggah-cv') ?>" enctype="multipart/form-data" id="cvForm">
           <?= csrfField() ?>
           <label class="btn btn-outline btn-sm">Ganti<input type="file" name="file_cv" accept=".pdf" hidden onchange="document.getElementById('cvForm').submit()"></label>
@@ -61,6 +53,7 @@ function tombolHapusItem(int $id): string
   </div>
 
   <div class="panel">
+    <!-- ===== Tab profil ===== -->
     <div class="tabs" data-tabs="profPanes" id="profTabs">
       <button class="active" data-tab="diri">Data diri</button>
       <button data-tab="pendidikan">Pendidikan</button>
@@ -74,6 +67,7 @@ function tombolHapusItem(int $id): string
     </div>
     <div id="profPanes">
 
+      <!-- ===== Tab: data diri ===== -->
       <form data-pane="diri" method="post" action="<?= url('mahasiswa/simpan-profil') ?>">
         <?= csrfField() ?><input type="hidden" name="aksi" value="data_diri">
         <div class="row2">
@@ -87,16 +81,18 @@ function tombolHapusItem(int $id): string
         <button class="btn btn-primary" type="submit">Simpan data diri</button>
       </form>
 
+      <!-- ===== Tab: pendidikan ===== -->
       <div data-pane="pendidikan" hidden>
         <?php foreach ($pendidikan as $it): ?>
           <div class="list-item"><span class="list-ic" data-ic="graduation"></span>
-            <div class="grow"><b><?= e($it['judul']) ?></b><div class="muted"><?= e($it['instansi']) ?>, <?= e(tanggalPendekAman($it['mulai'])) ?> sampai <?= $it['selesai'] ? e(tanggalPendekAman($it['selesai'])) : 'sekarang' ?></div><?php if ($it['deskripsi']): ?><p style="margin:6px 0 0"><?= nl2br(e($it['deskripsi'])) ?></p><?php endif; ?></div>
+            <div class="grow"><b><?= e($it['judul']) ?></b><div class="muted"><?= e($it['instansi']) ?>, <?= e(tanggalPendekAman($it['mulai'])) ?> sampai <?= $it['selesai'] ? e(tanggalPendekAman($it['selesai'])) : 'sekarang' ?></div><?php if ($it['deskripsi']): ?><p class="m-0 mt-6"><?= nl2br(e($it['deskripsi'])) ?></p><?php endif; ?></div>
             <?= tombolHapusItem($it['id']) ?>
           </div>
         <?php endforeach; ?>
-        <button class="btn btn-outline" onclick="bukaTambahItem('pendidikan')" style="margin-top:12px" type="button"><span data-ic="plus"></span>Tambah pendidikan</button>
+        <button class="btn btn-outline mt-12" onclick="bukaTambahItem('pendidikan')" type="button"><span data-ic="plus"></span>Tambah pendidikan</button>
       </div>
 
+      <!-- ===== Tab: skill ===== -->
       <div data-pane="skill" hidden>
         <p class="muted">Centang skill yang kamu kuasai. Kalau skill kamu belum ada di daftar, tambahkan sendiri lewat kotak di bawah.</p>
 
@@ -110,34 +106,34 @@ function tombolHapusItem(int $id): string
               <label class="chip pickable"><input type="checkbox" name="skill_id[]" value="<?= (int) $s['id'] ?>" <?= $dicentang ? 'checked' : '' ?>><?= e($s['nama']) ?></label>
             <?php endforeach; ?>
           </div>
-          <?php if ($semuaSkill): ?><button class="btn btn-primary" style="margin-top:16px">Simpan skill</button><?php endif; ?>
+          <?php if ($semuaSkill): ?><button class="btn btn-primary mt-16">Simpan skill</button><?php endif; ?>
         </form>
 
-        <div style="margin-top:22px;padding-top:18px;border-top:1px solid var(--line)">
+        <div class="garis-atas mt-22 pt-18">
           <form method="post" action="<?= url('mahasiswa/simpan-profil') ?>">
             <?= csrfField() ?><input type="hidden" name="aksi" value="skill_baru">
             <label class="field-label" for="skillBaru">Tambah skill baru</label>
-            <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:6px">
-              <input class="input" id="skillBaru" name="skill_nama" style="flex:1;min-width:240px"
+            <div class="d-flex flex-wrap gap-10 mt-6">
+              <input class="input flex-1 min-w-240" id="skillBaru" name="skill_nama"
                      placeholder="Misalnya: Laravel, Tableau, Public Speaking" required maxlength="300">
               <button class="btn btn-primary" type="submit"><span data-ic="plus"></span>Tambah skill</button>
             </div>
-            <small class="muted" style="display:block;margin-top:6px">Bisa sekaligus beberapa, pisahkan dengan koma.</small>
+            <small class="muted d-block mt-6">Bisa sekaligus beberapa, pisahkan dengan koma.</small>
           </form>
         </div>
 
         <?php if ($skillSaya): ?>
-          <div style="margin-top:22px">
+          <div class="mt-22">
             <label class="field-label">Skill yang sudah ada di profilmu</label>
-            <div class="chips" style="margin-top:8px">
+            <div class="chips mt-8">
               <?php foreach ($skillSaya as $s): ?>
-                <span class="chip" style="padding-right:6px"><?= e($s['nama']) ?>
-                  <form method="post" action="<?= url('mahasiswa/simpan-profil') ?>" style="display:inline">
+                <span class="chip pr-6"><?= e($s['nama']) ?>
+                  <form class="d-inline" method="post" action="<?= url('mahasiswa/simpan-profil') ?>">
                     <?= csrfField() ?>
                     <input type="hidden" name="aksi" value="skill_hapus">
                     <input type="hidden" name="skill_id" value="<?= (int) $s['id'] ?>">
-                    <button type="submit" title="Hapus <?= e($s['nama']) ?>"
-                            style="background:none;border:0;cursor:pointer;color:var(--muted);padding:0 4px;font-size:1rem">&times;</button>
+                    <button class="chip-x" type="submit" title="Hapus <?= e($s['nama']) ?>"
+                           >&times;</button>
                   </form>
                 </span>
               <?php endforeach; ?>
@@ -146,16 +142,18 @@ function tombolHapusItem(int $id): string
         <?php endif; ?>
       </div>
 
+      <!-- ===== Tab: pengalaman ===== -->
       <div data-pane="pengalaman" hidden>
         <?php foreach ($pengalaman as $it): ?>
           <div class="list-item"><span class="list-ic" data-ic="briefcase"></span>
-            <div class="grow"><b><?= e($it['judul']) ?></b><div class="muted"><?= e($it['instansi']) ?>, <?= e(tanggalPendekAman($it['mulai'])) ?> sampai <?= $it['selesai'] ? e(tanggalPendekAman($it['selesai'])) : 'sekarang' ?></div><?php if ($it['deskripsi']): ?><p style="margin:6px 0 0"><?= nl2br(e($it['deskripsi'])) ?></p><?php endif; ?></div>
+            <div class="grow"><b><?= e($it['judul']) ?></b><div class="muted"><?= e($it['instansi']) ?>, <?= e(tanggalPendekAman($it['mulai'])) ?> sampai <?= $it['selesai'] ? e(tanggalPendekAman($it['selesai'])) : 'sekarang' ?></div><?php if ($it['deskripsi']): ?><p class="m-0 mt-6"><?= nl2br(e($it['deskripsi'])) ?></p><?php endif; ?></div>
             <?= tombolHapusItem($it['id']) ?>
           </div>
         <?php endforeach; ?>
-        <button class="btn btn-outline" onclick="bukaTambahItem('pengalaman')" style="margin-top:12px" type="button"><span data-ic="plus"></span>Tambah pengalaman</button>
+        <button class="btn btn-outline mt-12" onclick="bukaTambahItem('pengalaman')" type="button"><span data-ic="plus"></span>Tambah pengalaman</button>
       </div>
 
+      <!-- ===== Tab: sertifikat ===== -->
       <div data-pane="sertifikat" hidden>
         <?php foreach ($sertifikat as $it): ?>
           <div class="list-item"><span class="list-ic" data-ic="shield"></span>
@@ -164,9 +162,10 @@ function tombolHapusItem(int $id): string
             <?= tombolHapusItem($it['id']) ?>
           </div>
         <?php endforeach; ?>
-        <button class="btn btn-outline" onclick="bukaTambahItem('sertifikat')" style="margin-top:12px" type="button"><span data-ic="plus"></span>Tambah sertifikat</button>
+        <button class="btn btn-outline mt-12" onclick="bukaTambahItem('sertifikat')" type="button"><span data-ic="plus"></span>Tambah sertifikat</button>
       </div>
 
+      <!-- ===== Tab: portofolio ===== -->
       <div data-pane="portofolio" hidden>
         <p class="muted">Tautan ini ikut terkirim otomatis setiap kali kamu melamar.</p>
         <?php foreach ($portofolio as $it): ?>
@@ -175,7 +174,7 @@ function tombolHapusItem(int $id): string
             <?= tombolHapusItem($it['id']) ?>
           </div>
         <?php endforeach; ?>
-        <form method="post" action="<?= url('mahasiswa/simpan-profil') ?>" style="display:grid;grid-template-columns:180px 1fr auto;gap:8px;margin-top:14px">
+        <form class="form-portofolio" method="post" action="<?= url('mahasiswa/simpan-profil') ?>">
           <?= csrfField() ?><input type="hidden" name="aksi" value="item_tambah"><input type="hidden" name="tipe" value="portofolio">
           <select class="input" name="judul"><option>GitHub</option><option>Behance</option><option>Google Drive</option><option>Website pribadi</option><option>LinkedIn</option></select>
           <input class="input" name="tautan" type="url" placeholder="https://" required>
@@ -183,6 +182,7 @@ function tombolHapusItem(int $id): string
         </form>
       </div>
 
+      <!-- ===== Tab: dokumen ===== -->
       <form data-pane="dokumen" hidden method="post" action="<?= url('mahasiswa/simpan-profil') ?>" enctype="multipart/form-data">
         <?= csrfField() ?><input type="hidden" name="aksi" value="dokumen">
         <p class="muted">Dokumen ini otomatis terlampir saat kamu melamar. Surat pengantar bisa diganti setiap kali melamar.</p>
@@ -202,11 +202,12 @@ function tombolHapusItem(int $id): string
         <button class="btn btn-primary">Simpan dokumen</button>
       </form>
 
+      <!-- ===== Tab: bidang minat ===== -->
       <div data-pane="minat" hidden>
         <form method="post" action="<?= url('mahasiswa/simpan-profil') ?>">
           <?= csrfField() ?><input type="hidden" name="aksi" value="minat">
           <p class="muted">Kamu akan menerima notifikasi saat ada lowongan baru di bidang ini.</p>
-          <div class="chips" style="margin-bottom:16px">
+          <div class="chips mb-16">
             <?php foreach ($semuaBidang as $b): $dicentang = in_array($b['id'], $minatIdTerpilih, true); ?>
               <label class="chip pickable"><input type="checkbox" name="bidang_id[]" value="<?= (int) $b['id'] ?>" <?= $dicentang ? 'checked' : '' ?>><?= e($b['nama']) ?></label>
             <?php endforeach; ?>
@@ -215,6 +216,7 @@ function tombolHapusItem(int $id): string
         </form>
       </div>
 
+      <!-- ===== Tab: status karier ===== -->
       <form data-pane="karier" hidden method="post" action="<?= url('mahasiswa/status-karier') ?>">
         <?= csrfField() ?>
         <?php if (!empty($mahasiswa['karier_diperbarui_pada'])): ?>
@@ -223,7 +225,7 @@ function tombolHapusItem(int $id): string
 
         <p class="muted">Pilih status yang paling sesuai. Kolom isian di bawahnya akan menyesuaikan sendiri, jadi kamu tidak perlu mengisi nama perusahaan kalau memang belum bekerja.</p>
 
-        <div class="field" style="max-width:340px">
+        <div class="field max-w-340">
           <label for="statusKarier">Status karier saat ini</label>
           <select class="input" id="statusKarier" name="status_karier" onchange="gantiFormKarier(this.value)">
             <?php foreach ($labelStatusKarier as $val => $lbl): ?>
@@ -232,7 +234,6 @@ function tombolHapusItem(int $id): string
           </select>
         </div>
 
-        <!-- ================= BEKERJA ================= -->
         <div data-karier="bekerja" hidden>
           <div class="row2">
             <div class="field"><label>Nama perusahaan <span class="wajib">*</span></label><input class="input" name="tempat_kerja" value="<?= e($mahasiswa['tempat_kerja'] ?? '') ?>" placeholder="PT Nusantara Digital"></div>
@@ -247,7 +248,6 @@ function tombolHapusItem(int $id): string
           </div>
         </div>
 
-        <!-- ================= WIRAUSAHA ================= -->
         <div data-karier="wirausaha" hidden>
           <div class="row2">
             <div class="field"><label>Nama usaha <span class="wajib">*</span></label><input class="input" name="tempat_kerja" value="<?= e($mahasiswa['tempat_kerja'] ?? '') ?>" placeholder="Kopi Kenangan Malang"></div>
@@ -257,9 +257,8 @@ function tombolHapusItem(int $id): string
           </div>
         </div>
 
-        <!-- ================= STUDI LANJUT ================= -->
         <div data-karier="studi lanjut" hidden>
-          <div class="field" style="max-width:340px">
+          <div class="field max-w-340">
             <label>Tahap saat ini</label>
             <select class="input" name="karier_tahap_studi">
               <?php foreach (['rencana' => 'Masih rencana', 'diterima' => 'Sudah diterima', 'sedang berjalan' => 'Sedang berkuliah'] as $val => $lbl): ?>
@@ -275,7 +274,6 @@ function tombolHapusItem(int $id): string
           </div>
         </div>
 
-        <!-- ================= MENCARI KERJA ================= -->
         <div data-karier="mencari kerja" hidden>
           <div class="row2">
             <div class="field"><label>Bidang karier yang diminati</label><input class="input" name="karier_bidang_minat" value="<?= e($mahasiswa['karier_bidang_minat'] ?? '') ?>" placeholder="Teknologi Informasi, Konstruksi"></div>
@@ -284,7 +282,6 @@ function tombolHapusItem(int $id): string
           <div class="alert alert-info"><span data-ic="info"></span><span>Bidang yang kamu isi di sini membantu Career Center melihat kebutuhan lulusan. Untuk rekomendasi lowongan, isi juga tab <b>Bidang minat</b>.</span></div>
         </div>
 
-        <!-- ================= BELUM BEKERJA ================= -->
         <div data-karier="belum bekerja" hidden>
           <div class="field">
             <label>Bidang yang ingin kamu tekuni ke depan</label>
@@ -302,9 +299,6 @@ function tombolHapusItem(int $id): string
       </form>
 
       <script>
-      /* Menampilkan hanya blok isian milik status yang sedang dipilih, sekaligus
-         menonaktifkan input milik status lain supaya tidak ikut terkirim
-         (kalau ikut terkirim, nama field yang sama bisa saling menimpa). */
       function gantiFormKarier(status) {
         document.querySelectorAll('[data-karier]').forEach(function (blok) {
           var aktif = blok.getAttribute('data-karier') === status;
@@ -321,7 +315,7 @@ function tombolHapusItem(int $id): string
   </div>
 </section>
 
-<!-- Modal: tambah item pendidikan/pengalaman/sertifikat -->
+<!-- ===== Modal tambah item ===== -->
 <div class="modal" id="mItem" role="dialog" aria-modal="true" aria-labelledby="iT">
   <div class="modal-box">
     <div class="modal-head"><h3 id="iT">Tambah data</h3><button class="close" data-close aria-label="Tutup" data-ic="x"></button></div>
@@ -339,6 +333,7 @@ function tombolHapusItem(int $id): string
   </div>
 </div>
 
+<!-- ===== Script profil ===== -->
 <script>
 function bukaTambahItem(tipe) {
   document.getElementById('itemTipe').value = tipe;

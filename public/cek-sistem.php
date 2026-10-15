@@ -1,14 +1,5 @@
 <?php
-/**
- * Halaman pengecek kesiapan sistem
- * Buka di browser: http://localhost/.../cek-sistem.php
- *
- * Dipakai saat pertama kali memasang proyek di komputer baru, untuk
- * memastikan PHP, ekstensi PostgreSQL, koneksi database, isi tabel, dan
- * izin folder sudah benar SEBELUM membuka aplikasinya.
- *
- * HAPUS ATAU BLOKIR file ini sebelum dipakai sungguhan / di-deploy publik.
- */
+// ===== ALAT BANTU · Cek kesiapan sistem ==============================
 
 $hasil = [];
 function cek(string $nama, bool $ok, string $pesanOk, string $pesanGagal, string $solusi = ''): array
@@ -16,7 +7,6 @@ function cek(string $nama, bool $ok, string $pesanOk, string $pesanGagal, string
     return compact('nama', 'ok', 'pesanOk', 'pesanGagal', 'solusi');
 }
 
-/* 1. Versi PHP */
 $hasil[] = cek(
     'Versi PHP',
     version_compare(PHP_VERSION, '8.0', '>='),
@@ -25,7 +15,6 @@ $hasil[] = cek(
     'Proyek ini butuh PHP 8.0 ke atas. Perbarui PHP atau pakai XAMPP versi terbaru.'
 );
 
-/* 2. Ekstensi pdo_pgsql */
 $hasil[] = cek(
     'Ekstensi pdo_pgsql',
     extension_loaded('pdo_pgsql'),
@@ -34,7 +23,6 @@ $hasil[] = cek(
     'Buka php.ini, hapus tanda titik koma di depan baris extension=pdo_pgsql dan extension=pgsql, lalu restart Apache.'
 );
 
-/* 3. File konfigurasi */
 $cfgPath = __DIR__ . '/../app/config/config.php';
 $dbPath  = __DIR__ . '/../app/config/database.php';
 $adaCfg  = is_file($cfgPath) && is_file($dbPath);
@@ -43,7 +31,6 @@ $hasil[] = cek('File konfigurasi', $adaCfg, 'Ditemukan', 'Tidak ditemukan', 'Pas
 $cfg = $adaCfg ? require $cfgPath : [];
 $db  = $adaCfg ? require $dbPath : [];
 
-/* 4. Koneksi database */
 $pdo = null;
 $errDb = '';
 if ($adaCfg && extension_loaded('pdo_pgsql')) {
@@ -62,7 +49,6 @@ $hasil[] = cek(
     'Periksa app/config/database.php: nama database, user, dan password. Pastikan juga service PostgreSQL sudah berjalan.'
 );
 
-/* 5. Tabel sudah dibuat */
 $jumlahTabel = 0;
 if ($pdo) {
     $jumlahTabel = (int) $pdo->query("SELECT COUNT(*) FROM information_schema.tables WHERE table_schema='public'")->fetchColumn();
@@ -75,7 +61,6 @@ $hasil[] = cek(
     'Jalankan database/01-schema.sql lalu database/02-seed.sql di database ini.'
 );
 
-/* 6. Data awal */
 $jumlahAkun = 0;
 if ($pdo && $jumlahTabel >= 20) {
     try {
@@ -92,7 +77,6 @@ $hasil[] = cek(
     'Jalankan database/02-seed.sql supaya akun demo admin, mahasiswa, dan perusahaan terbuat.'
 );
 
-/* 7. Folder unggahan bisa ditulis */
 $uploadDir = __DIR__ . '/../storage/uploads';
 $hasil[] = cek(
     'Folder storage/uploads',
@@ -102,7 +86,6 @@ $hasil[] = cek(
     'Klik kanan folder storage, Properties, hilangkan centang Read-only. Di Linux/Mac: chmod -R 775 storage'
 );
 
-/* 8. base_url cocok dengan lokasi file */
 $basePerkiraan = rtrim(str_replace('\\', '/', dirname($_SERVER['SCRIPT_NAME'])), '/');
 $baseTersimpan = rtrim($cfg['base_url'] ?? '', '/');
 $hasil[] = cek(
@@ -113,7 +96,6 @@ $hasil[] = cek(
     "Buka app/config/config.php, ubah baris 'base_url' menjadi '" . $basePerkiraan . "'"
 );
 
-/* 9. mod_rewrite (hanya relevan bila lewat Apache) */
 $pakaiApache = stripos($_SERVER['SERVER_SOFTWARE'] ?? '', 'apache') !== false;
 if ($pakaiApache) {
     $rewriteOn = function_exists('apache_get_modules') ? in_array('mod_rewrite', apache_get_modules(), true) : true;

@@ -1,14 +1,5 @@
 <?php
-/**
- * Model tabel dokumen_verifikasi
- * PIC   : Aqillah (UI/UX, Frontend, dan Integrasi)
- * Status: DIISI.
- *
- * Tabel ini tidak punya kolom "versi aktif": setiap kali pendaftar unggah
- * ulang (alur Perbaiki Data), baris BARU ditambahkan, baris lama tetap
- * tersimpan sebagai riwayat. Yang dipakai Admin untuk menilai adalah
- * dokumen dengan diunggah_pada TERBARU per tipe (lihat terbaruPerTipe()).
- */
+// ===== BACKEND · MODEL · DokumenVerifikasi (tabel dokumen_verifikasi) ====
 
 class DokumenVerifikasi extends Model
 {
@@ -32,7 +23,6 @@ class DokumenVerifikasi extends Model
         );
     }
 
-    /** Satu dokumen terbaru untuk tiap tipe (dipakai di halaman Detail Pendaftar Admin). */
     public function terbaruPerTipe(int $penggunaId): array
     {
         return Database::fetchAll(

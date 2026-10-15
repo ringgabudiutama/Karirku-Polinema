@@ -1,17 +1,11 @@
 <?php
-/**
- * Pembungkus koneksi PDO
- * PIC   : M. Ubaidillah (Backend dan Database)
- * Status: DIISI.
- *
- * Singleton: satu koneksi PDO dipakai ulang di sepanjang satu request,
- * supaya tidak connect ke PostgreSQL berkali-kali.
- */
+// ===== BACKEND · CORE · Database (PDO PostgreSQL) ====================
 
 class Database
 {
     private static ?\PDO $pdo = null;
 
+    // --- Koneksi -----------------------------------------------------
     public static function pdo(): \PDO
     {
         if (self::$pdo === null) {
@@ -36,8 +30,7 @@ class Database
         return self::$pdo;
     }
 
-    /* ------------------------- helper query pendek ------------------------- */
-
+    // --- Query -------------------------------------------------------
     public static function query(string $sql, array $params = []): \PDOStatement
     {
         $stmt = self::pdo()->prepare($sql);
@@ -66,6 +59,7 @@ class Database
         return self::pdo()->lastInsertId($sequenceOrColumn);
     }
 
+    // --- Transaksi ---------------------------------------------------
     public static function beginTransaction(): bool
     {
         return self::pdo()->beginTransaction();

@@ -1,9 +1,5 @@
 <?php
-/**
- * View: mahasiswa/pengaturan (route: mahasiswa/pengaturan-akun)
- * Dipanggil oleh: MahasiswaController::pengaturanAkun()
- * Variabel: $pengguna, $mahasiswa
- */
+// ===== FRONTEND · MAHASISWA · Pengaturan akun ========================
 $page_title = 'Pengaturan Akun';
 $active_menu = 'pengaturan';
 require __DIR__ . '/../layouts/app-header.php';
@@ -11,7 +7,7 @@ require __DIR__ . '/../layouts/app-header.php';
 <section class="view active">
   <div class="page-head"><div><h1>Pengaturan akun</h1></div></div>
 
-  <div class="grid g2" style="align-items:start">
+  <div class="grid g2 items-start">
     <form class="panel" method="post" action="<?= url('mahasiswa/simpan-pengaturan-akun') ?>">
       <?= csrfField() ?><input type="hidden" name="aksi" value="kontak">
       <h3>Kontak akun</h3>

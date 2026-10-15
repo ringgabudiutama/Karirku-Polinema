@@ -1,20 +1,15 @@
 <?php
-/**
- * Model tabel skill
- * PIC   : Muhamad Nafi' Hanif (Modul Mahasiswa dan Alumni)
- * Status: DIISI.
- */
+// ===== BACKEND · MODEL · Skill (tabel skill) =========================
 
 class Skill extends Model
 {
     protected string $tabel = 'skill';
 
+    // --- Baca data ---------------------------------------------------
     public function semuaUrut(): array
     {
         return Database::fetchAll('SELECT * FROM skill ORDER BY nama');
     }
-
-    /* --------------------- relasi mahasiswa_skill --------------------- */
 
     public function milikMahasiswa(int $mahasiswaId): array
     {
@@ -26,7 +21,7 @@ class Skill extends Model
         );
     }
 
-    /** Ganti seluruh daftar skill mahasiswa dengan daftar baru (hapus lalu isi ulang). */
+    // --- Tulis data --------------------------------------------------
     public function setUntukMahasiswa(int $mahasiswaId, array $skillIds): void
     {
         Database::beginTransaction();
@@ -45,11 +40,6 @@ class Skill extends Model
         }
     }
 
-    /**
-     * Cari skill berdasarkan nama, buat baru kalau belum ada, lalu kembalikan id-nya.
-     * Nama dirapikan dulu (spasi ganda dibuang) supaya tidak muncul duplikat
-     * seperti "PHP" dan "php ".
-     */
     public function cariAtauBuat(string $nama): ?int
     {
         $nama = trim(preg_replace('/\s+/', ' ', $nama));
@@ -67,7 +57,6 @@ class Skill extends Model
         return $baru ? (int) $baru['id'] : null;
     }
 
-    /** Pasang satu skill ke mahasiswa tanpa menghapus skill lain yang sudah ada. */
     public function tambahkanKeMahasiswa(int $mahasiswaId, int $skillId): void
     {
         Database::execute(
@@ -77,7 +66,6 @@ class Skill extends Model
         );
     }
 
-    /** Lepas satu skill dari mahasiswa (skill tetap ada di daftar induk). */
     public function lepasDariMahasiswa(int $mahasiswaId, int $skillId): void
     {
         Database::execute(

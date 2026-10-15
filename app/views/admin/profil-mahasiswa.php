@@ -1,13 +1,5 @@
 <?php
-/**
- * View: admin/profil-mahasiswa
- * Dipanggil oleh: AdminController::profilMahasiswa($mahasiswaId)
- * Variabel: $mhs, $pendidikan, $pengalaman, $sertifikat, $portofolio,
- *           $skill, $minat, $lamaran, $kelengkapan
- *
- * Halaman ini HANYA BACA. Admin memakainya untuk memeriksa profil karier
- * seorang mahasiswa dari menu Kelola Pengguna, tanpa bisa mengubah datanya.
- */
+// ===== FRONTEND · ADMIN · Profil lengkap mahasiswa ===================
 $page_title  = 'Profil ' . $mhs['nama'];
 $active_menu = 'pengguna';
 require __DIR__ . '/../layouts/app-header.php';
@@ -20,8 +12,6 @@ $labelStatusKarier = [
 ];
 $statusKarier = $mhs['status_karier'] ?? '';
 
-/* Baris detail karier ikut berubah mengikuti status, sama seperti di form
-   milik mahasiswa, supaya Admin tidak melihat kolom kosong yang tidak relevan. */
 $detailKarier = [];
 switch ($statusKarier) {
     case 'bekerja':
@@ -57,7 +47,6 @@ if (!empty($mhs['karier_catatan'])) {
 }
 $detailKarier = array_filter($detailKarier, static fn($b) => trim((string) $b[1]) !== '');
 
-
 ?>
 <section class="view active">
   <div class="crumb"><a href="<?= url('admin/kelola-pengguna') ?>">Kelola Pengguna</a> <span>/</span> <span><?= e($mhs['nama']) ?></span></div>
@@ -67,28 +56,27 @@ $detailKarier = array_filter($detailKarier, static fn($b) => trim((string) $b[1]
       <h1><?= e($mhs['nama']) ?></h1>
       <p><?= e($mhs['jenjang'] . ' ' . $mhs['nama_prodi']) ?>, <?= e($mhs['nama_jurusan']) ?></p>
     </div>
-    <div style="display:flex;gap:10px">
+    <div class="d-flex gap-10">
       <a class="btn btn-outline" href="<?= url('admin/kelola-pengguna') ?>">Kembali</a>
     </div>
   </div>
 
-  <div class="grid g-side" style="align-items:start">
+  <!-- ===== Kolom kiri: identitas, karier, riwayat ===== -->
+  <div class="grid g-side items-start">
 
-    <!-- ================= KOLOM KIRI ================= -->
     <div>
-      <!-- Identitas -->
       <div class="panel">
-        <div class="person" style="align-items:center;margin-bottom:16px">
+        <div class="person items-center mb-16">
           <?php if ($fotoUrl): ?>
-            <img src="<?= e($fotoUrl) ?>" alt="Foto <?= e($mhs['nama']) ?>" style="width:64px;height:64px;border-radius:50%;object-fit:cover">
+            <img class="avatar-64" src="<?= e($fotoUrl) ?>" alt="Foto <?= e($mhs['nama']) ?>">
           <?php else: ?>
-            <span style="display:inline-flex;align-items:center;justify-content:center;background:var(--blue-soft);color:var(--navy);font-weight:700;width:64px;height:64px;border-radius:50%;font-size:1.2rem"><?= e(inisial($mhs['nama'])) ?></span>
+            <span class="avatar-inisial avatar-64 fs-120"><?= e(inisial($mhs['nama'])) ?></span>
           <?php endif; ?>
           <div>
-            <b style="font-size:1.1rem"><?= e($mhs['nama']) ?></b>
+            <b class="fs-110"><?= e($mhs['nama']) ?></b>
             <small>NIM <?= e($mhs['nim']) ?><?= $mhs['ipk'] ? ' &middot; IPK ' . e($mhs['ipk']) : '' ?></small>
           </div>
-          <span style="margin-left:auto"><?= badgeHtml(labelStatusAkun($mhs['status_akun'])) ?></span>
+          <span class="ml-auto"><?= badgeHtml(labelStatusAkun($mhs['status_akun'])) ?></span>
         </div>
 
         <dl class="dl">
@@ -103,7 +91,6 @@ $detailKarier = array_filter($detailKarier, static fn($b) => trim((string) $b[1]
         </dl>
       </div>
 
-      <!-- Status karier -->
       <div class="panel">
         <div class="panel-head">
           <h3>Status karier</h3>
@@ -125,7 +112,6 @@ $detailKarier = array_filter($detailKarier, static fn($b) => trim((string) $b[1]
         <?php endif; ?>
       </div>
 
-      <!-- Pendidikan -->
       <div class="panel">
         <h3>Pendidikan</h3>
         <?php if (!$pendidikan): ?><p class="muted">Belum diisi.</p><?php endif; ?>
@@ -133,13 +119,12 @@ $detailKarier = array_filter($detailKarier, static fn($b) => trim((string) $b[1]
           <div class="list-item"><span class="list-ic" data-ic="graduation"></span>
             <div class="grow"><b><?= e($it['judul']) ?></b>
               <div class="muted"><?= e($it['instansi']) ?><?= $it['mulai'] ? ', ' . e(tanggalIndo($it['mulai'])) . ' sampai ' . ($it['selesai'] ? e(tanggalIndo($it['selesai'])) : 'sekarang') : '' ?></div>
-              <?php if ($it['deskripsi']): ?><p style="margin:6px 0 0"><?= nl2br(e($it['deskripsi'])) ?></p><?php endif; ?>
+              <?php if ($it['deskripsi']): ?><p class="m-0 mt-6"><?= nl2br(e($it['deskripsi'])) ?></p><?php endif; ?>
             </div>
           </div>
         <?php endforeach; ?>
       </div>
 
-      <!-- Pengalaman -->
       <div class="panel">
         <h3>Pengalaman</h3>
         <?php if (!$pengalaman): ?><p class="muted">Belum diisi.</p><?php endif; ?>
@@ -147,13 +132,12 @@ $detailKarier = array_filter($detailKarier, static fn($b) => trim((string) $b[1]
           <div class="list-item"><span class="list-ic" data-ic="briefcase"></span>
             <div class="grow"><b><?= e($it['judul']) ?></b>
               <div class="muted"><?= e($it['instansi']) ?><?= $it['mulai'] ? ', ' . e(tanggalIndo($it['mulai'])) . ' sampai ' . ($it['selesai'] ? e(tanggalIndo($it['selesai'])) : 'sekarang') : '' ?></div>
-              <?php if ($it['deskripsi']): ?><p style="margin:6px 0 0"><?= nl2br(e($it['deskripsi'])) ?></p><?php endif; ?>
+              <?php if ($it['deskripsi']): ?><p class="m-0 mt-6"><?= nl2br(e($it['deskripsi'])) ?></p><?php endif; ?>
             </div>
           </div>
         <?php endforeach; ?>
       </div>
 
-      <!-- Sertifikat -->
       <div class="panel">
         <h3>Sertifikat</h3>
         <?php if (!$sertifikat): ?><p class="muted">Belum diisi.</p><?php endif; ?>
@@ -165,7 +149,6 @@ $detailKarier = array_filter($detailKarier, static fn($b) => trim((string) $b[1]
         <?php endforeach; ?>
       </div>
 
-      <!-- Riwayat lamaran -->
       <div class="panel">
         <h3>Riwayat lamaran</h3>
         <?php if (!$lamaran): ?>
@@ -188,11 +171,11 @@ $detailKarier = array_filter($detailKarier, static fn($b) => trim((string) $b[1]
       </div>
     </div>
 
-    <!-- ================= KOLOM KANAN ================= -->
+    <!-- ===== Kolom kanan: kelengkapan, dokumen, skill ===== -->
     <div>
       <div class="panel">
         <h3>Kelengkapan profil</h3>
-        <div style="display:flex;justify-content:space-between;font-size:.9rem;margin-bottom:6px">
+        <div class="progress-label">
           <span class="muted">Terisi</span><b><?= (int) $kelengkapan ?>%</b>
         </div>
         <div class="progress"><i style="width:<?= (int) $kelengkapan ?>%"></i></div>
@@ -207,7 +190,7 @@ $detailKarier = array_filter($detailKarier, static fn($b) => trim((string) $b[1]
           <?php if (berkasAda($mhs['file_ktm'] ?? null, 'ktm', 'ijazah')): ?>
             <a class="btn btn-sm btn-outline" href="<?= url('unduh.php?tipe=ktm&file=' . urlencode($mhs['file_ktm'])) ?>" target="_blank">Lihat</a>
           <?php elseif (!empty($mhs['file_ktm'])): ?>
-            <span class="muted" style="font-size:.85rem">Berkas tidak ditemukan</span>
+            <span class="muted fs-85">Berkas tidak ditemukan</span>
           <?php endif; ?>
         </div>
         <div class="list-item"><span class="list-ic" data-ic="file"></span>

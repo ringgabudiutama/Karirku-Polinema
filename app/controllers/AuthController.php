@@ -1,17 +1,9 @@
 <?php
-/**
- * Login, registrasi, dan verifikasi akun
- * PIC   : Aqillah (UI/UX, Frontend, dan Integrasi)
- * Status: LOGIKA BACKEND DIISI oleh M. Ubaidillah (Backend) atas permintaan tim,
- *         supaya alur bisa langsung dites ujung ke ujung. Aqillah silakan
- *         lanjutkan menimpa app/views/publik/daftar.php & masuk.php dengan
- *         desain asli dari public/daftar.html & masuk.html -- variabel yang
- *         disediakan tiap view sudah dicatat di komentar atas tiap method.
- */
+// ===== BACKEND · CONTROLLER · Auth (masuk, daftar, sandi) ============
 
 class AuthController extends Controller
 {
-    /** View: publik/masuk. Variabel: $emailSebelumnya (isi ulang kalau login gagal). */
+    // --- Masuk (login) -----------------------------------------------
     public function formMasuk()
     {
         if (Auth::sudahLogin()) {
@@ -59,13 +51,10 @@ class AuthController extends Controller
         $penggunaModel->perbaruiTerakhirLogin((int) $pengguna['id']);
         unset($_SESSION['_masuk_email']);
 
-        // Akun belum aktif (menunggu/perbaikan/ditolak) tetap boleh masuk,
-        // tapi hanya melihat Halaman Status Akun -- lihat Auth::wajibAktif().
         if ($pengguna['status_akun'] !== 'aktif') {
             $this->redirect('status-akun');
         }
 
-        // 8. Pengingat lowongan disimpan yang hampir tutup, dibuat saat login (tanpa cron job).
         if ($pengguna['role'] === 'mahasiswa') {
             $mhs = (new Mahasiswa())->cariByPenggunaId((int) $pengguna['id']);
             if ($mhs) {
@@ -83,11 +72,7 @@ class AuthController extends Controller
         $this->redirect($tujuan);
     }
 
-    /**
-     * View: publik/daftar. Variabel: $jurusan (untuk <select> asal kampus lewat
-     * prodi), $prodi (semua program studi, dikelompokkan oleh JS/PHP per jurusan
-     * di sisi tampilan), $peranTerpilih ('mahasiswa'|'perusahaan'|null dari ?peran=).
-     */
+    // --- Daftar (registrasi) -----------------------------------------
     public function formDaftar()
     {
         if (Auth::sudahLogin()) {
@@ -104,7 +89,7 @@ class AuthController extends Controller
     public function prosesDaftar()
     {
         $this->wajibPost();
-        $peran = $this->input('peran'); // 'mahasiswa' atau 'perusahaan'
+        $peran = $this->input('peran');
 
         try {
             if ($peran === 'mahasiswa') {
@@ -129,7 +114,7 @@ class AuthController extends Controller
         $nim = $this->input('nim');
         $noWa = $this->input('no_whatsapp');
         $programStudiId = (int) $this->input('program_studi_id');
-        $statusMhs = $this->input('status_mahasiswa'); // 'aktif' atau 'alumni'
+        $statusMhs = $this->input('status_mahasiswa');
         $angkatan = (int) $this->input('angkatan');
         $tahunLulus = $this->input('tahun_lulus');
 
@@ -156,7 +141,6 @@ class AuthController extends Controller
             throw new RuntimeException('Anda harus menyetujui syarat dan ketentuan.');
         }
 
-        // Dokumen wajib: KTM untuk aktif, ijazah untuk alumni.
         $tipeDokWajib = $statusMhs === 'alumni' ? 'ijazah' : 'ktm';
         try {
             $dok = UploadService::simpan('file_dokumen', $tipeDokWajib, ['pdf', 'jpg', 'jpeg', 'png']);
@@ -222,7 +206,6 @@ class AuthController extends Controller
             throw new RuntimeException('Anda harus menyetujui syarat dan ketentuan.');
         }
 
-        // Dokumen wajib: NIB, NPWP, akta pendirian. Opsional: domisili, logo.
         try {
             $nib = UploadService::simpan('file_nib', 'nib', ['pdf', 'jpg', 'jpeg', 'png']);
             $npwp = UploadService::simpan('file_npwp', 'npwp', ['pdf', 'jpg', 'jpeg', 'png']);
@@ -295,12 +278,7 @@ class AuthController extends Controller
         }
     }
 
-    /**
-     * View: publik/status-akun. Variabel: $pengguna, $riwayat (riwayat
-     * keputusan verifikasi), $dokumen (dokumen terbaru per tipe).
-     * Akun BOLEH melihat halaman ini di status apa pun (menunggu, perbaikan,
-     * ditolak, aktif, nonaktif) -- makanya pakai wajibLogin(), BUKAN wajibAktif().
-     */
+    // --- Status akun & perbaikan berkas ------------------------------
     public function statusAkun()
     {
         Auth::wajibLogin();
@@ -318,7 +296,6 @@ class AuthController extends Controller
         ]);
     }
 
-    /** Dipanggil dari tombol "Perbaiki Data" di Halaman Status Akun saat status = perbaikan. */
     public function kirimPerbaikan()
     {
         $this->wajibPost();
@@ -331,8 +308,6 @@ class AuthController extends Controller
             $this->redirect('status-akun');
         }
 
-        // Terima ulang dokumen apa pun yang dikirim (nama field fleksibel:
-        // file_ktm, file_ijazah, file_nib, file_npwp, file_akta, file_domisili, file_logo).
         $petaTipe = [
             'file_ktm' => 'ktm', 'file_ijazah' => 'ijazah', 'file_nib' => 'nib',
             'file_npwp' => 'npwp', 'file_akta' => 'akta', 'file_domisili' => 'domisili', 'file_logo' => 'logo',
@@ -368,7 +343,7 @@ class AuthController extends Controller
         $this->redirect('status-akun');
     }
 
-    /** View: publik/lupa-sandi (form minta reset). */
+    // --- Lupa & reset kata sandi -------------------------------------
     public function lupaSandi()
     {
         $this->view('publik/lupa-sandi', ['tersedia' => (new Pengguna())->fiturResetTersedia()]);
@@ -386,8 +361,6 @@ class AuthController extends Controller
         }
 
         $pengguna = $penggunaModel->cariByEmail($email);
-        // Pesan sukses ditampilkan SAMA baik email ditemukan atau tidak,
-        // supaya orang luar tidak bisa menebak-nebak email mana yang terdaftar.
         if ($pengguna) {
             $token = $penggunaModel->buatTokenReset((int) $pengguna['id']);
             $tautan = url('auth/reset-sandi/' . $token);
@@ -398,7 +371,6 @@ class AuthController extends Controller
         $this->redirect('masuk');
     }
 
-    /** View: publik/reset-sandi. Variabel: $token. */
     public function resetSandi(string $token)
     {
         $penggunaModel = new Pengguna();
@@ -434,6 +406,7 @@ class AuthController extends Controller
         $this->redirect('masuk');
     }
 
+    // --- Keluar (logout) ---------------------------------------------
     public function keluar()
     {
         Auth::keluar();

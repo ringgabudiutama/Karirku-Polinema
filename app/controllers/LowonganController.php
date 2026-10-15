@@ -1,17 +1,9 @@
 <?php
-/**
- * Daftar, detail, dan pengelolaan lowongan
- * PIC   : Atha Rasya Farras (Modul Operator dan Career Center)
- * Status: LOGIKA BACKEND DIISI. Views masih perlu ditimpa dengan desain asli.
- */
+// ===== BACKEND · CONTROLLER · Lowongan ===============================
 
 class LowonganController extends Controller
 {
-    /**
-     * View: mahasiswa/lowongan. Variabel: $lowongan (hasil halaman ini),
-     * $total, $halaman, $totalHalaman, $filter (nilai filter yang sedang
-     * dipakai, untuk mengisi ulang form), $jurusan, $bidang (untuk <select>).
-     */
+    // --- Mahasiswa: cari, detail, simpan -----------------------------
     public function daftar()
     {
         Auth::wajibAktif();
@@ -53,10 +45,6 @@ class LowonganController extends Controller
         ]);
     }
 
-    /**
-     * View: mahasiswa/lowongan-detail. Variabel: $lowongan, $jurusanSasaran,
-     * $sudahDisimpan, $sudahMelamar, $profilLengkap (bool, syarat boleh melamar).
-     */
     public function detail(int $id)
     {
         Auth::wajibAktif();
@@ -83,7 +71,6 @@ class LowonganController extends Controller
         ]);
     }
 
-    /** Toggle simpan/batal-simpan lowongan (dipanggil dari tombol bookmark). */
     public function simpan(int $id)
     {
         $this->wajibPost();
@@ -106,10 +93,7 @@ class LowonganController extends Controller
         $this->redirect($kembali);
     }
 
-    /**
-     * View: perusahaan/lowongan-form. Variabel: $lowongan (null kalau pasang baru,
-     * berisi data kalau mode edit), $jurusanTerpilih, $bidang, $jurusan.
-     */
+    // --- Perusahaan: pasang & kelola lowongan ------------------------
     public function formPasang(int $id = 0)
     {
         Auth::wajibAktif();
@@ -137,7 +121,6 @@ class LowonganController extends Controller
         ]);
     }
 
-    /** Handle create MAUPUN update, dibedakan lewat field tersembunyi "id" (kosong = baru). */
     public function prosesPasang()
     {
         $this->wajibPost();
@@ -175,7 +158,6 @@ class LowonganController extends Controller
 
         try {
             if ($id) {
-                // pastikan lowongan ini benar milik perusahaan yang sedang login
                 $existing = $lowonganModel->cari($id);
                 if (!$existing || (int) $existing['perusahaan_id'] !== (int) $prsh['id']) {
                     http_response_code(403);
@@ -189,7 +171,6 @@ class LowonganController extends Controller
                 $lowonganModel->setJurusanSasaran($id, $jurusanSasaran);
                 $this->flash('ok', 'Lowongan berhasil diperbarui.');
             } else {
-                // pamflet WAJIB untuk lowongan baru (proposal: "Tombol Tayangkan mati sebelum pamflet diunggah").
                 $pamflet = UploadService::simpan('pamflet', 'pamflet', ['jpg', 'jpeg', 'png']);
                 $data['pamflet'] = $pamflet['nama'];
                 $lowonganId = $lowonganModel->buat((int) $prsh['id'], $data);
@@ -206,7 +187,6 @@ class LowonganController extends Controller
         $this->redirect('perusahaan/lowongan');
     }
 
-    /** Tutup manual sebelum batas lamar (beda dengan otomatis saat kuota penuh). */
     public function tutup(int $id)
     {
         $this->wajibPost();
@@ -227,7 +207,6 @@ class LowonganController extends Controller
         $this->redirect('perusahaan/lowongan');
     }
 
-    /** Buka kembali lowongan yang sudah ditutup (kuota penuh/manual) dengan batas lamaran baru. */
     public function perpanjang(int $id)
     {
         $this->wajibPost();
@@ -258,12 +237,7 @@ class LowonganController extends Controller
         $this->redirect('perusahaan/lowongan');
     }
 
-    /**
-     * View: publik/info-loker. Halaman TANPA LOGIN, dibuka lewat tautan
-     * wa.me yang dikirim ke admin jurusan. Kode acak (bukan id angka) supaya
-     * tidak mudah ditebak dan tidak diindeks mesin pencari (lihat view:
-     * pasang <meta name="robots" content="noindex"> di sana).
-     */
+    // --- Publik: info loker (tanpa login) ----------------------------
     public function pratinjau(string $kode)
     {
         $lowongan = (new Lowongan())->cariByKodePratinjau($kode);

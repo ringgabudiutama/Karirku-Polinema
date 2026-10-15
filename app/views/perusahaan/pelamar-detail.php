@@ -1,17 +1,10 @@
 <?php
-/**
- * View: perusahaan/pelamar-detail
- * Dipanggil oleh: LamaranController::detailPelamar($id)
- * Variabel: $lamaran, $mahasiswa, $profilItem, $skill, $riwayat, $interview
- */
+// ===== FRONTEND · PERUSAHAAN · Detail pelamar & proses seleksi =======
 $page_title = 'Detail Pelamar';
 $active_menu = 'pelamar';
 require __DIR__ . '/../layouts/app-header.php';
 
 $fotoUrl = !empty($mahasiswa['foto']) ? url('unduh.php?tipe=foto&file=' . urlencode($mahasiswa['foto'])) : url('assets/img/avatar-1.jpg');
-/* Lamaran yang sudah selesai tidak lagi bisa diproses. 'dibatalkan' berarti
-   pelamarnya sendiri yang menarik lamaran, jadi ikut dihitung selesai supaya
-   perusahaan tidak menjadwalkan interview untuk lamaran yang sudah ditarik. */
 $selesai = in_array($lamaran['status'], ['diterima', 'ditolak', 'dibatalkan'], true);
 $per = fn($tipe) => array_values(array_filter($profilItem, fn($i) => $i['tipe'] === $tipe));
 $pendidikan = $per('pendidikan');
@@ -25,15 +18,16 @@ $labelRiwayat = ['diajukan' => 'Lamaran diajukan', 'screening' => 'CV dibuka, st
 <section class="view active">
   <div class="crumb"><a href="<?= url('perusahaan/pelamar') ?>">Pelamar</a> <span>/</span> <span><?= e($mahasiswa['nama']) ?></span></div>
 
-  <div class="grid g-side" style="align-items:start">
+  <div class="grid g-side items-start">
     <div>
       <div class="panel">
+        <!-- ===== Kolom kiri: profil pelamar ===== -->
         <div class="profile-head">
           <img class="avatar-lg" src="<?= e($fotoUrl) ?>" alt="Foto <?= e($mahasiswa['nama']) ?>">
           <div class="grow">
-            <h1 style="font-size:1.6rem;margin:0"><?= e($mahasiswa['nama']) ?> <span class="verified" data-ic="check">Terverifikasi</span></h1>
-            <p class="muted" style="margin:2px 0 8px"><?= e($mahasiswa['jenjang'] . ' ' . $mahasiswa['nama_prodi']) ?>, angkatan <?= e((string) $mahasiswa['angkatan']) ?>, <?= $mahasiswa['status_mahasiswa'] === 'alumni' ? 'Alumni, lulus ' . e((string) $mahasiswa['tahun_lulus']) : 'Mahasiswa aktif' ?></p>
-            <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center"><?= badgeHtml(labelStatusLamaran($lamaran['status'])) ?><span class="muted" style="font-size:.88rem">Melamar <?= e($lamaran['posisi']) ?> pada <?= tanggalIndo($lamaran['tanggal_lamar']) ?></span></div>
+            <h1 class="fs-160 m-0"><?= e($mahasiswa['nama']) ?> <span class="verified" data-ic="check">Terverifikasi</span></h1>
+            <p class="muted m-0 mt-2 mb-8"><?= e($mahasiswa['jenjang'] . ' ' . $mahasiswa['nama_prodi']) ?>, angkatan <?= e((string) $mahasiswa['angkatan']) ?>, <?= $mahasiswa['status_mahasiswa'] === 'alumni' ? 'Alumni, lulus ' . e((string) $mahasiswa['tahun_lulus']) : 'Mahasiswa aktif' ?></p>
+            <div class="d-flex flex-wrap items-center gap-8"><?= badgeHtml(labelStatusLamaran($lamaran['status'])) ?><span class="muted fs-88">Melamar <?= e($lamaran['posisi']) ?> pada <?= tanggalIndo($lamaran['tanggal_lamar']) ?></span></div>
           </div>
         </div>
       </div>
@@ -68,7 +62,7 @@ $labelRiwayat = ['diajukan' => 'Lamaran diajukan', 'screening' => 'CV dibuka, st
           <div class="list-item"><span class="list-ic" data-ic="shield"></span><div class="grow"><b><?= e($it['judul']) ?></b><div class="muted"><?= tanggalIndo($it['mulai']) ?></div></div><?php if (berkasAda($it['file'] ?? null, 'portofolio')): ?>
             <a class="btn btn-sm btn-outline" href="<?= url('unduh.php?tipe=portofolio&file=' . urlencode($it['file'])) ?>" target="_blank">Lihat file</a>
           <?php elseif (!empty($it['file'])): ?>
-            <span class="muted" style="font-size:.85rem">Berkas tidak ditemukan</span>
+            <span class="muted fs-85">Berkas tidak ditemukan</span>
           <?php endif; ?></div>
         <?php endforeach; ?>
       </div>
@@ -85,9 +79,9 @@ $labelRiwayat = ['diajukan' => 'Lamaran diajukan', 'screening' => 'CV dibuka, st
       <div class="panel"><div class="panel-head"><h3>CV yang dikirim (<?= $lamaran['jenis_cv'] === 'unggah' ? 'CV unggahan' : 'CV otomatis' ?>)</h3>
           <a class="btn btn-sm btn-outline" href="<?= url('unduh.php?tipe=cv&file=' . urlencode($lamaran['file_cv'])) ?>" target="_blank"><span data-ic="download"></span>Unduh CV</a></div>
         <div class="cv-paper">
-          <div style="display:flex;gap:12px;align-items:center"><img src="<?= e($fotoUrl) ?>" alt="" style="width:54px;height:54px;border-radius:50%;object-fit:cover"><div><b style="font-size:1.1rem"><?= e($snapshot['nama'] ?? $mahasiswa['nama']) ?></b><br><span class="muted"><?= e($snapshot['prodi'] ?? $mahasiswa['nama_prodi']) ?></span></div></div>
-          <h4>Pendidikan</h4><p style="margin:0"><?= e($snapshot['prodi'] ?? $mahasiswa['nama_prodi']) ?>, Politeknik Negeri Malang (IPK <?= e((string) ($snapshot['ipk'] ?? $mahasiswa['ipk'] ?? '-')) ?>)</p>
-          <h4>Skills</h4><p style="margin:0"><?= e(implode(', ', array_column($skill, 'nama')) ?: '-') ?></p>
+          <div class="d-flex items-center gap-12"><img class="avatar-54" src="<?= e($fotoUrl) ?>" alt=""><div><b class="fs-110"><?= e($snapshot['nama'] ?? $mahasiswa['nama']) ?></b><br><span class="muted"><?= e($snapshot['prodi'] ?? $mahasiswa['nama_prodi']) ?></span></div></div>
+          <h4>Pendidikan</h4><p class="m-0"><?= e($snapshot['prodi'] ?? $mahasiswa['nama_prodi']) ?>, Politeknik Negeri Malang (IPK <?= e((string) ($snapshot['ipk'] ?? $mahasiswa['ipk'] ?? '-')) ?>)</p>
+          <h4>Skills</h4><p class="m-0"><?= e(implode(', ', array_column($skill, 'nama')) ?: '-') ?></p>
         </div>
       </div>
 
@@ -99,10 +93,11 @@ $labelRiwayat = ['diajukan' => 'Lamaran diajukan', 'screening' => 'CV dibuka, st
       </div>
 
       <?php if ($lamaran['catatan_pelamar']): ?>
-      <div class="panel"><h3>Catatan tambahan pelamar</h3><p style="margin:0"><?= nl2br(e($lamaran['catatan_pelamar'])) ?></p></div>
+      <div class="panel"><h3>Catatan tambahan pelamar</h3><p class="m-0"><?= nl2br(e($lamaran['catatan_pelamar'])) ?></p></div>
       <?php endif; ?>
     </div>
 
+    <!-- ===== Kolom kanan: proses seleksi ===== -->
     <div class="sticky">
       <div class="panel">
         <h3>Proses seleksi</h3>
@@ -136,7 +131,6 @@ $labelRiwayat = ['diajukan' => 'Lamaran diajukan', 'screening' => 'CV dibuka, st
               </select>
             </div>
 
-            <!-- ============ ISIAN KHUSUS DARING ============ -->
             <div data-mode="daring" hidden>
               <div class="field">
                 <label>Tautan meeting <span class="wajib">*</span></label>
@@ -147,7 +141,6 @@ $labelRiwayat = ['diajukan' => 'Lamaran diajukan', 'screening' => 'CV dibuka, st
               </div>
             </div>
 
-            <!-- ============ ISIAN KHUSUS LURING ============ -->
             <div data-mode="luring" hidden>
               <div class="field">
                 <label>Nama tempat atau alamat <span class="wajib">*</span></label>
@@ -174,13 +167,10 @@ $labelRiwayat = ['diajukan' => 'Lamaran diajukan', 'screening' => 'CV dibuka, st
               </div>
             </div>
             <div class="field"><label>Catatan untuk pelamar <span class="muted">(opsional)</span></label><textarea class="input" name="catatan" rows="2"><?= e($interview['catatan'] ?? '') ?></textarea></div>
-            <button class="btn btn-primary" style="width:100%" type="submit">Simpan jadwal interview</button>
+            <button class="btn btn-primary w-100" type="submit">Simpan jadwal interview</button>
           </form>
 
           <script>
-          /* Menampilkan hanya isian milik mode yang dipilih. Input mode lain
-             ikut dinonaktifkan supaya tidak terkirim dan tidak memicu validasi
-             "wajib diisi" untuk field yang sedang tidak terlihat. */
           function gantiModeInterview(mode) {
             document.querySelectorAll('[data-mode]').forEach(function (blok) {
               var aktif = blok.getAttribute('data-mode') === mode;
@@ -193,21 +183,21 @@ $labelRiwayat = ['diajukan' => 'Lamaran diajukan', 'screening' => 'CV dibuka, st
           gantiModeInterview(document.getElementById('modeInterview').value);
           </script>
 
-          <form method="post" action="<?= url('lamaran/ubah-status/' . $lamaran['id']) ?>" onsubmit="return confirm('Tolak pelamar ini? Catatan alasan akan dikirim ke pelamar.')" style="margin-top:10px">
+          <form class="mt-10" method="post" action="<?= url('lamaran/ubah-status/' . $lamaran['id']) ?>" onsubmit="return confirm('Tolak pelamar ini? Catatan alasan akan dikirim ke pelamar.')">
             <?= csrfField() ?><input type="hidden" name="aksi" value="tolak">
             <div class="field"><label>Atau, tolak pelamar</label><textarea class="input" name="catatan_perusahaan" rows="2" placeholder="Alasan penolakan (wajib diisi)" required></textarea></div>
-            <button class="btn btn-outline" style="width:100%;color:var(--bad);border-color:var(--bad)" type="submit">Tolak pelamar</button>
+            <button class="btn btn-outline w-100 btn-outline-bad" type="submit">Tolak pelamar</button>
           </form>
 
-          <div style="border-top:1px solid var(--line);margin:16px 0 0;padding-top:16px">
-            <button class="btn btn-ok" style="width:100%" type="button" data-open="mAccept"><span data-ic="check"></span>Terima pelamar</button>
+          <div class="garis-atas mt-16 pt-16">
+            <button class="btn btn-ok w-100" type="button" data-open="mAccept"><span data-ic="check"></span>Terima pelamar</button>
           </div>
         <?php endif; ?>
 
-        <h3 style="margin-top:14px;font-size:1rem">Riwayat</h3>
+        <h3 class="fs-100 mt-14">Riwayat</h3>
         <ul class="activity">
           <?php foreach ($riwayat as $r): ?>
-            <li><span><b><?= e($labelRiwayat[$r['status']] ?? ucfirst($r['status'])) ?></b><small><?= tanggalWaktuIndo($r['tanggal']) ?></small><?php if ($r['catatan']): ?><br><span class="muted" style="font-size:.85rem"><?= e($r['catatan']) ?></span><?php endif; ?></span></li>
+            <li><span><b><?= e($labelRiwayat[$r['status']] ?? ucfirst($r['status'])) ?></b><small><?= tanggalWaktuIndo($r['tanggal']) ?></small><?php if ($r['catatan']): ?><br><span class="muted fs-85"><?= e($r['catatan']) ?></span><?php endif; ?></span></li>
           <?php endforeach; ?>
         </ul>
       </div>
@@ -216,6 +206,7 @@ $labelRiwayat = ['diajukan' => 'Lamaran diajukan', 'screening' => 'CV dibuka, st
 </section>
 
 <?php if (!$selesai): ?>
+<!-- ===== Modal terima pelamar ===== -->
 <div class="modal" id="mAccept" role="dialog" aria-modal="true" aria-labelledby="acT">
   <div class="modal-box">
     <div class="modal-head"><h3 id="acT">Terima pelamar ini?</h3><button class="close" data-close aria-label="Tutup" data-ic="x"></button></div>

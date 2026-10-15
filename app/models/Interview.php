@@ -1,26 +1,17 @@
 <?php
-/**
- * Model tabel interview
- * PIC   : Atha Rasya Farras (Modul Operator dan Career Center)
- * Status: DIISI.
- */
+// ===== BACKEND · MODEL · Interview (tabel interview) =================
 
 class Interview extends Model
 {
     protected string $tabel = 'interview';
 
+    // --- Baca data ---------------------------------------------------
     public function untukLamaran(int $lamaranId): ?array
     {
         return $this->satuBerdasarkan('lamaran_id', $lamaranId);
     }
 
-    /**
-     * Buat baru atau timpa jadwal yang sudah ada (perusahaan boleh menjadwal ulang).
-     *
-     * Kolom yang diisi menyesuaikan mode:
-     *   daring : lokasi_tautan (link meeting), kolom luring dikosongkan
-     *   luring : tempat, ruangan, dresscode, yang_dibawa, narahubung
-     */
+    // --- Tulis data --------------------------------------------------
     public function jadwalkan(int $lamaranId, array $d): void
     {
         $luring = ($d['mode'] ?? '') === 'luring';
@@ -42,7 +33,6 @@ class Interview extends Model
                 $d['tanggal'],
                 $d['jam'],
                 $d['mode'],
-                // Kolom ini NOT NULL di skema, jadi untuk luring diisi alamatnya.
                 $luring ? ($nol($d['tempat'] ?? '') ?? '-') : ($d['lokasi_tautan'] ?: '-'),
                 $nol($d['catatan'] ?? ''),
                 $luring ? $nol($d['tempat'] ?? '')      : null,
@@ -54,11 +44,7 @@ class Interview extends Model
         );
     }
 
-    /**
-     * Rangkum jadwal jadi beberapa baris siap tampil, dipakai di halaman
-     * Lamaran Saya (mahasiswa) dan notifikasi. Isinya berbeda antara mode
-     * daring dan luring.
-     */
+    // --- Format tampilan ---------------------------------------------
     public static function rincian(array $iv): array
     {
         $baris = [];

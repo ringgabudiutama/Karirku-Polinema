@@ -1,9 +1,5 @@
 <?php
-/**
- * View: mahasiswa/lamaran-form
- * Dipanggil oleh: LamaranController::kirim($lowonganId) — GET
- * Variabel: $lowongan, $mahasiswa
- */
+// ===== FRONTEND · MAHASISWA · Form kirim lamaran =====================
 $page_title = 'Kirim Lamaran';
 $active_menu = 'lowongan';
 require __DIR__ . '/../layouts/app-header.php';
@@ -12,9 +8,9 @@ $logoUrl = !empty($lowongan['logo']) ? url('unduh.php?tipe=logo&file=' . urlenco
 <section class="view active">
   <div class="crumb"><a href="<?= url('lowongan/detail/' . $lowongan['id']) ?>"><?= e($lowongan['posisi']) ?></a> <span>/</span> <span>Kirim lamaran</span></div>
 
-  <div class="panel" style="max-width:640px;margin:0 auto">
-    <div class="person" style="margin-bottom:16px">
-      <?php if ($logoUrl): ?><img class="avatar" src="<?= e($logoUrl) ?>" alt=""><?php else: ?><span class="avatar" style="display:inline-flex;align-items:center;justify-content:center;background:var(--blue-soft);color:var(--navy);font-weight:700"><?= e(inisial($lowongan['nama_perusahaan'])) ?></span><?php endif; ?>
+  <div class="panel max-w-640 m-0 mx-auto">
+    <div class="person mb-16">
+      <?php if ($logoUrl): ?><img class="avatar" src="<?= e($logoUrl) ?>" alt=""><?php else: ?><span class="avatar avatar-inisial"><?= e(inisial($lowongan['nama_perusahaan'])) ?></span><?php endif; ?>
       <div><b><?= e($lowongan['posisi']) ?></b><small><?= e($lowongan['nama_perusahaan']) ?></small></div>
     </div>
 
@@ -28,35 +24,36 @@ $logoUrl = !empty($lowongan['logo']) ? url('unduh.php?tipe=logo&file=' . urlenco
       </div>
     <?php endif; ?>
 
+    <!-- ===== Form lamaran ===== -->
     <form method="post" action="<?= url('lamaran/kirim/' . $lowongan['id']) ?>" enctype="multipart/form-data" id="formLamar">
       <?= csrfField() ?>
 
-      <p style="font-weight:600;margin-bottom:8px">Pilih CV yang dikirim</p>
-      <label class="radio-card"><input type="radio" name="jenis_cv" value="generate" checked><span><b>CV otomatis</b><br><span class="muted" style="font-size:.88rem">Dibuat dari profil terbaru</span></span></label>
+      <p class="fw-600 mb-8">Pilih CV yang dikirim</p>
+      <label class="radio-card"><input type="radio" name="jenis_cv" value="generate" checked><span><b>CV otomatis</b><br><span class="muted fs-88">Dibuat dari profil terbaru</span></span></label>
       <label class="radio-card <?= empty($mahasiswa['file_cv']) ? 'disabled' : '' ?>">
         <input type="radio" name="jenis_cv" value="unggah" <?= empty($mahasiswa['file_cv']) ? 'disabled' : '' ?>>
-        <span><b>CV unggahan</b><br><span class="muted" style="font-size:.88rem"><?= !empty($mahasiswa['file_cv']) ? 'CV yang sudah kamu unggah di profil' : 'Belum ada CV diunggah, lengkapi di Profil Karier dulu' ?></span></span>
+        <span><b>CV unggahan</b><br><span class="muted fs-88"><?= !empty($mahasiswa['file_cv']) ? 'CV yang sudah kamu unggah di profil' : 'Belum ada CV diunggah, lengkapi di Profil Karier dulu' ?></span></span>
       </label>
 
-      <p style="font-weight:600;margin:16px 0 8px">Dokumen pendukung</p>
+      <p class="fw-600 m-0 mt-16 mb-8">Dokumen pendukung</p>
       <div class="row2">
         <div class="field">
           <label><?= e($labelKtm) ?> <span class="muted">(otomatis dari profil)</span></label>
           <?php if ($ktmAda): ?>
-            <div class="upload" style="pointer-events:none;background:var(--ok-bg);border-color:var(--ok-line)">
+            <div class="upload upload-ok">
               <span data-ic="checkc"></span><div class="name">Sudah tersimpan di profil</div>
               <div class="hint">Ikut terkirim otomatis</div>
             </div>
           <?php else: ?>
-            <a class="upload" href="<?= url('mahasiswa/profil') ?>" style="display:block;background:var(--bad-bg);border-color:var(--bad)">
-              <span data-ic="alert"></span><div class="name" style="color:var(--bad)">Belum diunggah</div>
+            <a class="upload upload-bad" href="<?= url('mahasiswa/profil') ?>">
+              <span data-ic="alert"></span><div class="name text-bad">Belum diunggah</div>
               <div class="hint">Klik untuk mengunggah di Profil Karier</div>
             </a>
           <?php endif; ?>
         </div>
         <?php $suratAda = !empty($mahasiswa['file_surat_pengantar']); ?>
         <div class="field">
-          <label>Surat pengantar <?= $suratAda ? '<span class="muted">(opsional)</span>' : '<span style="color:var(--bad)">*</span>' ?></label>
+          <label>Surat pengantar <?= $suratAda ? '<span class="muted">(opsional)</span>' : '<span class="text-bad">*</span>' ?></label>
           <label class="upload" id="kotakSurat">
             <input type="file" name="file_surat_pengantar" accept="application/pdf,.pdf" id="fileSurat"
                    <?= $suratAda ? '' : 'required' ?>>
@@ -68,7 +65,7 @@ $logoUrl = !empty($lowongan['logo']) ? url('unduh.php?tipe=logo&file=' . urlenco
                     : 'Format PDF, maksimal 2 MB' ?>
             </div>
           </label>
-          <small class="muted" id="galatSurat" style="display:none;color:var(--bad)"></small>
+          <small class="muted text-bad" id="galatSurat" style="display:none"></small>
           <?php if (!$suratAda): ?>
             <small class="muted">Sudah punya surat pengantar yang dipakai berulang? Simpan sekali di
               <a href="<?= url('mahasiswa/profil') ?>">Profil Karier</a>, nanti terpakai otomatis.</small>
@@ -80,19 +77,17 @@ $logoUrl = !empty($lowongan['logo']) ? url('unduh.php?tipe=logo&file=' . urlenco
 
       <div class="field"><label for="cover">Catatan tambahan <span class="muted">(opsional)</span></label><textarea class="input" id="cover" name="catatan_pelamar" rows="2" placeholder="Pesan singkat untuk perusahaan"></textarea></div>
 
-      <div style="display:flex;justify-content:flex-end;align-items:center;gap:10px;margin-top:16px;flex-wrap:wrap">
+      <div class="d-flex flex-wrap justify-end items-center gap-10 mt-16">
         <?php if (!$ktmAda): ?>
-          <small class="muted" style="margin-right:auto">Lengkapi <?= e($labelKtm) ?> dulu untuk mengaktifkan tombol kirim.</small>
+          <small class="muted mr-auto">Lengkapi <?= e($labelKtm) ?> dulu untuk mengaktifkan tombol kirim.</small>
         <?php endif; ?>
         <a class="btn btn-outline" href="<?= url('lowongan/detail/' . $lowongan['id']) ?>">Batal</a>
         <button class="btn btn-primary" type="submit" <?= $ktmAda ? '' : 'disabled' ?>>Kirim lamaran</button>
       </div>
     </form>
 
+    <!-- ===== Script cek berkas surat pengantar ===== -->
     <script>
-    /* Menampilkan nama berkas yang dipilih dan menolak berkas yang terlalu besar
-       atau bukan PDF sejak di browser, supaya pengguna tidak menunggu unggahan
-       selesai baru tahu berkasnya ditolak. */
     (function () {
       var input  = document.getElementById('fileSurat');
       var label  = document.getElementById('namaSurat');

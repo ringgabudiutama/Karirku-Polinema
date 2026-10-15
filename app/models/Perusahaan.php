@@ -1,14 +1,11 @@
 <?php
-/**
- * Model tabel perusahaan
- * PIC   : Atha Rasya Farras (Modul Operator dan Career Center)
- * Status: DIISI.
- */
+// ===== BACKEND · MODEL · Perusahaan (tabel perusahaan) ===============
 
 class Perusahaan extends Model
 {
     protected string $tabel = 'perusahaan';
 
+    // --- Registrasi --------------------------------------------------
     public function buat(array $d): int
     {
         return $this->simpan([
@@ -26,6 +23,7 @@ class Perusahaan extends Model
         ]);
     }
 
+    // --- Baca data ---------------------------------------------------
     public function cariByPenggunaId(int $penggunaId): ?array
     {
         return Database::fetch(
@@ -46,6 +44,7 @@ class Perusahaan extends Model
         );
     }
 
+    // --- Ubah profil -------------------------------------------------
     public function perbaruiProfil(int $id, array $d): void
     {
         $this->ubah($id, [
@@ -67,6 +66,7 @@ class Perusahaan extends Model
         $this->ubah($id, ['logo' => $namaFile]);
     }
 
+    // --- Admin & publik ----------------------------------------------
     public function semuaDenganStatus(): array
     {
         return Database::fetchAll(
@@ -76,28 +76,16 @@ class Perusahaan extends Model
         );
     }
 
-    /**
-     * Ambil satu perusahaan berdasarkan primary key.
-     * Dipakai LamaranController saat mengirim notifikasi lamaran masuk.
-     */
     public function cariById(int $id): ?array
     {
         return Database::fetch('SELECT * FROM perusahaan WHERE id = ?', [$id]);
     }
 
-    /** Perbarui nomor WhatsApp PIC dari menu Pengaturan Akun. */
     public function perbaruiWhatsapp(int $id, string $whatsapp): void
     {
         Database::execute('UPDATE perusahaan SET whatsapp_pic = ? WHERE id = ?', [$whatsapp, $id]);
     }
 
-    /**
-     * Perusahaan terverifikasi untuk bagian "Perusahaan mitra" di beranda.
-     * Yang sedang punya lowongan aktif ditampilkan lebih dulu, supaya yang
-     * terlihat di halaman depan adalah mitra yang benar-benar sedang merekrut.
-     * Sisanya diurutkan dari yang paling baru diverifikasi, sehingga mitra
-     * yang baru lolos verifikasi langsung naik ke depan.
-     */
     public function mitraTerverifikasi(int $batas = 12): array
     {
         return Database::fetchAll(

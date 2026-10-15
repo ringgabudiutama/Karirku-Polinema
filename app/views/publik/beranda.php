@@ -1,11 +1,5 @@
 <?php
-/**
- * View: publik/beranda
- * Dipanggil langsung oleh Router::renderBeranda() (tanpa controller) saat
- * URL kosong ("/") atau "beranda". Karena tanpa controller, variabel di
- * sini dihitung langsung di dalam view lewat kelas Auth (aman dipakai,
- * bootstrap.php sudah dimuat lebih dulu oleh public/index.php).
- */
+// ===== FRONTEND · PUBLIK · Beranda (landing page) ====================
 $sudahLogin = Auth::sudahLogin();
 $hrefDashboard = '#';
 if ($sudahLogin) {
@@ -26,6 +20,7 @@ if ($sudahLogin) {
 </head>
 <body>
 
+<!-- ===== Navbar ===== -->
 <header class="nav">
   <div class="container nav-inner">
     <a class="brand" href="<?= url('beranda') ?>" aria-label="KarirKu Polinema, ke beranda">
@@ -62,6 +57,7 @@ if ($sudahLogin) {
 </header>
 
 <main>
+<!-- ===== Hero / slider ===== -->
 <section class="hero" id="beranda" aria-roledescription="carousel" aria-label="Sorotan KarirKu">
   <div class="hero-slide active"><img src="<?= url('assets/img/hero-1.jpg') ?>" alt="Mahasiswa Politeknik Negeri Malang di kampus"></div>
   <div class="hero-slide"><img src="<?= url('assets/img/hero-2.jpg') ?>" alt="Wisuda lulusan Politeknik Negeri Malang"></div>
@@ -119,6 +115,7 @@ if ($sudahLogin) {
   </div>
 </section>
 
+<!-- ===== Tentang, visi & misi ===== -->
 <section class="sec" id="tentang">
   <div class="container about">
     <div>
@@ -139,6 +136,7 @@ if ($sudahLogin) {
   </div>
 </section>
 
+<!-- ===== Alur penggunaan ===== -->
 <section class="sec sec-sky" id="alur">
   <div class="container">
     <div class="sec-head">
@@ -167,6 +165,7 @@ if ($sudahLogin) {
   </div>
 </section>
 
+<!-- ===== Keunggulan ===== -->
 <section class="sec" id="keunggulan">
   <div class="container feature-wrap">
     <div class="big-photo">
@@ -188,6 +187,7 @@ if ($sudahLogin) {
   </div>
 </section>
 
+<!-- ===== Perusahaan mitra & lowongan terbaru ===== -->
 <section class="sec sec-sky" id="mitra">
   <div class="container">
     <div class="sec-head">
@@ -198,7 +198,6 @@ if ($sudahLogin) {
       <div class="partners">
         <?php foreach ($mitra as $m): ?>
           <?php
-            // Huruf awal dipakai kalau perusahaan belum mengunggah logo.
             $tanpaBadan = preg_replace('/^(PT|CV)\s+/i', '', $m['nama_perusahaan']);
             $inisial    = mb_strtoupper(mb_substr($tanpaBadan, 0, 1));
             $aktif      = (int) ($m['lowongan_aktif'] ?? 0);
@@ -233,7 +232,7 @@ if ($sudahLogin) {
       <p class="muted">Belum ada perusahaan terverifikasi. Perusahaan yang lolos verifikasi Career Center akan muncul di sini.</p>
     <?php endif; ?>
     <?php if (!empty($lowonganTerbaru)): ?>
-      <div class="sec-head" style="margin-top:46px">
+      <div class="sec-head mt-46">
         <h2>Lowongan terbaru</h2>
         <p>
           <?= (int) ($statistik['lowongan'] ?? 0) ?> lowongan sedang menerima lamaran dari
@@ -258,10 +257,8 @@ if ($sudahLogin) {
           </a>
         <?php endforeach; ?>
       </div>
-      <div style="text-align:center;margin-bottom:46px">
+      <div class="text-center mb-46">
         <?php
-          /* Daftar lowongan hanya untuk mahasiswa. Peran lain diarahkan ke
-             halaman yang memang miliknya, supaya tidak berakhir di 403. */
           $peranKini = class_exists('Auth') ? (Auth::penggunaSaatIni()['role'] ?? null) : null;
           [$tujuanLoker, $labelLoker] = [
               'mahasiswa'  => ['lowongan/daftar', 'Lihat semua lowongan'],
@@ -273,17 +270,19 @@ if ($sudahLogin) {
       </div>
     <?php endif; ?>
 
+    <!-- ===== Ajakan untuk perusahaan ===== -->
     <div class="cta-band">
-      <div class="hero-pattern" style="width:40%;left:auto;right:0"></div>
-      <div style="position:relative">
+      <div class="hero-pattern"></div>
+      <div class="relative">
         <h3>Butuh talenta vokasi yang terampil?</h3>
         <p>Daftarkan perusahaan Anda dan rekrut lulusan Politeknik Negeri Malang.</p>
       </div>
-      <a class="btn btn-white" href="<?= url('daftar?peran=perusahaan') ?>" style="position:relative">Daftar sebagai perusahaan</a>
+      <a class="btn btn-white relative" href="<?= url('daftar?peran=perusahaan') ?>">Daftar sebagai perusahaan</a>
     </div>
   </div>
 </section>
 
+<!-- ===== FAQ ===== -->
 <section class="sec" id="faq">
   <div class="container">
     <div class="sec-head"><h2>Pertanyaan umum</h2></div>
@@ -297,6 +296,7 @@ if ($sudahLogin) {
   </div>
 </section>
 
+<!-- ===== Kontak ===== -->
 <section class="sec sec-sky" id="kontak">
   <div class="container contact">
     <div>
@@ -318,11 +318,12 @@ if ($sudahLogin) {
 </section>
 </main>
 
+<!-- ===== Footer ===== -->
 <footer class="footer">
   <div class="container">
     <div class="footer-grid">
       <div>
-        <a class="brand" href="<?= url('beranda') ?>" style="color:#fff;margin-bottom:14px"><img class="brand-mark" src="<?= asetUrl('assets/img/logo-polinema.png') ?>" alt="Logo Politeknik Negeri Malang"><span>KarirKu Polinema</span></a>
+        <a class="brand" href="<?= url('beranda') ?>"><img class="brand-mark" src="<?= asetUrl('assets/img/logo-polinema.png') ?>" alt="Logo Politeknik Negeri Malang"><span>KarirKu Polinema</span></a>
         <p>Pusat karier mahasiswa dan alumni Politeknik Negeri Malang. Menghubungkan pendidikan vokasi dengan dunia industri.</p>
       </div>
       <div><h4>Jelajahi</h4><ul><li><a href="#tentang">Tentang KarirKu</a></li><li><a href="#alur">Alur penggunaan</a></li><li><a href="#mitra">Mitra</a></li><li><a href="#faq">FAQ</a></li></ul></div>

@@ -1,9 +1,5 @@
 <?php
-/**
- * View: admin/dashboard
- * Dipanggil oleh: AdminController::dashboard()
- * Variabel: $statistik, $antreanVerifikasi, $notifikasi, $lamaranPerBulan
- */
+// ===== FRONTEND · ADMIN · Dashboard ==================================
 $page_title = 'Dashboard Admin';
 $active_menu = 'dashboard';
 require __DIR__ . '/../layouts/app-header.php';
@@ -12,13 +8,15 @@ $persenBekerja = $statistik['total_alumni'] > 0 ? round($statistik['alumni_beker
 ?>
 <section class="view active">
   <div class="page-head"><div><h1>Selamat datang, Career Center</h1><p>Ringkasan KarirKu per <?= tanggalIndo(date('Y-m-d')) ?>.</p></div></div>
-  <div class="grid g4" style="margin-bottom:18px">
+  <!-- ===== Kartu statistik ===== -->
+  <div class="grid g4 mb-18">
     <a class="stat <?= $statistik['menunggu_verifikasi'] > 0 ? 'alert-stat' : '' ?>" href="<?= url('admin/persetujuan') ?>"><div class="n"><?= (int) $statistik['menunggu_verifikasi'] ?></div><div class="l">Menunggu verifikasi</div></a>
     <a class="stat" href="<?= url('admin/kelola-pengguna') ?>"><div class="n"><?= number_format($statistik['total_mahasiswa']) ?></div><div class="l">Mahasiswa dan alumni</div></a>
     <a class="stat" href="<?= url('admin/monitoring-lowongan') ?>"><div class="n"><?= number_format($statistik['lowongan_aktif']) ?></div><div class="l">Lowongan aktif dari <?= number_format($statistik['total_perusahaan']) ?> perusahaan</div></a>
-    <a class="stat" href="<?= url('admin/tracer-karier') ?>"><div class="n" style="color:var(--ok)"><?= $persenBekerja ?>%</div><div class="l">Alumni sudah bekerja</div></a>
+    <a class="stat" href="<?= url('admin/tracer-karier') ?>"><div class="n text-ok"><?= $persenBekerja ?>%</div><div class="l">Alumni sudah bekerja</div></a>
   </div>
 
+  <!-- ===== Grafik & antrean verifikasi ===== -->
   <div class="grid g-side">
     <div>
       <div class="panel">
@@ -39,7 +37,7 @@ $persenBekerja = $statistik['total_alumni'] > 0 ? round($statistik['alumni_beker
         <div class="table-wrap"><table class="t">
           <tr><th>Pendaftar</th><th>Tanggal</th><th>Menunggu</th><th>Jenis</th><th></th></tr>
           <?php if (empty($antreanVerifikasi)): ?>
-            <tr><td colspan="5" class="muted" style="text-align:center;padding:24px">Tidak ada antrean. Semua sudah diperiksa.</td></tr>
+            <tr><td colspan="5" class="muted text-center p-24">Tidak ada antrean. Semua sudah diperiksa.</td></tr>
           <?php else: foreach ($antreanVerifikasi as $q):
               $detik = time() - strtotime($q['dibuat_pada']);
               $hari = (int) floor($detik / 86400);
@@ -59,6 +57,7 @@ $persenBekerja = $statistik['total_alumni'] > 0 ? round($statistik['alumni_beker
         </table></div>
       </div>
     </div>
+    <!-- ===== Aktivitas terbaru ===== -->
     <div class="panel">
       <h3>Aktivitas terbaru</h3>
       <ul class="activity">

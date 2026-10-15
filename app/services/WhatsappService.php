@@ -1,23 +1,9 @@
 <?php
-/**
- * Penyusun tautan wa.me
- * PIC   : Aqillah (UI/UX, Frontend, dan Integrasi)
- * Status: DIISI.
- *
- * Tautan wa.me hanya bisa mengisi TEKS pesan, tidak bisa mengirim gambar
- * pamflet secara otomatis (batasan resmi WhatsApp untuk tautan tanpa API
- * berbayar). Karena itu pamflet disampaikan lewat tiga cara terpisah di
- * halaman pratinjau info loker: gambar pratinjau tautan (meta Open Graph),
- * tombol unduh, dan tombol salin gambar.
- */
+// ===== BACKEND · SERVICE · WhatsApp ==================================
 
 class WhatsappService
 {
-    /**
-     * Ganti kata kunci {posisi}, {perusahaan}, {lokasi}, {deadline}, {tautan}
-     * (dan {jurusan} bila admin menambahkannya sendiri di template) pada
-     * template pesan dengan data lowongan & jurusan yang sesungguhnya.
-     */
+    // --- Pesan -------------------------------------------------------
     public static function susunPesan(string $template, array $lowongan, string $namaJurusan, string $tautanPratinjau): string
     {
         $pengganti = [
@@ -32,7 +18,7 @@ class WhatsappService
         return strtr($template, $pengganti);
     }
 
-    /** Bikin URL wa.me lengkap. Nomor dirapikan ke format 62xxxxxxxxxx tanpa spasi/tanda. */
+    // --- Nomor & tautan ----------------------------------------------
     public static function buatTautan(string $nomorWa, string $pesan): string
     {
         $nomor = self::rapikanNomor($nomorWa);

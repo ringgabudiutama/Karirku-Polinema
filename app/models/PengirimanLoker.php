@@ -1,9 +1,5 @@
 <?php
-/**
- * Model tabel pengiriman_loker
- * PIC   : Aqillah (UI/UX, Frontend, dan Integrasi)
- * Status: DIISI.
- */
+// ===== BACKEND · MODEL · PengirimanLoker (tabel pengiriman_loker) ====
 
 class PengirimanLoker extends Model
 {
@@ -26,7 +22,6 @@ class PengirimanLoker extends Model
         );
     }
 
-    /** Daftar jurusan_id yang SUDAH menerima loker ini, untuk menandai tombol jadi "Terkirim". */
     public function jurusanSudahDikirimUntuk(int $lowonganId): array
     {
         $baris = Database::fetchAll('SELECT jurusan_id FROM pengiriman_loker WHERE lowongan_id = ?', [$lowonganId]);

@@ -1,29 +1,20 @@
 <?php
-/**
- * Pembuat notifikasi
- * PIC   : M. Ubaidillah (Backend dan Database)
- * Status: DIISI.
- *
- * Satu titik pemanggilan untuk seluruh peristiwa pada matriks notifikasi
- * proposal (14 peristiwa). Controller cukup memanggil method di sini,
- * tidak perlu tahu detail tabel notifikasi maupun kapan harus kirim email.
- * Nomor di komentar tiap method cocok dengan nomor baris matriks di proposal.
- */
+// ===== BACKEND · SERVICE · Notifikasi ================================
 
 class NotifikasiService
 {
+    // --- Helper ------------------------------------------------------
     private static function notif(): Notifikasi
     {
         return new Notifikasi();
     }
 
-    /** 1. Registrasi berhasil -> halaman sukses (ditangani view) + email. */
+    // --- Akun --------------------------------------------------------
     public static function registrasiBerhasil(array $pengguna, string $noPendaftaran): void
     {
         MailService::kirimPendaftaranDiterima($pengguna['email'], $noPendaftaran);
     }
 
-    /** 2. Pendaftar baru atau data perbaikan dikirim ulang -> Admin (website). */
     public static function pendaftarBaruUntukAdmin(string $namaPendaftar, string $role): void
     {
         $admin = Database::fetchAll("SELECT pengguna_id FROM admin");
@@ -38,7 +29,6 @@ class NotifikasiService
         }
     }
 
-    /** 3 & 4. Akun disetujui / perlu perbaikan / ditolak -> pendaftar (website + email). */
     public static function statusAkunBerubah(int $penggunaId, string $email, string $keputusan, ?string $catatan): void
     {
         $judul = [
@@ -51,7 +41,6 @@ class NotifikasiService
         MailService::kirimStatusAkun($email, $keputusan, $catatan);
     }
 
-    /** 5. Akun dinonaktifkan / diaktifkan kembali -> pengguna (website + email). */
     public static function statusAktivasiBerubah(int $penggunaId, string $email, bool $nonaktif, ?string $alasan): void
     {
         $judul = $nonaktif ? 'Akun Anda dinonaktifkan' : 'Akun Anda diaktifkan kembali';
@@ -59,7 +48,7 @@ class NotifikasiService
         MailService::kirimStatusAktivasi($email, $nonaktif, $alasan);
     }
 
-    /** 7. Lowongan baru sesuai bidang minat -> mahasiswa/alumni yang berminat (website). */
+    // --- Lowongan ----------------------------------------------------
     public static function lowonganBaruSesuaiMinat(int $lowonganId, string $posisi, string $namaPerusahaan, int $bidangId): void
     {
         $peminat = Database::fetchAll(
@@ -79,8 +68,6 @@ class NotifikasiService
         }
     }
 
-    /** 8. Lowongan yang disimpan tersisa 3 hari -> mahasiswa/alumni (website).
-     *  Dipanggil saat pengguna login (tanpa cron job), lihat AuthController::prosesMasuk(). */
     public static function ingatkanLowonganDisimpanHampirTutup(int $penggunaId, int $mahasiswaId): void
     {
         $akanTutup = Database::fetchAll(
@@ -102,7 +89,7 @@ class NotifikasiService
         }
     }
 
-    /** 9. Lamaran baru masuk / dibatalkan -> perusahaan (website). */
+    // --- Lamaran -----------------------------------------------------
     public static function lamaranMasukUntukPerusahaan(int $perusahaanPenggunaId, string $namaMahasiswa, string $posisi, int $lowonganId): void
     {
         self::notif()->buat(
@@ -124,7 +111,6 @@ class NotifikasiService
         );
     }
 
-    /** 10. Status lamaran berubah (screening/interview/ditolak) -> mahasiswa (website). */
     public static function statusLamaranBerubah(int $mahasiswaPenggunaId, string $posisi, string $status, ?string $catatan = null): void
     {
         $judul = [
@@ -140,7 +126,6 @@ class NotifikasiService
         );
     }
 
-    /** 11. Pelamar diterima -> pelamar, perusahaan, dan admin (website). */
     public static function pelamarDiterima(int $mahasiswaPenggunaId, int $perusahaanPenggunaId, string $posisi, string $namaPerusahaan, string $namaMahasiswa): void
     {
         self::notif()->buat(
@@ -160,7 +145,7 @@ class NotifikasiService
         }
     }
 
-    /** 12. Kuota terpenuhi, lowongan ditutup otomatis -> perusahaan (website). */
+    // --- Lowongan (perusahaan) ---------------------------------------
     public static function kuotaTerpenuhi(int $perusahaanPenggunaId, string $posisi): void
     {
         self::notif()->buat(
@@ -169,7 +154,6 @@ class NotifikasiService
         );
     }
 
-    /** 13. Lowongan dinonaktifkan Admin -> perusahaan (website). */
     public static function lowonganDinonaktifkanAdmin(int $perusahaanPenggunaId, string $posisi, string $alasan): void
     {
         self::notif()->buat(
@@ -178,9 +162,7 @@ class NotifikasiService
         );
     }
 
-    /** 14. Status karier alumni belum diperbarui > 6 bulan -> banner di dashboard alumni.
-     *  Tidak disimpan sebagai baris notifikasi (supaya tidak numpuk tiap login), cukup
-     *  dihitung langsung saat dashboard dibuka. Lihat MahasiswaController::dashboard(). */
+    // --- Tracer karier -----------------------------------------------
     public static function perluPembaruanKarier(array $mahasiswa): bool
     {
         if ($mahasiswa['status_mahasiswa'] !== 'alumni') {

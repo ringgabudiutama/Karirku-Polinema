@@ -1,14 +1,9 @@
 <?php
-/**
- * Dashboard dan profil mahasiswa serta alumni
- * PIC   : Muhamad Nafi' Hanif (Modul Mahasiswa dan Alumni)
- * Status: LOGIKA BACKEND DIISI. Views masih perlu ditimpa dengan desain asli
- *         dari public/mahasiswa.html (lihat app/views/PANDUAN-VIEW.md).
- */
+// ===== BACKEND · CONTROLLER · Mahasiswa ==============================
 
 class MahasiswaController extends Controller
 {
-    /** Ambil baris mahasiswa milik pengguna yang sedang login, atau 404 kalau aneh. */
+    // --- Helper ------------------------------------------------------
     private function mahasiswaSaya(): array
     {
         $mhs = (new Mahasiswa())->cariByPenggunaId(Auth::penggunaSaatIni()['id']);
@@ -19,11 +14,7 @@ class MahasiswaController extends Controller
         return $mhs;
     }
 
-    /**
-     * View: mahasiswa/dashboard. Variabel: $mahasiswa, $kelengkapan (persen),
-     * $lamaranAktif (jumlah), $lowonganDisimpan (jumlah), $rekomendasi (5 lowongan),
-     * $lamaranTerbaru (5 lamaran terakhir), $perluUpdateKarier (bool, untuk banner alumni).
-     */
+    // --- Dashboard ---------------------------------------------------
     public function dashboard()
     {
         Auth::wajibAktif();
@@ -49,10 +40,7 @@ class MahasiswaController extends Controller
         ]);
     }
 
-    /**
-     * View: mahasiswa/disimpan. Variabel: $lowongan (daftar lowongan yang
-     * ditandai simpan, sudah urut dari yang batas lamarnya paling dekat).
-     */
+    // --- Lowongan disimpan -------------------------------------------
     public function disimpan()
     {
         Auth::wajibAktif();
@@ -70,10 +58,7 @@ class MahasiswaController extends Controller
         $this->view('mahasiswa/disimpan', ['lowongan' => $daftar]);
     }
 
-    /**
-     * View: mahasiswa/profil. Variabel: $mahasiswa, $pendidikan, $pengalaman,
-     * $sertifikat, $portofolio, $skillTerpilih, $semuaSkill, $minatTerpilih, $semuaBidang.
-     */
+    // --- Profil karier -----------------------------------------------
     public function profil()
     {
         Auth::wajibAktif();
@@ -101,12 +86,6 @@ class MahasiswaController extends Controller
         ]);
     }
 
-    /**
-     * Satu action menangani beberapa jenis submit dari halaman Profil Karier,
-     * dibedakan lewat field tersembunyi "aksi" pada tiap <form>:
-     *   aksi=data_diri | aksi=foto | aksi=dokumen | aksi=item_tambah | aksi=item_hapus
-     *   aksi=skill_minat
-     */
     public function simpanProfil()
     {
         $this->wajibPost();
@@ -176,12 +155,9 @@ class MahasiswaController extends Controller
                     $this->flash('ok', 'Skill berhasil diperbarui.');
                     break;
 
-                // Mahasiswa mengetik skill yang belum ada di daftar. Skill baru
-                // masuk ke tabel induk supaya bisa dipakai mahasiswa lain juga.
                 case 'skill_baru':
                     $skillModel = new Skill();
                     $ditambah = [];
-                    // Boleh mengetik beberapa sekaligus, dipisah koma.
                     foreach (explode(',', (string) $this->input('skill_nama')) as $nama) {
                         $skillId = $skillModel->cariAtauBuat($nama);
                         if ($skillId !== null) {
@@ -216,7 +192,7 @@ class MahasiswaController extends Controller
         $this->redirect('mahasiswa/profil');
     }
 
-    /** Generate CV otomatis (PDF) dari data profil yang sudah diisi. */
+    // --- CV ----------------------------------------------------------
     public function generateCv()
     {
         Auth::wajibAktif();
@@ -235,7 +211,6 @@ class MahasiswaController extends Controller
         );
     }
 
-    /** Unggah CV sendiri (menggantikan CV otomatis sebagai file yang dipilih saat melamar). */
     public function unggahCv()
     {
         $this->wajibPost();
@@ -253,6 +228,7 @@ class MahasiswaController extends Controller
         $this->redirect('mahasiswa/profil');
     }
 
+    // --- Status karier (tracer) --------------------------------------
     public function statusKarier()
     {
         $this->wajibPost();
@@ -262,9 +238,6 @@ class MahasiswaController extends Controller
         $mhs    = $this->mahasiswaSaya();
         $status = $this->input('status_karier');
 
-        // Status harus salah satu dari daftar yang dikenal database. Tanpa
-        // pemeriksaan ini, kiriman kosong atau nilai asing langsung ditolak
-        // PostgreSQL dan muncul sebagai halaman fatal error, bukan pesan biasa.
         $statusDikenal = ['bekerja', 'wirausaha', 'studi lanjut', 'mencari kerja', 'belum bekerja'];
         if (!in_array($status, $statusDikenal, true)) {
             $this->flash('bad', 'Pilih dulu status kariermu sebelum menyimpan.');
@@ -272,18 +245,11 @@ class MahasiswaController extends Controller
             return;
         }
 
-        // Tahap studi juga dibatasi database. Nilai di luar daftar dianggap
-        // tidak diisi, bukan dibiarkan lolos lalu ditolak PostgreSQL.
         $tahap = $this->input('karier_tahap_studi');
         if (!in_array($tahap, ['rencana', 'diterima', 'sedang berjalan'], true)) {
             $tahap = null;
         }
 
-        // Nama field dipakai ulang antar status supaya kolom database tidak
-        // membengkak. Arti tiap field per status dijelaskan di 01-schema.sql.
-        //   bekerja      : tempat_kerja = perusahaan, posisi_kerja = posisi
-        //   wirausaha    : tempat_kerja = nama usaha,  posisi_kerja = peran
-        //   studi lanjut : tempat_kerja = kampus,      posisi_kerja = program studi
         $data = [
             'status_karier'         => $status,
             'tempat_kerja'          => $this->input('tempat_kerja'),
@@ -297,7 +263,6 @@ class MahasiswaController extends Controller
             'karier_catatan'        => $this->input('karier_catatan'),
         ];
 
-        // Validasi hanya untuk field yang memang wajib pada status terpilih.
         $wajib = [
             'bekerja'      => ['tempat_kerja' => 'Nama perusahaan', 'posisi_kerja' => 'Posisi'],
             'wirausaha'    => ['tempat_kerja' => 'Nama usaha', 'posisi_kerja' => 'Peran kamu di usaha'],
@@ -317,14 +282,7 @@ class MahasiswaController extends Controller
         $this->redirect('mahasiswa/profil');
     }
 
-    /**
-     * Pengaturan Akun (ubah email/nomor WhatsApp/kata sandi).
-     * Logika sama persis dengan PerusahaanController::pengaturanAkun(), sengaja
-     * digandakan (bukan lewat trait) supaya URL 'mahasiswa/pengaturan-akun' dan
-     * 'perusahaan/pengaturan-akun' sama-sama mengikuti pola routing
-     * controller/method biasa tanpa pengecualian di Router.
-     * View: mahasiswa/pengaturan. Variabel: $pengguna.
-     */
+    // --- Pengaturan akun ---------------------------------------------
     public function pengaturanAkun()
     {
         Auth::wajibAktif();

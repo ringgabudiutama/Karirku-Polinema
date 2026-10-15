@@ -1,10 +1,7 @@
 <?php
-/**
- * Fungsi bantu tampilan
- * PIC   : Ringga Budi Utama (Project Lead, UI/UX, dan Frontend)
- * Status: DIISI (silakan sesuaikan kelas CSS-nya kalau nama classnya beda).
- */
+// ===== BACKEND · HELPER · Format tampilan ============================
 
+// --- Tanggal ---------------------------------------------------------
 function tanggalIndo(?string $tgl): string
 {
     if (!$tgl) {
@@ -23,7 +20,6 @@ function tanggalWaktuIndo(?string $tgl): string
     return tanggalIndo($tgl) . ', ' . date('H:i', strtotime($tgl));
 }
 
-/** Positif = masih berapa hari lagi, negatif = sudah lewat berapa hari. */
 function sisaHari(string $tanggal): int
 {
     $sekarang = new DateTime('today');
@@ -31,7 +27,7 @@ function sisaHari(string $tanggal): int
     return (int) $sekarang->diff($target)->format('%r%a');
 }
 
-/** [label tampilan, nama warna] untuk status_akun pada tabel pengguna. */
+// --- Label & badge status --------------------------------------------
 function labelStatusAkun(string $status): array
 {
     $peta = [
@@ -44,7 +40,6 @@ function labelStatusAkun(string $status): array
     return [$peta[$status] ?? ucfirst($status), $status];
 }
 
-/** [label tampilan, status mentah] untuk status pada tabel lamaran. Status mentah dipakai sebagai kelas warna .p-xxx di style.css. */
 function labelStatusLamaran(string $status): array
 {
     $peta = [
@@ -58,7 +53,6 @@ function labelStatusLamaran(string $status): array
     return [$peta[$status] ?? ucfirst($status), $status];
 }
 
-/** [label tampilan, status mentah] untuk status pada tabel lowongan. */
 function labelStatusLowongan(string $status): array
 {
     $peta = [
@@ -69,13 +63,13 @@ function labelStatusLowongan(string $status): array
     return [$peta[$status] ?? ucfirst($status), $status];
 }
 
-/** Cetak <span class="pill p-xxx">label</span>, memakai kelas warna .p-xxx yang sudah ada di style.css. */
 function badgeHtml(array $labelStatus): string
 {
     [$label, $statusMentah] = $labelStatus;
     return '<span class="pill p-' . e($statusMentah) . '">' . e($label) . '</span>';
 }
 
+// --- Teks ------------------------------------------------------------
 function formatRupiah(?string $angka): string
 {
     if (!$angka || !is_numeric($angka)) {
@@ -84,7 +78,6 @@ function formatRupiah(?string $angka): string
     return 'Rp' . number_format((float) $angka, 0, ',', '.');
 }
 
-/** Potong teks panjang untuk ringkasan kartu, tanpa memenggal di tengah kata. */
 function ringkas(string $teks, int $panjang = 120): string
 {
     $teks = trim(strip_tags($teks));
@@ -94,7 +87,6 @@ function ringkas(string $teks, int $panjang = 120): string
     return mb_substr($teks, 0, $panjang) . '...';
 }
 
-/** Inisial 1-2 huruf untuk logo kotak perusahaan yang belum unggah logo. */
 function inisial(string $nama): string
 {
     $kata = preg_split('/\s+/', trim($nama));
@@ -105,14 +97,7 @@ function inisial(string $nama): string
     return $inisial;
 }
 
-/**
- * Memeriksa apakah berkas yang tercatat di database benar-benar ada di
- * penyimpanan. Dipakai view supaya tidak menampilkan tombol "Lihat" yang
- * berakhir di halaman "Berkas tidak ditemukan".
- *
- * $folder boleh lebih dari satu, karena KTM dan ijazah memakai satu kolom
- * yang sama tetapi disimpan di folder berbeda.
- */
+// --- Berkas ----------------------------------------------------------
 function berkasAda(?string $nama, string ...$folder): bool
 {
     if ($nama === null || trim($nama) === '') {
@@ -126,7 +111,6 @@ function berkasAda(?string $nama, string ...$folder): bool
     return false;
 }
 
-/** Keterangan singkat untuk status satu berkas di layar. */
 function labelBerkas(?string $nama, string ...$folder): string
 {
     if ($nama === null || trim($nama) === '') {

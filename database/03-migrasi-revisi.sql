@@ -1,23 +1,6 @@
--- ===========================================================================
--- Migrasi revisi KarirKu Polinema
---
--- KAPAN INI DIJALANKAN
---   Hanya kalau database kamu SUDAH pernah diisi 01-schema.sql versi lama.
---   Kalau kamu membuat database dari nol dengan 01-schema.sql yang baru,
---   kolom di bawah sudah ikut terbuat dan file ini tidak perlu dijalankan.
---
---   Aman dijalankan berulang kali (memakai IF NOT EXISTS).
---
--- ISI PERUBAHAN
---   1. Tabel mahasiswa  : kolom tambahan untuk Status Karier yang isinya
---                         berbeda-beda tergantung status yang dipilih.
---   2. Tabel interview  : kolom tambahan khusus interview luring
---                         (tempat, ruangan, dresscode, yang dibawa, narahubung).
--- ===========================================================================
+-- ===== Migrasi revisi KarirKu Polinema ===================================
 
--- --------------------------------------------------------------------------
--- 1. Status karier yang menyesuaikan pilihan mahasiswa
--- --------------------------------------------------------------------------
+-- ----- 1. Status karier yang menyesuaikan pilihan mahasiswa --------------
 ALTER TABLE mahasiswa ADD COLUMN IF NOT EXISTS karier_fakultas       varchar(150);
 ALTER TABLE mahasiswa ADD COLUMN IF NOT EXISTS karier_bidang_minat   varchar(255);
 ALTER TABLE mahasiswa ADD COLUMN IF NOT EXISTS karier_rencana_posisi varchar(255);
@@ -40,9 +23,7 @@ COMMENT ON COLUMN mahasiswa.karier_bidang_minat   IS 'Khusus status mencari kerj
 COMMENT ON COLUMN mahasiswa.karier_rencana_posisi IS 'Khusus status mencari kerja';
 COMMENT ON COLUMN mahasiswa.karier_tahap_studi    IS 'Khusus studi lanjut: rencana, diterima, sedang berjalan';
 
--- --------------------------------------------------------------------------
--- 2. Detail interview luring
--- --------------------------------------------------------------------------
+-- ----- 2. Detail interview luring ----------------------------------------
 ALTER TABLE interview ADD COLUMN IF NOT EXISTS tempat      varchar(255);
 ALTER TABLE interview ADD COLUMN IF NOT EXISTS ruangan     varchar(100);
 ALTER TABLE interview ADD COLUMN IF NOT EXISTS dresscode   varchar(255);
@@ -55,10 +36,7 @@ COMMENT ON COLUMN interview.dresscode   IS 'Khusus mode luring';
 COMMENT ON COLUMN interview.yang_dibawa IS 'Khusus mode luring: berkas yang perlu dibawa pelamar';
 COMMENT ON COLUMN interview.narahubung  IS 'Khusus mode luring: nama dan nomor yang dihubungi saat tiba';
 
--- --------------------------------------------------------------------------
--- 3. Daftar skill awal supaya tab Skills tidak kosong saat pertama dibuka.
---    Mahasiswa tetap bisa menambah skill baru sendiri lewat Profil Karier.
--- --------------------------------------------------------------------------
+-- ----- 3. Daftar skill awal ----------------------------------------------
 INSERT INTO skill (nama) VALUES
   ('HTML'), ('CSS'), ('JavaScript'), ('PHP'), ('Laravel'), ('CodeIgniter'),
   ('PostgreSQL'), ('MySQL'), ('Git'), ('Figma'), ('UI/UX Design'),
@@ -66,11 +44,7 @@ INSERT INTO skill (nama) VALUES
   ('Komunikasi'), ('Kerja sama tim'), ('Manajemen waktu'), ('Bahasa Inggris')
 ON CONFLICT (nama) DO NOTHING;
 
--- --------------------------------------------------------------------------
--- 4. Jenjang S2 Terapan (Magister Terapan) ikut didaftarkan, karena Polinema
---    juga membuka program pascasarjana. Tanpa ini, baris S2 di 02-seed.sql
---    ditolak oleh CHECK lama yang hanya mengizinkan D-II, D-III, dan D-IV.
--- --------------------------------------------------------------------------
+-- ----- 4. Jenjang S2 Terapan ---------------------------------------------
 DO $$
 BEGIN
   IF EXISTS (
@@ -82,20 +56,12 @@ BEGIN
     CHECK (jenjang IN ('D-II','D-III','D-IV','S2'));
 END $$;
 
--- --------------------------------------------------------------------------
--- 5. Nama program studi dibersihkan dari awalan jenjang.
---    Tampilan menggabungkan jenjang + nama, jadi "D-III Teknik Sipil" pada
---    kolom nama membuat labelnya terbaca ganda: "D-III D-III Teknik Sipil".
--- --------------------------------------------------------------------------
+-- ----- 5. Nama program studi dibersihkan dari awalan jenjang -------------
 UPDATE program_studi
    SET nama = btrim(regexp_replace(nama, '^(D-?I{1,3}V?|D[234]|S[123])\s+', ''))
  WHERE nama ~ '^(D-?I{1,3}V?|D[234]|S[123])\s';
 
--- --------------------------------------------------------------------------
--- 6. Satu jurusan boleh punya nama program studi yang sama di dua jenjang,
---    misalnya Teknik Elektronika pada D-III dan D-IV. Kunci unik lama hanya
---    memakai (jurusan_id, nama) sehingga salah satunya tertolak.
--- --------------------------------------------------------------------------
+-- ----- 6. Kunci unik program studi per jenjang ---------------------------
 DO $$
 BEGIN
   IF EXISTS (
@@ -112,17 +78,9 @@ BEGIN
   END IF;
 END $$;
 
--- ===========================================================================
--- 7. JURUSAN DAN PROGRAM STUDI DISAMAKAN DENGAN DAFTAR RESMI POLINEMA
---
---    Bagian ini yang membuat pilihan di halaman pendaftaran ikut berubah.
---    Aman untuk database yang sudah berisi data: mahasiswa yang sudah
---    terdaftar tidak dihapus, hanya dipindahkan ke program studi resmi
---    yang paling cocok bila program studi lamanya tidak ada di daftar.
--- ===========================================================================
+-- ===== 7. JURUSAN DAN PROGRAM STUDI RESMI POLINEMA =======================
 
--- Daftar resmi dipakai berulang di beberapa langkah, jadi disimpan sementara.
--- Tabelnya dihapus lagi di akhir bagian ini.
+-- ----- Tabel sementara daftar resmi --------------------------------------
 DROP TABLE IF EXISTS prodi_resmi;
 CREATE TEMP TABLE prodi_resmi (jurusan text, nama text, jenjang text);
 INSERT INTO prodi_resmi (jurusan, nama, jenjang) VALUES
@@ -159,21 +117,18 @@ INSERT INTO prodi_resmi (jurusan, nama, jenjang) VALUES
     ('Administrasi Niaga', 'Pengelolaan Arsip dan Rekaman Informasi', 'D-IV'),
     ('Administrasi Niaga', 'Bahasa Inggris untuk Komunikasi Bisnis dan Profesional', 'D-IV');
 
--- 7a. Jurusan yang belum ada ditambahkan.
+-- ----- 7a. Jurusan yang belum ada ditambahkan ----------------------------
 INSERT INTO jurusan (nama)
   SELECT DISTINCT jurusan FROM prodi_resmi
  ON CONFLICT (nama) DO NOTHING;
 
--- 7b. Program studi resmi ditambahkan. Yang sudah ada dilewati, sehingga
---     mahasiswa yang menempel padanya tetap aman.
+-- ----- 7b. Program studi resmi ditambahkan -------------------------------
 INSERT INTO program_studi (jurusan_id, nama, jenjang)
   SELECT j.id, pr.nama, pr.jenjang
     FROM prodi_resmi pr JOIN jurusan j ON j.nama = pr.jurusan
  ON CONFLICT DO NOTHING;
 
--- 7c. Mahasiswa yang masih menempel pada program studi di luar daftar resmi
---     dipindahkan ke program studi resmi di jurusan yang sama: yang namanya
---     sama kalau ada, kalau tidak ada diambil yang pertama di jurusan itu.
+-- ----- 7c. Pindahkan mahasiswa ke prodi resmi ----------------------------
 UPDATE mahasiswa m
    SET program_studi_id = pengganti.id
   FROM program_studi lama
@@ -195,8 +150,7 @@ UPDATE mahasiswa m
           WHERE pr.jurusan = j.nama AND pr.nama = lama.nama AND pr.jenjang = lama.jenjang
        );
 
--- 7d. Program studi di luar daftar resmi yang sudah tidak dipakai siapa pun
---     dihapus, supaya pilihan di halaman pendaftaran bersih.
+-- ----- 7d. Hapus prodi di luar daftar resmi ------------------------------
 DELETE FROM program_studi ps
  USING jurusan j
  WHERE j.id = ps.jurusan_id
@@ -208,17 +162,7 @@ DELETE FROM program_studi ps
 
 DROP TABLE prodi_resmi;
 
--- ===========================================================================
--- 8. ISI NOTIFIKASI UNTUK TIGA AKUN DEMO
---
---    Database yang dibuat sebelum pembaruan ini punya tabel notifikasi yang
---    masih kosong, sehingga lonceng dan halaman Notifikasi tidak ada isinya
---    saat didemokan. Bagian ini mengisinya.
---
---    Hanya berjalan kalau akun yang bersangkutan memang belum punya
---    notifikasi, jadi aman dijalankan berulang kali dan tidak menggandakan
---    data yang sudah ada.
--- ===========================================================================
+-- ===== 8. ISI NOTIFIKASI UNTUK TIGA AKUN DEMO ============================
 DO $$
 DECLARE
   sudah_ada integer;
@@ -231,7 +175,6 @@ BEGIN
     RAISE NOTICE 'Notifikasi akun demo sudah ada (% baris), bagian ini dilewati.', sudah_ada;
     RETURN;
   END IF;
-
 
   INSERT INTO notifikasi (pengguna_id, tipe, judul, pesan, tautan, dibaca, dibuat_pada)
     SELECT p.id, 'interview', 'Jadwal interview sudah ditentukan',
@@ -287,23 +230,7 @@ BEGIN
       FROM pengguna p WHERE p.email = 'admin@polinema.ac.id';
 END $$;
 
--- ===========================================================================
--- 9. BERKAS CONTOH UNTUK DATABASE YANG SUDAH ADA
---
---    Supaya tombol seperti "Lihat file" pada sertifikat, foto profil, logo
---    perusahaan, dan dokumen legalitas tidak berakhir di halaman
---    "Berkas tidak ditemukan" saat didemokan.
---
---    Memakai nama berkas bersama (contoh-*.pdf) karena berkas itu pasti ada
---    di storage/uploads/ berapa pun isi databasemu. Hanya mengisi yang masih
---    kosong, jadi berkas yang sudah pernah diunggah sungguhan tidak ditimpa,
---    dan aman dijalankan berulang kali.
---
---    Catatan: pada pemasangan dari nol lewat 02-seed.sql, tiap orang mendapat
---    nama berkas sendiri memakai NIM atau nomor perusahaan. Itu lebih mirip
---    keadaan sebenarnya, karena berkas yang diunggah pengguna selalu diberi
---    nama acak yang berbeda.
--- ===========================================================================
+-- ===== 9. BERKAS CONTOH UNTUK DATABASE YANG SUDAH ADA ====================
 
 UPDATE mahasiswa SET foto = 'contoh-foto.jpg'
  WHERE foto IS NULL AND id % 3 = 0;
@@ -323,7 +250,7 @@ UPDATE mahasiswa SET file_ktm = 'contoh-ktm.pdf'
 UPDATE mahasiswa SET file_surat_pengantar = 'contoh-surat-pengantar.pdf'
  WHERE file_surat_pengantar IS NULL OR btrim(file_surat_pengantar) = '';
 
--- Dokumen legalitas perusahaan, hanya untuk yang belum punya sama sekali
+-- ----- Dokumen legalitas perusahaan --------------------------------------
 INSERT INTO dokumen_verifikasi (pengguna_id, tipe, file, ukuran_kb)
   SELECT pr.pengguna_id, t.tipe, 'contoh-' || t.tipe || '.pdf', 2
     FROM perusahaan pr
@@ -332,5 +259,3 @@ INSERT INTO dokumen_verifikasi (pengguna_id, tipe, file, ukuran_kb)
      SELECT 1 FROM dokumen_verifikasi dv
       WHERE dv.pengguna_id = pr.pengguna_id AND dv.tipe = t.tipe
    );
-
--- Selesai.

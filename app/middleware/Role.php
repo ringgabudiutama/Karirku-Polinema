@@ -1,16 +1,5 @@
 <?php
-/**
- * Pemeriksa hak akses peran
- * PIC   : M. Ubaidillah (Backend dan Database)
- * Status: DIISI.
- *
- * Dipanggil SETELAH Auth::wajibAktif() di baris kedua method controller,
- * contoh: PerusahaanController::pelamar() {
- *   Auth::wajibAktif();
- *   Role::wajib('perusahaan');
- *   ...
- * }
- */
+// ===== BACKEND · MIDDLEWARE · Role (cek peran) =======================
 
 class Role
 {

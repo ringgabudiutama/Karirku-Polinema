@@ -1,13 +1,9 @@
 <?php
-/**
- * Dashboard dan profil perusahaan
- * PIC   : Atha Rasya Farras (Modul Operator dan Career Center)
- * Status: LOGIKA BACKEND DIISI. Views masih perlu ditimpa dengan desain asli
- *         dari public/perusahaan.html (lihat app/views/PANDUAN-VIEW.md).
- */
+// ===== BACKEND · CONTROLLER · Perusahaan =============================
 
 class PerusahaanController extends Controller
 {
+    // --- Helper ------------------------------------------------------
     private function perusahaanSaya(): array
     {
         $prsh = (new Perusahaan())->cariByPenggunaId(Auth::penggunaSaatIni()['id']);
@@ -18,11 +14,7 @@ class PerusahaanController extends Controller
         return $prsh;
     }
 
-    /**
-     * View: perusahaan/dashboard. Variabel: $perusahaan, $lowonganAktif,
-     * $pelamarBaru (jumlah status diajukan), $interviewTerjadwal, $pelamarDiterima,
-     * $lowonganSaya (untuk grafik kuota per lowongan), $pelamarTerbaru (5 terakhir).
-     */
+    // --- Dashboard ---------------------------------------------------
     public function dashboard()
     {
         Auth::wajibAktif();
@@ -44,7 +36,7 @@ class PerusahaanController extends Controller
         ]);
     }
 
-    /** View: perusahaan/lowongan. Variabel: $lowongan (semua milik perusahaan, dengan jumlah pelamar). */
+    // --- Lowongan & pelamar ------------------------------------------
     public function lowongan()
     {
         Auth::wajibAktif();
@@ -55,10 +47,6 @@ class PerusahaanController extends Controller
         $this->view('perusahaan/lowongan', ['lowongan' => (new Lowongan())->milikPerusahaan((int) $prsh['id'])]);
     }
 
-    /**
-     * View: perusahaan/pelamar. Variabel: $pelamar, $lowonganSaya (untuk
-     * <select> filter), $filter (nilai filter aktif).
-     */
     public function pelamar()
     {
         Auth::wajibAktif();
@@ -80,7 +68,7 @@ class PerusahaanController extends Controller
         ]);
     }
 
-    /** View: perusahaan/profil. Variabel: $perusahaan. */
+    // --- Profil perusahaan -------------------------------------------
     public function profil()
     {
         Auth::wajibAktif();
@@ -97,8 +85,6 @@ class PerusahaanController extends Controller
 
         $prsh = $this->perusahaanSaya();
 
-        // Nomor WhatsApp PIC wajib ada di database (kolomnya NOT NULL) dan
-        // dipakai Career Center maupun pelamar untuk menghubungi perusahaan.
         $whatsapp = trim((string) $this->input('whatsapp_pic'));
         if ($whatsapp === '') {
             $this->flash('bad', 'Nomor WhatsApp PIC wajib diisi.');
@@ -136,13 +122,7 @@ class PerusahaanController extends Controller
         $this->redirect('perusahaan/profil');
     }
 
-    /**
-     * Pengaturan Akun (ubah email/kata sandi). Logika sama persis dengan
-     * MahasiswaController::pengaturanAkun(), sengaja digandakan (bukan lewat
-     * trait) supaya URL 'perusahaan/pengaturan-akun' mengikuti pola routing
-     * controller/method biasa tanpa pengecualian di Router.
-     * View: perusahaan/pengaturan. Variabel: $pengguna.
-     */
+    // --- Pengaturan akun ---------------------------------------------
     public function pengaturanAkun()
     {
         Auth::wajibAktif();

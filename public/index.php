@@ -1,12 +1,5 @@
 <?php
-/**
- * Titik masuk aplikasi (front controller)
- * PIC   : M. Ubaidillah (Backend dan Database)
- * Status: DIAKTIFKAN.
- *
- * Semua request (lihat public/.htaccess) diarahkan ke sini, lalu Router
- * yang memutuskan controller dan method mana yang menangani.
- */
+// ===== BACKEND · ENTRY POINT (semua request masuk lewat sini) ========
 
 require __DIR__ . '/../app/core/bootstrap.php';
 

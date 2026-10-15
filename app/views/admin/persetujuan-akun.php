@@ -1,9 +1,5 @@
 <?php
-/**
- * View: admin/persetujuan-akun
- * Dipanggil oleh: AdminController::persetujuan()
- * Variabel: $antrean, $jurusan, $filter
- */
+// ===== FRONTEND · ADMIN · Persetujuan akun (antrean) =================
 $page_title = 'Persetujuan Akun';
 $active_menu = 'persetujuan';
 require __DIR__ . '/../layouts/app-header.php';
@@ -14,10 +10,11 @@ $tampil = array_filter($antrean, fn($a) => $grup === 'semua' || $a['role'] === $
 <section class="view active">
   <div class="page-head"><div><h1>Persetujuan akun</h1><p>Periksa data dan dokumen pendaftar. Target selesai maksimal 2 hari kerja.</p></div></div>
   <div class="panel">
+    <!-- ===== Tab & filter ===== -->
     <div class="tabs">
-      <a href="<?= url('admin/persetujuan') ?>" class="<?= $grup === 'semua' ? 'active' : '' ?>" style="text-decoration:none">Semua<span class="c"><?= count($antrean) ?></span></a>
-      <a href="<?= url('admin/persetujuan?peran=mahasiswa') ?>" class="<?= $grup === 'mahasiswa' ? 'active' : '' ?>" style="text-decoration:none">Mahasiswa/Alumni<span class="c"><?= count(array_filter($antrean, fn($a) => $a['role'] === 'mahasiswa')) ?></span></a>
-      <a href="<?= url('admin/persetujuan?peran=perusahaan') ?>" class="<?= $grup === 'perusahaan' ? 'active' : '' ?>" style="text-decoration:none">Perusahaan<span class="c"><?= count(array_filter($antrean, fn($a) => $a['role'] === 'perusahaan')) ?></span></a>
+      <a href="<?= url('admin/persetujuan') ?>" class="<?= $grup === 'semua' ? 'active' : '' ?>">Semua<span class="c"><?= count($antrean) ?></span></a>
+      <a href="<?= url('admin/persetujuan?peran=mahasiswa') ?>" class="<?= $grup === 'mahasiswa' ? 'active' : '' ?>">Mahasiswa/Alumni<span class="c"><?= count(array_filter($antrean, fn($a) => $a['role'] === 'mahasiswa')) ?></span></a>
+      <a href="<?= url('admin/persetujuan?peran=perusahaan') ?>" class="<?= $grup === 'perusahaan' ? 'active' : '' ?>">Perusahaan<span class="c"><?= count(array_filter($antrean, fn($a) => $a['role'] === 'perusahaan')) ?></span></a>
     </div>
     <form class="filters" method="get" action="<?= url('admin/persetujuan') ?>">
       <input type="hidden" name="peran" value="<?= e($grup) ?>">
@@ -31,10 +28,11 @@ $tampil = array_filter($antrean, fn($a) => $grup === 'semua' || $a['role'] === $
         <option value="baru">Paling baru mendaftar</option>
       </select>
     </form>
+    <!-- ===== Tabel pendaftar ===== -->
     <div class="table-wrap"><table class="t" id="tabelPendaftar">
       <tr><th>Pendaftar</th><th>Tanggal daftar</th><th>Lama menunggu</th><th>Jenis</th><th></th></tr>
       <?php if (empty($tampil)): ?>
-        <tr><td colspan="5" class="muted" style="text-align:center;padding:30px">Tidak ada pendaftar menunggu.</td></tr>
+        <tr><td colspan="5" class="muted kosong">Tidak ada pendaftar menunggu.</td></tr>
       <?php else: foreach ($tampil as $q):
           $hari = (int) floor((time() - strtotime($q['dibuat_pada'])) / 86400);
           $jenisBaru = empty($q['jumlah_perbaikan']);
@@ -50,6 +48,7 @@ $tampil = array_filter($antrean, fn($a) => $grup === 'semua' || $a['role'] === $
     </table></div>
   </div>
 </section>
+<!-- ===== Script cari & urutkan ===== -->
 <script>
 (function(){
   var cari = document.getElementById('cariPendaftar');

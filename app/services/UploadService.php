@@ -1,21 +1,9 @@
 <?php
-/**
- * Penanganan unggah file
- * PIC   : Aqillah (UI/UX, Frontend, dan Integrasi)
- * Status: DIISI.
- *
- * Semua unggahan disimpan di storage/uploads/{subfolder}, DI LUAR public/,
- * lalu dilayani lewat public/unduh.php setelah dicek hak aksesnya (lihat
- * NotifikasiController & routing unduh di public/index.php).
- */
+// ===== BACKEND · SERVICE · Unggah berkas =============================
 
 class UploadService
 {
-    /**
-     * Validasi & pindahkan file dari $_FILES ke folder tujuan dengan nama acak.
-     * Mengembalikan ['nama' => string, 'ukuran_kb' => int] kalau berhasil.
-     * Melempar RuntimeException berisi pesan yang aman ditampilkan ke pengguna kalau gagal.
-     */
+    // --- Unggah ------------------------------------------------------
     public static function simpan(string $field, string $subfolder, array $tipeDiizinkan = ['pdf', 'jpg', 'jpeg', 'png']): array
     {
         $cfg = require __DIR__ . '/../config/config.php';
@@ -56,7 +44,7 @@ class UploadService
         ];
     }
 
-    /** Path lengkap di server untuk satu file yang sudah tersimpan (dipakai public/unduh.php). */
+    // --- Lokasi berkas -----------------------------------------------
     public static function pathLengkap(string $subfolder, string $namaFile): string
     {
         $cfg = require __DIR__ . '/../config/config.php';

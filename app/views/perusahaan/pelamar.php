@@ -1,9 +1,5 @@
 <?php
-/**
- * View: perusahaan/pelamar
- * Dipanggil oleh: PerusahaanController::pelamar()
- * Variabel: $pelamar, $lowonganSaya, $jurusan, $filter
- */
+// ===== FRONTEND · PERUSAHAAN · Daftar pelamar ========================
 $page_title = 'Pelamar';
 $active_menu = 'pelamar';
 require __DIR__ . '/../layouts/app-header.php';
@@ -13,6 +9,7 @@ $statusOpsi = ['' => 'Semua status', 'diajukan' => 'Diajukan', 'screening' => 'S
 <section class="view active">
   <div class="page-head"><div><h1>Pelamar</h1><p>Klik nama pelamar untuk melihat profil lengkap, CV, dan portofolio.</p></div></div>
   <div class="panel">
+    <!-- ===== Filter ===== -->
     <form class="filters" method="get" action="<?= url('perusahaan/pelamar') ?>">
       <input class="input grow" type="search" name="q" value="<?= e($filter['keyword'] ?? '') ?>" placeholder="Cari nama pelamar">
       <select class="input jur-filter" name="jurusan_id" onchange="this.form.submit()">
@@ -31,13 +28,13 @@ $statusOpsi = ['' => 'Semua status', 'diajukan' => 'Diajukan', 'screening' => 'S
     <div class="table-wrap"><table class="t">
       <tr><th>Pelamar</th><th>Lowongan</th><th>Tanggal</th><th>Status</th><th></th></tr>
       <?php if (empty($pelamar)): ?>
-        <tr><td colspan="5" class="muted" style="text-align:center;padding:30px">Tidak ada pelamar dengan filter ini.</td></tr>
+        <tr><td colspan="5" class="muted kosong">Tidak ada pelamar dengan filter ini.</td></tr>
       <?php else: foreach ($pelamar as $p):
           $fotoUrlP = !empty($p['foto']) ? url('unduh.php?tipe=foto&file=' . urlencode($p['foto'])) : null;
       ?>
         <tr>
           <td><a class="person" href="<?= url('lamaran/detail-pelamar/' . $p['id']) ?>">
-            <?php if ($fotoUrlP): ?><img src="<?= e($fotoUrlP) ?>" alt=""><?php else: ?><span class="avatar" style="display:inline-flex;align-items:center;justify-content:center;background:var(--blue-soft);color:var(--navy);font-weight:700;font-size:.8rem"><?= e(inisial($p['nama_mahasiswa'])) ?></span><?php endif; ?>
+            <?php if ($fotoUrlP): ?><img src="<?= e($fotoUrlP) ?>" alt=""><?php else: ?><span class="avatar avatar-inisial fs-80"><?= e(inisial($p['nama_mahasiswa'])) ?></span><?php endif; ?>
             <div><b><?= e($p['nama_mahasiswa']) ?></b><small><?= e($p['nama_prodi']) ?></small></div>
           </a></td>
           <td><?= e($p['posisi']) ?></td>

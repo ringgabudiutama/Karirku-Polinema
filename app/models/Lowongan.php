@@ -1,14 +1,11 @@
 <?php
-/**
- * Model tabel lowongan
- * PIC   : Atha Rasya Farras (Modul Operator dan Career Center)
- * Status: DIISI.
- */
+// ===== BACKEND · MODEL · Lowongan (tabel lowongan) ===================
 
 class Lowongan extends Model
 {
     protected string $tabel = 'lowongan';
 
+    // --- Status otomatis ---------------------------------------------
     public function tutupOtomatisJikaLewatBatas(): void
     {
         Database::execute(
@@ -17,6 +14,7 @@ class Lowongan extends Model
         );
     }
 
+    // --- Tulis data --------------------------------------------------
     public function buat(int $perusahaanId, array $d): int
     {
         return $this->simpan([
@@ -61,8 +59,7 @@ class Lowongan extends Model
         $this->ubah($id, ['pamflet' => $namaFile, 'diperbarui_pada' => date('Y-m-d H:i:s')]);
     }
 
-    /* --------------------- jurusan sasaran --------------------- */
-
+    // --- Jurusan sasaran ---------------------------------------------
     public function jurusanSasaran(int $lowonganId): array
     {
         return Database::fetchAll(
@@ -91,8 +88,7 @@ class Lowongan extends Model
         }
     }
 
-    /* --------------------- ambil detail --------------------- */
-
+    // --- Baca data ---------------------------------------------------
     public function cariDetail(int $id): ?array
     {
         return Database::fetch(
@@ -129,7 +125,6 @@ class Lowongan extends Model
         );
     }
 
-    /** Daftar nilai lokasi unik dari lowongan aktif, untuk mengisi dropdown "Semua lokasi". */
     public function lokasiUnik(): array
     {
         return array_column(Database::fetchAll(
@@ -139,14 +134,7 @@ class Lowongan extends Model
         ), 'lokasi');
     }
 
-    /* --------------------- pencarian mahasiswa/alumni --------------------- */
-
-    /**
-     * Sebelumnya bernama cari(array $filter, ...) -- bentrok dengan
-     * Model::cari(int $id): ?array milik induknya (dipakai di tempat lain,
-     * mis. AdminController::nonaktifkanLowongan()). Sekarang diberi nama
-     * sendiri biar gak bentrok.
-     */
+    // --- Pencarian & filter ------------------------------------------
     public function cariDenganFilter(array $filter, int $limit = 20, int $offset = 0): array
     {
         [$where, $params] = $this->klausaFilter($filter);
@@ -202,6 +190,7 @@ class Lowongan extends Model
         return [$where, $params];
     }
 
+    // --- Rekomendasi -------------------------------------------------
     public function rekomendasiUntuk(int $mahasiswaId, int $limit = 5): array
     {
         return Database::fetchAll(
@@ -215,8 +204,7 @@ class Lowongan extends Model
         );
     }
 
-    /* --------------------- perubahan kuota & status --------------------- */
-
+    // --- Kuota & status ----------------------------------------------
     public function tambahTerisi(int $id): void
     {
         Database::execute(
@@ -234,12 +222,6 @@ class Lowongan extends Model
         $this->ubah($id, ['status' => 'ditutup', 'diperbarui_pada' => date('Y-m-d H:i:s')]);
     }
 
-    /**
-     * Membuka kembali lowongan yang sudah ditutup, dengan batas lamaran baru.
-     * Status dikembalikan ke aktif supaya lowongannya tayang lagi dan bisa
-     * menerima lamaran. Kolom alasan_nonaktif ikut dikosongkan, karena
-     * lowongan ini sudah tidak dalam keadaan ditutup maupun dinonaktifkan.
-     */
     public function perpanjang(int $id, string $batasLamaranBaru): void
     {
         $this->ubah($id, [
@@ -259,8 +241,7 @@ class Lowongan extends Model
         ]);
     }
 
-    /* --------------------- untuk Admin: Monitoring & Kirim Loker --------------------- */
-
+    // --- Admin & publik ----------------------------------------------
     public function semuaDenganFilter(array $filter = []): array
     {
         $where = ['1=1'];
@@ -286,7 +267,6 @@ class Lowongan extends Model
         return Database::fetchAll($sql, $params);
     }
 
-    /** Lowongan aktif yang bisa dipilih di halaman Kirim Loker ke Jurusan. */
     public function aktifUntukDikirim(): array
     {
         return Database::fetchAll(
@@ -297,11 +277,6 @@ class Lowongan extends Model
         );
     }
 
-    /**
-     * Lowongan terbaru yang masih menerima lamaran, untuk ditampilkan di
-     * beranda publik. Tidak memerlukan login, jadi kolom yang diambil hanya
-     * yang memang boleh dilihat umum.
-     */
     public function terbaruUntukPublik(int $batas = 6): array
     {
         return Database::fetchAll(

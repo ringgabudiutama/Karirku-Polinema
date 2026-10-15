@@ -1,9 +1,5 @@
 <?php
-/**
- * Model tabel bidang
- * PIC   : Muhamad Nafi' Hanif (Modul Mahasiswa dan Alumni)
- * Status: DIISI.
- */
+// ===== BACKEND · MODEL · Bidang (tabel bidang) =======================
 
 class Bidang extends Model
 {
@@ -13,8 +9,6 @@ class Bidang extends Model
     {
         return Database::fetchAll('SELECT * FROM bidang ORDER BY nama');
     }
-
-    /* --------------------- relasi mahasiswa_minat --------------------- */
 
     public function minatMahasiswa(int $mahasiswaId): array
     {

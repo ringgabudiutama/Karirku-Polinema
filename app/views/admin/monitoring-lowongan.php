@@ -1,9 +1,5 @@
 <?php
-/**
- * View: admin/monitoring-lowongan
- * Dipanggil oleh: AdminController::monitoringLowongan()
- * Variabel: $lowongan, $bidang, $jurusan, $filter
- */
+// ===== FRONTEND · ADMIN · Monitoring lowongan ========================
 $page_title = 'Monitoring Lowongan';
 $active_menu = 'monitoring';
 require __DIR__ . '/../layouts/app-header.php';
@@ -13,6 +9,7 @@ require __DIR__ . '/../layouts/app-header.php';
     <a class="btn btn-outline" href="<?= url('admin/unduh-rekap-lowongan?' . http_build_query($filter)) ?>" target="_blank"><span data-ic="download"></span>Unduh laporan PDF</a>
   </div>
   <div class="panel">
+    <!-- ===== Filter ===== -->
     <form class="filters" method="get" action="<?= url('admin/monitoring-lowongan') ?>">
       <input class="input grow" type="text" id="cariLowongan" placeholder="Cari posisi atau perusahaan" autocomplete="off">
       <select class="input jur-filter" name="jurusan_id" onchange="this.form.submit()">
@@ -30,9 +27,10 @@ require __DIR__ . '/../layouts/app-header.php';
         <?php foreach ($bidang as $b): ?><option value="<?= (int) $b['id'] ?>" <?= (string) $filter['bidang_id'] === (string) $b['id'] ? 'selected' : '' ?>><?= e($b['nama']) ?></option><?php endforeach; ?>
       </select>
     </form>
+    <!-- ===== Tabel lowongan ===== -->
     <div class="table-wrap"><table class="t" id="tabelLowongan">
       <tr><th>Lowongan</th><th>Perusahaan</th><th>Batas</th><th>Pelamar</th><th>Kuota</th><th>Status</th><th></th></tr>
-      <?php if (empty($lowongan)): ?><tr><td colspan="7" class="muted" style="text-align:center;padding:30px">Tidak ada lowongan dengan filter ini.</td></tr><?php endif; ?>
+      <?php if (empty($lowongan)): ?><tr><td colspan="7" class="muted kosong">Tidak ada lowongan dengan filter ini.</td></tr><?php endif; ?>
       <?php foreach ($lowongan as $l): ?>
         <tr data-cari="<?= e(mb_strtolower($l['posisi'] . ' ' . $l['nama_perusahaan'])) ?>">
           <td><b><?= e($l['posisi']) ?></b><br><small class="muted"><?= e($l['nama_bidang']) ?></small></td>
@@ -41,10 +39,10 @@ require __DIR__ . '/../layouts/app-header.php';
           <td><?= (int) $l['terisi'] ?></td>
           <td><?= (int) $l['terisi'] ?>/<?= (int) $l['kuota'] ?></td>
           <td><?= badgeHtml(labelStatusLowongan($l['status'])) ?><?php if ($l['status'] === 'nonaktif' && $l['alasan_nonaktif']): ?><br><small class="muted"><?= e($l['alasan_nonaktif']) ?></small><?php endif; ?></td>
-          <td style="white-space:nowrap">
+          <td class="nowrap">
             <a class="btn btn-sm btn-outline" href="<?= url('info-loker/' . $l['kode_pratinjau']) ?>" target="_blank">Lihat</a>
             <?php if ($l['status'] === 'aktif'): ?>
-              <button class="btn btn-sm btn-outline" type="button" style="color:var(--bad);border-color:var(--bad)" data-open="mNon<?= (int) $l['id'] ?>">Nonaktifkan</button>
+              <button class="btn btn-sm btn-outline btn-outline-bad" type="button" data-open="mNon<?= (int) $l['id'] ?>">Nonaktifkan</button>
             <?php endif; ?>
           </td>
         </tr>
@@ -52,6 +50,7 @@ require __DIR__ . '/../layouts/app-header.php';
     </table></div>
   </div>
 </section>
+<!-- ===== Script cari lowongan ===== -->
 <script>
 (function(){
   var cari = document.getElementById('cariLowongan');
@@ -66,6 +65,7 @@ require __DIR__ . '/../layouts/app-header.php';
 })();
 </script>
 
+<!-- ===== Modal nonaktifkan ===== -->
 <?php foreach ($lowongan as $l): if ($l['status'] !== 'aktif') continue; ?>
 <div class="modal" id="mNon<?= (int) $l['id'] ?>" role="dialog" aria-modal="true">
   <div class="modal-box">

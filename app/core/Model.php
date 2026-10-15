@@ -1,24 +1,12 @@
 <?php
-/**
- * Model induk
- * PIC   : M. Ubaidillah (Backend dan Database)
- * Status: DIISI.
- *
- * Menyediakan CRUD dasar yang dipakai semua model anak (cari, semua, simpan,
- * ubah, hapus). Model anak menambahkan query khusus tabelnya sendiri di atas
- * fondasi ini (lihat app/models/*.php).
- *
- * Model dengan primary key komposit (mahasiswa_skill, lowongan_jurusan,
- * lowongan_disimpan) TIDAK memakai cari()/ubah()/hapus() di sini karena
- * method itu mengasumsikan satu kolom PK bernama $primaryKey; model tersebut
- * menulis query sendiri secara langsung.
- */
+// ===== BACKEND · CORE · Model induk (CRUD dasar) =====================
 
 abstract class Model
 {
     protected string $tabel = '';
     protected string $primaryKey = 'id';
 
+    // --- Baca data ---------------------------------------------------
     public function cari(int $id): ?array
     {
         $sql = "SELECT * FROM {$this->tabel} WHERE {$this->primaryKey} = ?";
@@ -34,26 +22,19 @@ abstract class Model
         return Database::fetchAll($sql);
     }
 
-    /** Cari banyak baris berdasarkan satu kolom, contoh: $model->cariBerdasarkan('pengguna_id', 5) */
     public function cariBerdasarkan(string $kolom, $nilai): array
     {
         $sql = "SELECT * FROM {$this->tabel} WHERE {$kolom} = ?";
         return Database::fetchAll($sql, [$nilai]);
     }
 
-    /** Cari SATU baris berdasarkan satu kolom, contoh: $model->satuBerdasarkan('email', $email) */
     public function satuBerdasarkan(string $kolom, $nilai): ?array
     {
         $sql = "SELECT * FROM {$this->tabel} WHERE {$kolom} = ?";
         return Database::fetch($sql, [$nilai]);
     }
 
-    /**
-     * Simpan baris baru. $data adalah array asosiatif kolom => nilai.
-     * Mengembalikan id baris baru (memakai RETURNING, cara yang benar di
-     * PostgreSQL, karena lastInsertId() bawaan PDO tidak selalu akurat
-     * untuk kolom serial).
-     */
+    // --- Tulis data --------------------------------------------------
     public function simpan(array $data): int
     {
         $kolom = array_keys($data);
@@ -86,6 +67,7 @@ abstract class Model
         return Database::execute($sql, [$id]) > 0;
     }
 
+    // --- Hitung ------------------------------------------------------
     public function hitung(string $where = '1=1', array $params = []): int
     {
         $sql = "SELECT COUNT(*) AS jumlah FROM {$this->tabel} WHERE {$where}";

@@ -1,19 +1,9 @@
 <?php
-/**
- * Kirim info loker ke admin jurusan via WhatsApp
- * PIC   : Aqillah (UI/UX, Frontend, dan Integrasi)
- * Status: LOGIKA BACKEND DIISI. Views masih perlu ditimpa dengan desain asli.
- *
- * Tautan wa.me HANYA bisa mengisi teks (lihat komentar di WhatsappService),
- * jadi pamflet disampaikan lewat gambar pratinjau tautan (meta Open Graph di
- * view info-loker), tombol unduh pamflet, dan tombol salin pamflet -- ketiganya
- * dirender di app/views/admin/kirim-loker.php dan publik/info-loker.php,
- * bukan di controller ini.
- */
+// ===== BACKEND · CONTROLLER · Kirim loker ke jurusan =================
 
 class KirimLokerController extends Controller
 {
-    /** Template default kalau admin belum pernah mengisi/menyimpan template WA sendiri di menu Pengaturan. Dipakai juga oleh views/admin/pengaturan.php supaya kotak "Isi pesan" tidak kosong. */
+    // --- Template pesan WA -------------------------------------------
     public const TEMPLATE_WA_DEFAULT = "Info Loker KarirKu Polinema\n"
         . "Posisi: {posisi}\n"
         . "Perusahaan: {perusahaan}\n"
@@ -22,19 +12,7 @@ class KirimLokerController extends Controller
         . "Lihat pamflet dan detail: {tautan}\n"
         . "Untuk melamar, masuk ke KarirKu dengan akun mahasiswa atau alumni.";
 
-    /**
-     * View: admin/kirim-loker. Variabel: $lowongan (daftar lowongan aktif
-     * untuk dipilih di dropdown), $lowonganDipilih (detail lowongan yang
-     * sedang dilihat pratinjaunya, null kalau belum ada yang dipilih),
-     * $jurusan, $kontak (peta jurusan_id => baris admin_jurusan_kontak),
-     * $sudahDikirim (array jurusan_id yang tombolnya harus berubah jadi
-     * "Terkirim"), $jurusanSasaran (array jurusan_id yang dipilih perusahaan
-     * saat memasang lowongan -- tombolnya diberi label "Disarankan untuk
-     * lowongan ini" lewat class .jur.suggest di view), $tautanPratinjau,
-     * $templatePesan (mentah, placeholder
-     * {jurusan}/{perusahaan}/dst BELUM diganti -- penggantian dilakukan di
-     * view per baris jurusan lewat WhatsappService::susunPesan()).
-     */
+    // --- Halaman kirim loker -----------------------------------------
     public function index()
     {
         Auth::wajibAktif();
@@ -75,15 +53,7 @@ class KirimLokerController extends Controller
         ]);
     }
 
-    /**
-     * Dipanggil lewat tombol admin jurusan di halaman Kirim Loker ke Jurusan.
-     * Sengaja diakses lewat <a href> biasa (BUKAN form POST) supaya klik
-     * tombol langsung membuka tab WhatsApp baru (target="_blank" di view),
-     * sambil tetap tercatat sebagai "Terkirim" lewat redirect ini sebelum
-     * membuka WhatsApp. Method GET untuk aksi yang mengubah data memang
-     * bukan praktik terbaik REST, tapi ini satu-satunya cara wa.me bisa
-     * dibuka di tab baru dari satu klik tanpa JavaScript tambahan.
-     */
+    // --- Kirim ke admin jurusan --------------------------------------
     public function kirim(int $lowonganId, int $jurusanId)
     {
         Auth::wajibAktif();
@@ -118,16 +88,13 @@ class KirimLokerController extends Controller
         exit;
     }
 
-    /** Simpan/perbarui nomor WhatsApp & nama kontak SEMUA admin jurusan sekaligus (satu tombol "Simpan kontak" di menu Pengaturan, bukan per baris). */
+    // --- Kontak admin jurusan ----------------------------------------
     public function simpanKontak()
     {
         $this->wajibPost();
         Auth::wajibAktif();
         Role::wajib('admin');
 
-        // Field dikirim sebagai larik nama_kontak[jurusan_id] / nomor_wa[jurusan_id]
-        // dari satu form yang membungkus seluruh tabel, jadi diambil langsung
-        // dari $_POST (bukan $this->input(), yang bertipe string tunggal).
         $namaKontak = $_POST['nama_kontak'] ?? [];
         $nomorWa = $_POST['nomor_wa'] ?? [];
         $adminId = (new Admin())->idDariPenggunaId(Auth::penggunaSaatIni()['id']);
@@ -140,11 +107,11 @@ class KirimLokerController extends Controller
             $nama = trim((string) ($namaKontak[$jurusanId] ?? ''));
 
             if ($nomor === '' && $nama === '') {
-                continue; // baris kosong, tidak diapa-apakan
+                continue;
             }
             if ($nomor !== '' && !WhatsappService::nomorValid($nomor)) {
                 $adaFormatSalah = true;
-                continue; // baris ini dilewati, baris lain tetap disimpan
+                continue;
             }
 
             $model->simpanKontak($jurusanId, $nama, $nomor !== '' ? WhatsappService::rapikanNomor($nomor) : '', $adminId);

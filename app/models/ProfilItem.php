@@ -1,12 +1,5 @@
 <?php
-/**
- * Model tabel profil_item
- * PIC   : Muhamad Nafi' Hanif (Modul Mahasiswa dan Alumni)
- * Status: DIISI.
- * Menyimpan 4 jenis data dalam satu tabel: pendidikan, pengalaman, sertifikat,
- * portofolio (dibedakan lewat kolom "tipe") supaya CV otomatis bisa disusun
- * dari satu sumber data saja.
- */
+// ===== BACKEND · MODEL · ProfilItem (tabel profil_item) ==============
 
 class ProfilItem extends Model
 {
@@ -43,7 +36,6 @@ class ProfilItem extends Model
         ]);
     }
 
-    /** Hapus HANYA jika item itu benar milik mahasiswa yang sedang login (cegah IDOR). */
     public function hapusMilik(int $id, int $mahasiswaId): bool
     {
         return Database::execute(

@@ -1,16 +1,9 @@
 <?php
-/**
- * Ikon lonceng notifikasi
- * PIC   : M. Ubaidillah (Backend dan Database)
- * Status: DIISI.
- * Dipakai oleh Mahasiswa, Perusahaan, dan Admin. Admin tetap juga melihat
- * ringkasan aktivitas terbaru di Dashboard, tapi sekarang punya halaman dan
- * lonceng notifikasi sendiri seperti dua peran lainnya.
- */
+// ===== BACKEND · CONTROLLER · Notifikasi =============================
 
 class NotifikasiController extends Controller
 {
-    /** View: mahasiswa/notifikasi, perusahaan/notifikasi, ATAU admin/notifikasi (dipilih otomatis sesuai peran). */
+    // --- Daftar notifikasi -------------------------------------------
     public function semua()
     {
         Auth::wajibAktif();
@@ -21,11 +14,7 @@ class NotifikasiController extends Controller
         $this->view($view, ['notifikasi' => (new Notifikasi())->milikPengguna($user['id'])]);
     }
 
-    /**
-     * Halaman daftar notifikasi. Alamatnya SATU untuk semua peran, yaitu
-     * 'notifikasi/semua'. Yang berbeda hanya view yang dipakai, dipilih
-     * otomatis di method semua() di atas.
-     */
+    // --- Tandai dibaca -----------------------------------------------
     private const HALAMAN_NOTIFIKASI = 'notifikasi/semua';
 
     public function tandaiDibaca(int $id)
@@ -34,10 +23,6 @@ class NotifikasiController extends Controller
         $notifModel = new Notifikasi();
         $notifModel->tandaiDibaca($id, Auth::penggunaSaatIni()['id']);
 
-        // Notifikasi boleh menyimpan tautan tujuan, misalnya ke detail lamaran.
-        // Tautan itu diperiksa dulu: kalau kosong atau mengarah ke alamat yang
-        // tidak dikenal, pengguna dikembalikan ke daftar notifikasi, bukan
-        // dilempar ke halaman 404.
         $tautan = Database::fetch('SELECT tautan FROM notifikasi WHERE id = ?', [$id])['tautan'] ?? null;
         $this->redirect($this->tujuanAman($tautan));
     }
@@ -49,17 +34,13 @@ class NotifikasiController extends Controller
         $this->redirect(self::HALAMAN_NOTIFIKASI);
     }
 
-    /**
-     * Mengembalikan tautan hanya kalau controller dan method-nya benar-benar
-     * ada. Selain itu dikembalikan ke halaman notifikasi.
-     */
+    // --- Helper ------------------------------------------------------
     private function tujuanAman(?string $tautan): string
     {
         $tautan = trim((string) $tautan, " /\t\n\r");
         if ($tautan === '') {
             return self::HALAMAN_NOTIFIKASI;
         }
-        // Tolak alamat ke situs lain, hanya boleh alamat di dalam aplikasi.
         if (preg_match('#^[a-z]+://#i', $tautan) || str_starts_with($tautan, '//')) {
             return self::HALAMAN_NOTIFIKASI;
         }
@@ -68,7 +49,6 @@ class NotifikasiController extends Controller
         $cSegmen = $segmen[0] ?? '';
         $mSegmen = $segmen[1] ?? 'index';
 
-        // Alamat khusus yang tidak mengikuti pola controller/method.
         if (in_array($cSegmen, ['beranda', 'masuk', 'daftar', 'status-akun'], true)) {
             return $tautan;
         }

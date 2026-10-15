@@ -1,9 +1,5 @@
 <?php
-/**
- * View: mahasiswa/disimpan
- * Dipanggil oleh: MahasiswaController::disimpan()
- * Variabel: $lowongan
- */
+// ===== FRONTEND · MAHASISWA · Lowongan disimpan ======================
 $page_title = 'Disimpan';
 $active_menu = 'disimpan';
 require __DIR__ . '/../layouts/app-header.php';
@@ -12,7 +8,7 @@ require __DIR__ . '/../layouts/app-header.php';
   <div class="page-head"><div><h1>Disimpan</h1><p>Lowongan yang kamu tandai. Perhatikan batas lamarannya.</p></div></div>
   <div class="jobs">
     <?php if (empty($lowongan)): ?>
-      <div class="panel" style="text-align:center">
+      <div class="panel text-center">
         <h3>Belum ada lowongan disimpan</h3>
         <p class="muted">Tekan Simpan pada lowongan yang menarik agar mudah ditemukan lagi.</p>
         <a class="btn btn-primary" href="<?= url('lowongan/daftar') ?>">Cari lowongan</a>

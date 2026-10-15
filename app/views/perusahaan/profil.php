@@ -1,9 +1,5 @@
 <?php
-/**
- * View: perusahaan/profil
- * Dipanggil oleh: PerusahaanController::profil()
- * Variabel: $perusahaan
- */
+// ===== FRONTEND · PERUSAHAAN · Profil perusahaan =====================
 $page_title = 'Profil Perusahaan';
 $active_menu = 'profil';
 require __DIR__ . '/../layouts/app-header.php';
@@ -13,11 +9,11 @@ $logoUrl = !empty($perusahaan['logo']) ? url('unduh.php?tipe=logo&file=' . urlen
   <div class="page-head"><div><h1>Profil perusahaan</h1><p>Profil ini tampil di setiap detail lowongan dan halaman info loker.</p></div></div>
   <form class="panel" method="post" action="<?= url('perusahaan/simpan-profil') ?>" enctype="multipart/form-data">
     <?= csrfField() ?>
-    <div class="profile-head" style="margin-bottom:20px">
-      <?php if ($logoUrl): ?><img src="<?= e($logoUrl) ?>" alt="" style="width:96px;height:96px;border-radius:18px;object-fit:cover"><?php else: ?>
-        <span class="logo-sq" style="background:var(--navy);width:96px;height:96px;font-size:1.8rem;border-radius:18px"><?= e(inisial($perusahaan['nama_perusahaan'])) ?></span>
+    <div class="profile-head mb-20">
+      <?php if ($logoUrl): ?><img class="logo-profil" src="<?= e($logoUrl) ?>" alt=""><?php else: ?>
+        <span class="logo-sq logo-profil"><?= e(inisial($perusahaan['nama_perusahaan'])) ?></span>
       <?php endif; ?>
-      <div class="grow"><h2 style="margin:0"><?= e($perusahaan['nama_perusahaan']) ?> <span class="verified" data-ic="check">Mitra terverifikasi</span></h2></div>
+      <div class="grow"><h2 class="m-0"><?= e($perusahaan['nama_perusahaan']) ?> <span class="verified" data-ic="check">Mitra terverifikasi</span></h2></div>
       <label class="btn btn-outline btn-sm">Ganti logo<input type="file" name="logo" hidden accept="image/*" onchange="this.form.submit()"></label>
     </div>
     <div class="row2">

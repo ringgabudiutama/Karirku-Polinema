@@ -1,11 +1,5 @@
 <?php
-/**
- * Model tabel lowongan_disimpan
- * PIC   : Muhamad Nafi' Hanif (Modul Mahasiswa dan Alumni)
- * Status: DIISI.
- * Primary key komposit (mahasiswa_id, lowongan_id), jadi TIDAK memakai
- * cari()/ubah()/hapus() bawaan Model induk yang mengasumsikan satu kolom id.
- */
+// ===== BACKEND · MODEL · LowonganDisimpan (tabel lowongan_disimpan) ====
 
 class LowonganDisimpan extends Model
 {

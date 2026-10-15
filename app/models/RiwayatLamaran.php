@@ -1,9 +1,5 @@
 <?php
-/**
- * Model tabel riwayat_lamaran
- * PIC   : Muhamad Nafi' Hanif (Modul Mahasiswa dan Alumni)
- * Status: DIISI.
- */
+// ===== BACKEND · MODEL · RiwayatLamaran (tabel riwayat_lamaran) ======
 
 class RiwayatLamaran extends Model
 {

@@ -1,9 +1,5 @@
 <?php
-/**
- * View: perusahaan/lowongan-form
- * Dipanggil oleh: LowonganController::formPasang($id = 0)
- * Variabel: $lowongan (null kalau pasang baru), $jurusanTerpilih, $bidang, $jurusan
- */
+// ===== FRONTEND · PERUSAHAAN · Form pasang / edit lowongan ===========
 $edit = $lowongan !== null;
 $page_title = $edit ? 'Edit Lowongan' : 'Pasang Lowongan';
 $active_menu = 'lowongan';
@@ -18,7 +14,7 @@ $pamfletUrl = $edit && !empty($lowongan['pamflet']) ? url('unduh.php?tipe=pamfle
   <div class="crumb"><a href="<?= url('perusahaan/lowongan') ?>">Lowongan Saya</a> <span>/</span> <span><?= $edit ? 'Edit lowongan' : 'Pasang lowongan' ?></span></div>
   <div class="page-head"><div><h1><?= $edit ? 'Edit lowongan' : 'Pasang lowongan' ?></h1><p>Isi data lowongan. Pamflet wajib diunggah sebelum lowongan bisa ditayangkan.</p></div></div>
 
-  <form class="grid g-side" style="align-items:start" method="post" action="<?= url('lowongan/proses-pasang') ?>" enctype="multipart/form-data">
+  <form class="grid g-side items-start" method="post" action="<?= url('lowongan/proses-pasang') ?>" enctype="multipart/form-data">
     <?= csrfField() ?>
     <input type="hidden" name="id" value="<?= $edit ? (int) $lowongan['id'] : '' ?>">
 
@@ -58,15 +54,16 @@ $pamfletUrl = $edit && !empty($lowongan['pamflet']) ? url('unduh.php?tipe=pamfle
       <div class="field"><label>Skill yang dibutuhkan <span class="muted">(opsional)</span></label><input class="input" name="skill_dibutuhkan" placeholder="Pisahkan dengan koma, misalnya PHP, Laravel, Git" value="<?= $g('skill_dibutuhkan') ?>"></div>
     </div>
 
+    <!-- ===== Kolom kanan: pamflet & simpan ===== -->
     <div class="sticky">
       <div class="panel">
-        <h3>Pamflet lowongan <?= $edit ? '' : '<span style="color:var(--bad)">*</span>' ?></h3>
-        <p class="muted" style="font-size:.88rem">JPG atau PNG, maksimal 2 MB. Ukuran persegi atau 4:5 paling pas untuk WhatsApp dan Instagram.</p>
-        <?php if ($pamfletUrl): ?><img src="<?= e($pamfletUrl) ?>" alt="Pamflet saat ini" style="border-radius:8px;margin-bottom:12px;border:1px solid var(--line);max-width:100%"><?php endif; ?>
+        <h3>Pamflet lowongan <?= $edit ? '' : '<span class="text-bad">*</span>' ?></h3>
+        <p class="muted fs-88">JPG atau PNG, maksimal 2 MB. Ukuran persegi atau 4:5 paling pas untuk WhatsApp dan Instagram.</p>
+        <?php if ($pamfletUrl): ?><img class="gambar-bingkai max-w-100 mb-12" src="<?= e($pamfletUrl) ?>" alt="Pamflet saat ini"><?php endif; ?>
         <label class="upload"><input type="file" name="pamflet" accept=".jpg,.jpeg,.png" <?= $edit ? '' : 'required' ?>><span data-ic="image"></span><div><b><?= $pamfletUrl ? 'Ganti pamflet' : 'Unggah pamflet' ?></b></div></label>
-        <?php if (!$edit): ?><div class="alert alert-warn" style="margin-top:12px"><span data-ic="info"></span><span>Pamflet wajib diunggah sebelum lowongan bisa ditayangkan.</span></div><?php endif; ?>
-        <button class="btn btn-primary" style="width:100%;margin-top:12px" type="submit"><?= $edit ? 'Simpan perubahan' : 'Tayangkan lowongan' ?></button>
-        <a class="btn btn-link" href="<?= url('perusahaan/lowongan') ?>" style="width:100%;text-align:center;display:block">Batal</a>
+        <?php if (!$edit): ?><div class="alert alert-warn mt-12"><span data-ic="info"></span><span>Pamflet wajib diunggah sebelum lowongan bisa ditayangkan.</span></div><?php endif; ?>
+        <button class="btn btn-primary w-100 mt-12" type="submit"><?= $edit ? 'Simpan perubahan' : 'Tayangkan lowongan' ?></button>
+        <a class="btn btn-link d-block w-100 text-center" href="<?= url('perusahaan/lowongan') ?>">Batal</a>
       </div>
     </div>
   </form>

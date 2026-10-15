@@ -1,16 +1,12 @@
 <?php
-/**
- * View: perusahaan/pengaturan (route: perusahaan/pengaturan-akun)
- * Dipanggil oleh: PerusahaanController::pengaturanAkun()
- * Variabel: $pengguna
- */
+// ===== FRONTEND · PERUSAHAAN · Pengaturan akun =======================
 $page_title = 'Pengaturan Akun';
 $active_menu = 'pengaturan';
 require __DIR__ . '/../layouts/app-header.php';
 ?>
 <section class="view active">
   <div class="page-head"><div><h1>Pengaturan akun</h1></div></div>
-  <div class="grid g2" style="align-items:start">
+  <div class="grid g2 items-start">
     <form class="panel" method="post" action="<?= url('perusahaan/simpan-pengaturan-akun') ?>">
       <?= csrfField() ?><input type="hidden" name="aksi" value="kontak">
       <h3>Kontak</h3>

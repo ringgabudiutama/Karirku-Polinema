@@ -1,16 +1,9 @@
 <?php
-/**
- * Pemeriksa sesi login
- * PIC   : M. Ubaidillah (Backend dan Database)
- * Status: DIISI.
- *
- * Dipanggil di baris PERTAMA setiap method controller yang butuh login,
- * contoh: MahasiswaController::dashboard() { Auth::wajibLogin(); ... }
- */
+// ===== BACKEND · MIDDLEWARE · Auth (cek login) =======================
 
 class Auth
 {
-    /** Hentikan request dan lempar ke Masuk kalau belum login sama sekali. */
+    // --- Penjaga akses -----------------------------------------------
     public static function wajibLogin(): void
     {
         if (empty($_SESSION['user'])) {
@@ -19,12 +12,6 @@ class Auth
         }
     }
 
-    /**
-     * Sama seperti wajibLogin(), TAPI juga mensyaratkan status_akun = 'aktif'.
-     * Akun berstatus menunggu/perbaikan/ditolak/nonaktif dilempar ke
-     * Halaman Status Akun, bukan ke halaman yang dituju.
-     * Inilah yang membuat "menu lain terkunci selama akun belum aktif".
-     */
     public static function wajibAktif(): void
     {
         self::wajibLogin();
@@ -34,6 +21,7 @@ class Auth
         }
     }
 
+    // --- Data sesi ---------------------------------------------------
     public static function penggunaSaatIni(): ?array
     {
         return $_SESSION['user'] ?? null;
@@ -44,9 +32,9 @@ class Auth
         return !empty($_SESSION['user']);
     }
 
+    // --- Login & logout ----------------------------------------------
     public static function loginkan(array $pengguna): void
     {
-        // regenerasi id sesi supaya tidak rentan session fixation
         session_regenerate_id(true);
         $_SESSION['user'] = [
             'id'          => (int) $pengguna['id'],
@@ -66,7 +54,7 @@ class Auth
         session_destroy();
     }
 
-    /** Panggil setelah keputusan admin berubah supaya sesi ikut segar tanpa perlu logout manual. */
+    // --- Sinkron status akun -----------------------------------------
     public static function segarkanStatusAkun(): void
     {
         if (empty($_SESSION['user'])) {

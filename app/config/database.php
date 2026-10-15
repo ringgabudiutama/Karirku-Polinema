@@ -1,12 +1,5 @@
 <?php
-/**
- * Koneksi PostgreSQL
- * PIC   : M. Ubaidillah (Backend dan Database)
- * Status: DIISI.
- *
- * Nilai di bawah bisa ditimpa lewat environment variable saat deploy,
- * supaya kata sandi asli tidak pernah ikut ter-commit ke Git.
- */
+// ===== BACKEND · KONFIGURASI · Koneksi database ======================
 
 return [
     'host' => getenv('DB_HOST') ?: '127.0.0.1',

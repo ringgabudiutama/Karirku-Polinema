@@ -1,9 +1,5 @@
 <?php
-/**
- * Model tabel pengaturan
- * PIC   : M. Ubaidillah (Backend dan Database)
- * Status: DIISI.
- */
+// ===== BACKEND · MODEL · Pengaturan (tabel pengaturan) ===============
 
 class Pengaturan extends Model
 {
@@ -25,7 +21,6 @@ class Pengaturan extends Model
         );
     }
 
-    /** Semua pengaturan sebagai array asosiatif kunci => nilai, untuk mengisi form Pengaturan. */
     public function semuaSebagaiPeta(): array
     {
         $peta = [];

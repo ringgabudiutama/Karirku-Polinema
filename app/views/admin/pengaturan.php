@@ -1,9 +1,5 @@
 <?php
-/**
- * View: admin/pengaturan
- * Dipanggil oleh: AdminController::pengaturan()
- * Variabel: $pengaturan, $kontakJurusan, $pengguna
- */
+// ===== FRONTEND · ADMIN · Pengaturan =================================
 $page_title = 'Pengaturan';
 $active_menu = 'pengaturan';
 require __DIR__ . '/../layouts/app-header.php';
@@ -22,6 +18,7 @@ $alasanDefault = "NIM tidak ditemukan di SIAKAD\nDokumen tidak terbaca\nPerusaha
     </div>
     <div id="sPanes">
 
+      <!-- ===== Tab: kontak admin jurusan ===== -->
       <div data-pane="kontak">
         <p class="muted">Nomor ini dipakai tombol di menu Kirim Loker ke Jurusan. Gunakan format 62, tanpa spasi.</p>
         <form method="post" action="<?= url('kirim-loker/simpan-kontak') ?>">
@@ -36,16 +33,18 @@ $alasanDefault = "NIM tidak ditemukan di SIAKAD\nDokumen tidak terbaca\nPerusaha
               </tr>
             <?php endforeach; ?>
           </table></div>
-          <button class="btn btn-primary" type="submit" style="margin-top:14px">Simpan kontak</button>
+          <button class="btn btn-primary mt-14" type="submit">Simpan kontak</button>
         </form>
       </div>
 
+      <!-- ===== Tab: template WhatsApp ===== -->
       <form data-pane="wa" hidden method="post" action="<?= url('admin/simpan-pengaturan') ?>">
         <?= csrfField() ?>
         <div class="field"><label>Isi pesan</label><textarea class="input" name="template_wa_loker" rows="6"><?= $g('template_wa_loker', KirimLokerController::TEMPLATE_WA_DEFAULT) ?></textarea><div class="hint">Kata dalam kurung kurawal diganti otomatis.</div></div>
         <button class="btn btn-primary">Simpan template</button>
       </form>
 
+      <!-- ===== Tab: template email ===== -->
       <form data-pane="email" hidden method="post" action="<?= url('admin/simpan-pengaturan') ?>" id="formEmail">
         <?= csrfField() ?>
         <div class="row2">
@@ -70,6 +69,7 @@ $alasanDefault = "NIM tidak ditemukan di SIAKAD\nDokumen tidak terbaca\nPerusaha
         <button class="btn btn-primary">Simpan template</button>
       </form>
 
+      <!-- ===== Tab: alasan penolakan ===== -->
       <form data-pane="alasan" hidden method="post" action="<?= url('admin/simpan-pengaturan') ?>" id="formAlasan">
         <?= csrfField() ?>
         <div class="chips" id="chipAlasan">
@@ -77,14 +77,15 @@ $alasanDefault = "NIM tidak ditemukan di SIAKAD\nDokumen tidak terbaca\nPerusaha
             <span class="chip" data-nilai="<?= e($alasan) ?>"><?= e($alasan) ?><button type="button" aria-label="Hapus alasan">&times;</button></span>
           <?php endforeach; ?>
         </div>
-        <div class="field" style="display:flex;gap:8px;align-items:flex-end;margin-top:14px;max-width:480px">
+        <div class="field d-flex items-end gap-8 mt-14 max-w-480">
           <input class="input" id="alasanBaruInput" placeholder="Tambah alasan baru">
-          <button class="btn btn-primary" type="button" id="btnTambahAlasan" style="flex:none">Tambah</button>
+          <button class="btn btn-primary flex-none" type="button" id="btnTambahAlasan">Tambah</button>
         </div>
         <textarea name="daftar_alasan_penolakan" id="alasanHidden" hidden><?= $g('daftar_alasan_penolakan', $alasanDefault) ?></textarea>
       </form>
 
-      <form data-pane="akun" hidden method="post" action="<?= url('admin/ganti-password') ?>" style="max-width:420px">
+      <!-- ===== Tab: akun admin ===== -->
+      <form class="max-w-420" data-pane="akun" hidden method="post" action="<?= url('admin/ganti-password') ?>">
         <?= csrfField() ?>
         <div class="field"><label>Kata sandi lama</label><input class="input" name="password_lama" type="password" required></div>
         <div class="field"><label>Kata sandi baru</label><input class="input" name="password_baru" type="password" required minlength="8"></div>
@@ -95,6 +96,7 @@ $alasanDefault = "NIM tidak ditemukan di SIAKAD\nDokumen tidak terbaca\nPerusaha
     </div>
   </div>
 </section>
+<!-- ===== Script template email & alasan ===== -->
 <script>
 (function(){
   var select = document.getElementById('pilihTemplateEmail');

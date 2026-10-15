@@ -1,9 +1,5 @@
 <?php
-/**
- * View: publik/masuk
- * Dipanggil oleh: AuthController::formMasuk()
- * Variabel tersedia: $emailSebelumnya
- */
+// ===== FRONTEND · PUBLIK · Halaman masuk (login) =====================
 $f = flashAmbil();
 ?>
 <!DOCTYPE html>
@@ -18,23 +14,25 @@ $f = flashAmbil();
 </head>
 <body>
 <div class="auth">
+  <!-- ===== Panel gambar kiri ===== -->
   <aside class="auth-side">
     <img src="<?= url('assets/img/login.jpg') ?>" alt="">
     <div class="shade"></div>
     <div class="hero-pattern"></div>
     <div class="auth-side-content">
-      <a class="brand" href="<?= url('beranda') ?>" style="color:#fff"><img class="brand-mark" src="<?= asetUrl('assets/img/logo-polinema.png') ?>" alt="Logo Politeknik Negeri Malang"><span>KarirKu Polinema<small>Career Center Politeknik Negeri Malang</small></span></a>
+      <a class="brand" href="<?= url('beranda') ?>"><img class="brand-mark" src="<?= asetUrl('assets/img/logo-polinema.png') ?>" alt="Logo Politeknik Negeri Malang"><span>KarirKu Polinema<small>Career Center Politeknik Negeri Malang</small></span></a>
       <div>
         <q>Keterampilan vokasi, dipertemukan dengan industri yang tepat.</q>
-        <p style="opacity:.8;margin-top:14px">Satu akun untuk melamar, memantau lamaran, dan menyimpan data kariermu.</p>
+        <p class="opacity-80 mt-14">Satu akun untuk melamar, memantau lamaran, dan menyimpan data kariermu.</p>
       </div>
     </div>
   </aside>
 
+  <!-- ===== Form masuk ===== -->
   <main class="auth-main">
     <div class="auth-box">
       <a class="back" href="<?= url('beranda') ?>"><span data-ic="left"></span>Kembali ke beranda</a>
-      <h1 style="font-size:2rem">Masuk</h1>
+      <h1 class="fs-200">Masuk</h1>
       <p class="muted">Gunakan email yang kamu daftarkan. Peran akun dikenali otomatis.</p>
 
       <?php if ($f): ?>
@@ -53,12 +51,12 @@ $f = flashAmbil();
           <label for="pw">Kata sandi</label>
           <div class="pw"><input class="input" id="pw" name="password" type="password" autocomplete="current-password" placeholder="Minimal 8 karakter" required><button type="button" aria-label="Tampilkan kata sandi" data-ic="eye"></button></div>
         </div>
-        <div style="display:flex;justify-content:flex-end;align-items:center;margin-bottom:18px">
+        <div class="d-flex justify-end items-center mb-18">
           <a href="<?= url('auth/lupa-sandi') ?>">Lupa kata sandi?</a>
         </div>
-        <button class="btn btn-primary" style="width:100%;padding:13px" type="submit">Masuk</button>
+        <button class="btn btn-primary btn-block" type="submit">Masuk</button>
       </form>
-      <p style="text-align:center;margin-top:20px">Belum punya akun? <a href="<?= url('daftar') ?>"><b>Daftar</b></a></p>
+      <p class="text-center mt-20">Belum punya akun? <a href="<?= url('daftar') ?>"><b>Daftar</b></a></p>
     </div>
   </main>
 </div>

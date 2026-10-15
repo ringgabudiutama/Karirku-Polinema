@@ -1,23 +1,9 @@
 <?php
-/**
- * Pembuatan PDF
- * PIC   : M. Ubaidillah (Backend dan Database)
- * Status: DIISI.
- *
- * WAJIB jalankan `composer install` dulu supaya folder vendor/ dan Dompdf
- * tersedia (lihat composer.json). Selama vendor/ belum ada, method di
- * bawah akan menampilkan HTML biasa yang tetap rapi kalau dicetak lewat
- * Ctrl+P (atribut CSS @media print sudah disiapkan di dalam $html),
- * supaya fitur unduh CV / laporan tetap bisa didemokan tanpa Dompdf.
- */
+// ===== BACKEND · SERVICE · PDF (CV & laporan) ========================
 
 class PdfService
 {
-    /**
-     * Ubah HTML jadi keluaran PDF (kalau Dompdf tersedia) atau HTML siap-cetak
-     * (kalau belum). Method ini langsung mencetak ke output dan exit, jadi
-     * panggil di baris TERAKHIR sebuah action controller.
-     */
+    // --- Mesin PDF ---------------------------------------------------
     public static function keluarkan(string $html, string $namaFile): void
     {
         if (is_file(__DIR__ . '/../../vendor/autoload.php')) {
@@ -33,11 +19,6 @@ class PdfService
             exit;
         }
 
-        /* Dompdf belum terpasang (folder vendor/ belum ada). Dokumen tetap
-           dikeluarkan sebagai halaman A4 yang sudah ditata untuk dicetak, plus
-           panel kecil berisi tombol "Simpan sebagai PDF" yang langsung membuka
-           dialog cetak browser. Panel itu sendiri tidak ikut tercetak karena
-           disembunyikan di @media print. Hasil akhirnya tetap berkas PDF. */
         header('Content-Type: text/html; charset=utf-8');
 
         $judul = htmlspecialchars(pathinfo($namaFile, PATHINFO_FILENAME), ENT_QUOTES, 'UTF-8');
@@ -73,8 +54,7 @@ class PdfService
         exit;
     }
 
-    /* --------------------- CV Otomatis mahasiswa --------------------- */
-
+    // --- CV mahasiswa ------------------------------------------------
     public static function cv(array $mahasiswa, array $pendidikan, array $pengalaman, array $sertifikat, array $portofolio, array $skill): void
     {
         $html = '<html><head><meta charset="utf-8"><style>
@@ -89,8 +69,6 @@ class PdfService
             .chip{display:inline-block;background:#eaf0fb;color:#16305e;border-radius:10px;padding:3px 10px;margin:2px 4px 2px 0;font-size:11px}
             </style></head><body>';
         $html .= '<h1>' . e($mahasiswa['nama']) . '</h1>';
-        // Hanya bagian yang benar-benar terisi yang ikut dicetak, supaya tidak
-        // muncul pemisah titik yang menggantung tanpa isi.
         $identitas = array_filter([
             trim(($mahasiswa['jenjang'] ?? '') . ' ' . ($mahasiswa['nama_prodi'] ?? '')),
             !empty($mahasiswa['nim']) ? 'NIM ' . $mahasiswa['nim'] : '',
@@ -140,7 +118,6 @@ class PdfService
             $html .= '</p>';
         }
 
-        // Status karier ikut ditampilkan supaya CV mencerminkan kondisi terkini.
         if (!empty($mahasiswa['status_karier'])) {
             $ringkas = Mahasiswa::ringkasanKarier($mahasiswa);
             $html .= '<h2>Status karier</h2><p>' . e(ucfirst($mahasiswa['status_karier']));
@@ -150,8 +127,6 @@ class PdfService
             $html .= '</p>';
         }
 
-        // Kalau profil masih kosong, beri penanda supaya mahasiswa sadar
-        // CV-nya perlu dilengkapi dulu sebelum dikirim ke perusahaan.
         if (!$pendidikan && !$pengalaman && !$sertifikat && !$portofolio && !$skill) {
             $html .= '<h2>Catatan</h2><p style="color:#8a3a2f">Profil karier masih kosong. '
                    . 'Lengkapi pendidikan, pengalaman, sertifikat, dan skill di menu '
@@ -174,8 +149,7 @@ class PdfService
             . '</div>';
     }
 
-    /* --------------------- 3 laporan Admin --------------------- */
-
+    // --- Laporan admin -----------------------------------------------
     public static function rekapLowongan(array $baris): void
     {
         $html = self::headerLaporan('Rekap Lowongan per Perusahaan');
@@ -214,6 +188,7 @@ class PdfService
         self::keluarkan($html, 'Laporan-Tracer-Karier.pdf');
     }
 
+    // --- Template laporan --------------------------------------------
     private static function headerLaporan(string $judul): string
     {
         return '<html><head><meta charset="utf-8"><style>
@@ -234,11 +209,6 @@ class PdfService
         return '</body></html>';
     }
 
-    /**
-     * Ambil isi di antara <body>...</body> dari HTML dokumen, plus seluruh
-     * blok <style> di <head>, supaya bisa disisipkan ke dalam halaman
-     * pembungkus tanpa membuat tag <html> bersarang.
-     */
     private static function isiBody(string $html): string
     {
         $gaya = '';

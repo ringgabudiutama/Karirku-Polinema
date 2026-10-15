@@ -1,9 +1,5 @@
 <?php
-/**
- * View: mahasiswa/lamaran (route: lamaran/lamaran-saya)
- * Dipanggil oleh: LamaranController::lamaranSaya()
- * Variabel: $lamaran
- */
+// ===== FRONTEND · MAHASISWA · Lamaran saya ===========================
 $page_title = 'Lamaran Saya';
 $active_menu = 'lamaran';
 require __DIR__ . '/../layouts/app-header.php';
@@ -27,14 +23,15 @@ $daftarTampil = array_filter($lamaran, fn($a) => $dalamGrup($a, $grup));
 <section class="view active">
   <div class="page-head"><div><h1>Lamaran Saya</h1><p>Pantau setiap lamaran dari diajukan sampai hasil akhir.</p></div></div>
 
+  <!-- ===== Tab status ===== -->
   <div class="tabs" data-tabs="x">
     <?php foreach ($grupOpsi as $key => $label): $jumlahGrup = count(array_filter($lamaran, fn($a) => $dalamGrup($a, $key))); ?>
-      <a href="<?= url('lamaran/lamaran-saya?status=' . $key) ?>" class="<?= $grup === $key ? 'active' : '' ?>" style="text-decoration:none"><?= e($label) ?><span class="c"><?= $jumlahGrup ?></span></a>
+      <a href="<?= url('lamaran/lamaran-saya?status=' . $key) ?>" class="<?= $grup === $key ? 'active' : '' ?>"><?= e($label) ?><span class="c"><?= $jumlahGrup ?></span></a>
     <?php endforeach; ?>
   </div>
 
   <?php if (empty($daftarTampil)): ?>
-    <div class="panel" style="text-align:center">
+    <div class="panel text-center">
       <h3>Belum ada lamaran di sini</h3>
       <p class="muted">Temukan lowongan yang sesuai dan kirim lamaran pertamamu.</p>
       <a class="btn btn-primary" href="<?= url('lowongan/daftar') ?>">Cari lowongan</a>
@@ -47,8 +44,8 @@ $daftarTampil = array_filter($lamaran, fn($a) => $dalamGrup($a, $grup));
   ?>
     <article class="app-card">
       <div class="app-card-head">
-        <?php if ($logoUrl): ?><img class="avatar" src="<?= e($logoUrl) ?>" alt=""><?php else: ?><span class="avatar" style="display:inline-flex;align-items:center;justify-content:center;background:var(--blue-soft);color:var(--navy);font-weight:700"><?= e(inisial($a['nama_perusahaan'])) ?></span><?php endif; ?>
-        <div class="grow"><a href="<?= url('lowongan/detail/' . $a['lowongan_id']) ?>"><b><?= e($a['posisi']) ?></b></a><div class="muted" style="font-size:.9rem"><?= e($a['nama_perusahaan']) ?>, dilamar <?= tanggalIndo($a['tanggal_lamar']) ?>, dengan <?= $a['jenis_cv'] === 'unggah' ? 'CV unggahan' : 'CV otomatis' ?></div></div>
+        <?php if ($logoUrl): ?><img class="avatar" src="<?= e($logoUrl) ?>" alt=""><?php else: ?><span class="avatar avatar-inisial"><?= e(inisial($a['nama_perusahaan'])) ?></span><?php endif; ?>
+        <div class="grow"><a href="<?= url('lowongan/detail/' . $a['lowongan_id']) ?>"><b><?= e($a['posisi']) ?></b></a><div class="muted fs-90"><?= e($a['nama_perusahaan']) ?>, dilamar <?= tanggalIndo($a['tanggal_lamar']) ?>, dengan <?= $a['jenis_cv'] === 'unggah' ? 'CV unggahan' : 'CV otomatis' ?></div></div>
         <?= badgeHtml(labelStatusLamaran($a['status'])) ?>
       </div>
       <div class="timeline">
@@ -65,10 +62,6 @@ $daftarTampil = array_filter($lamaran, fn($a) => $dalamGrup($a, $grup));
 
       <?php if ($a['status'] === 'interview' && $a['interview_tanggal']): ?>
         <?php
-        /* Rincian jadwal disusun lewat Interview::rincian() supaya isinya
-           menyesuaikan mode: interview daring menampilkan tautan meeting,
-           interview luring menampilkan tempat, ruangan, pakaian, berkas yang
-           dibawa, dan narahubung. */
         $rincianInterview = Interview::rincian([
             'tanggal'       => $a['interview_tanggal'],
             'jam'           => $a['interview_jam'],
@@ -82,15 +75,15 @@ $daftarTampil = array_filter($lamaran, fn($a) => $dalamGrup($a, $grup));
             'catatan'       => $a['interview_catatan'] ?? '',
         ]);
         ?>
-        <div class="info-box" style="align-items:flex-start">
+        <div class="info-box items-start">
           <span data-ic="calendar"></span>
-          <span style="flex:1">
+          <span class="flex-1">
             <b>Jadwal interview</b>
-            <table style="margin-top:8px;font-size:.92rem;border-collapse:collapse">
+            <table class="tabel-info">
               <?php foreach ($rincianInterview as [$label, $isi]): ?>
                 <tr>
-                  <td style="padding:3px 14px 3px 0;vertical-align:top;color:var(--muted);white-space:nowrap"><?= e($label) ?></td>
-                  <td style="padding:3px 0;vertical-align:top">
+                  <td><?= e($label) ?></td>
+                  <td>
                     <?php if ($label === 'Tautan'): ?>
                       <a href="<?= e($isi) ?>" target="_blank" rel="noopener"><?= e($isi) ?></a>
                     <?php else: ?>
@@ -111,8 +104,8 @@ $daftarTampil = array_filter($lamaran, fn($a) => $dalamGrup($a, $grup));
       <?php endif; ?>
 
       <?php if ($a['status'] === 'diajukan'): ?>
-        <div style="text-align:right;margin-top:10px">
-          <form method="post" action="<?= url('lamaran/batalkan/' . $a['id']) ?>" onsubmit="return confirm('Batalkan lamaran ini? Lamaran yang dibatalkan tidak bisa dikirim ulang untuk lowongan yang sama.')" style="display:inline">
+        <div class="text-right mt-10">
+          <form class="d-inline" method="post" action="<?= url('lamaran/batalkan/' . $a['id']) ?>" onsubmit="return confirm('Batalkan lamaran ini? Lamaran yang dibatalkan tidak bisa dikirim ulang untuk lowongan yang sama.')">
             <?= csrfField() ?>
             <button class="btn btn-sm btn-outline" type="submit">Batalkan lamaran</button>
           </form>

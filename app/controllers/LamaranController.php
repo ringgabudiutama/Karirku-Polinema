@@ -1,18 +1,9 @@
 <?php
-/**
- * Pipeline lamaran
- * PIC   : Muhamad Nafi' Hanif (Modul Mahasiswa dan Alumni)
- * Status: LOGIKA BACKEND DIISI. Transaksi penerimaan pelamar ada di
- *         app/models/Lamaran.php::terima(), controller ini hanya memanggilnya.
- */
+// ===== BACKEND · CONTROLLER · Lamaran ================================
 
 class LamaranController extends Controller
 {
-    /**
-     * View: mahasiswa/lamaran-form. GET menampilkan form pilih CV + unggah
-     * dokumen, POST (form yang sama, method=post) memprosesnya.
-     * Variabel utk GET: $lowongan, $mahasiswa.
-     */
+    // --- Mahasiswa: kirim lamaran ------------------------------------
     public function kirim(int $lowonganId)
     {
         Auth::wajibAktif();
@@ -42,15 +33,12 @@ class LamaranController extends Controller
     private function prosesKirim(int $lowonganId, array $mhs, array $lowongan): void
     {
         $mahasiswaId = (int) $mhs['id'];
-        // Hanya dua nilai yang dikenal database. Kiriman lain diperlakukan
-        // sebagai CV otomatis, supaya tidak berakhir jadi halaman fatal error.
         $jenisCv = $this->input('jenis_cv');
         if (!in_array($jenisCv, ['generate', 'unggah'], true)) {
             $jenisCv = 'generate';
         }
         $catatan = $this->input('catatan_pelamar');
 
-        // KTM (atau ijazah untuk alumni) diambil OTOMATIS dari profil, sesuai proposal.
         if (empty($mhs['file_ktm'])) {
             $this->flash('bad', 'Lengkapi dokumen KTM/ijazah di Profil Karier sebelum melamar.');
             $this->redirect('lowongan/detail/' . $lowonganId);
@@ -62,16 +50,9 @@ class LamaranController extends Controller
 
         $fileCv = $jenisCv === 'unggah' ? $mhs['file_cv'] : null;
         if ($jenisCv === 'generate') {
-            // Untuk kesederhanaan: pakai file_cv yang tersimpan bila ada, atau tandai '-'
-            // agar kolom NOT NULL tetap terisi. CV yang sesungguhnya dibuat on-the-fly
-            // lewat MahasiswaController::generateCv() dan bisa diunduh kapan pun.
             $fileCv = $mhs['file_cv'] ?: 'cv-otomatis.pdf';
         }
 
-        // Surat pengantar. Mahasiswa boleh mengunggah berkas khusus untuk lowongan
-        // ini, misalnya surat yang menyebut nama perusahaannya. Kalau tidak
-        // mengunggah apa pun, surat pengantar yang sudah ada di Profil Karier
-        // yang dipakai, supaya tidak perlu mengunggah berkas sama berulang kali.
         $adaUnggahan = isset($_FILES['file_surat_pengantar'])
             && ($_FILES['file_surat_pengantar']['error'] ?? UPLOAD_ERR_NO_FILE) !== UPLOAD_ERR_NO_FILE;
 
@@ -109,7 +90,6 @@ class LamaranController extends Controller
             'catatan_pelamar'      => $catatan,
         ], $snapshot, Auth::penggunaSaatIni()['id']);
 
-        // 9. Notifikasi lamaran baru masuk -> perusahaan
         $prsh = (new Perusahaan())->cariById($lowongan['perusahaan_id'] ?? 0) ?? Database::fetch(
             'SELECT * FROM perusahaan WHERE id = ?', [$lowongan['perusahaan_id']]
         );
@@ -123,7 +103,7 @@ class LamaranController extends Controller
         $this->redirect('lamaran/lamaran-saya');
     }
 
-    /** View: mahasiswa/lamaran. Variabel: $lamaran (semua milik mahasiswa, dengan status & jadwal interview). */
+    // --- Mahasiswa: lamaran saya -------------------------------------
     public function lamaranSaya()
     {
         Auth::wajibAktif();
@@ -158,12 +138,7 @@ class LamaranController extends Controller
         $this->redirect('lamaran/lamaran-saya');
     }
 
-    /**
-     * View: perusahaan/pelamar-detail. Variabel: $lamaran, $mahasiswa (profil
-     * lengkap si pelamar termasuk relasi skill/profil_item untuk ditampilkan),
-     * $riwayat, $interview.
-     * Membuka halaman ini otomatis memindahkan status 'diajukan' -> 'screening'.
-     */
+    // --- Perusahaan: proses pelamar ----------------------------------
     public function detailPelamar(int $id)
     {
         Auth::wajibAktif();
@@ -179,7 +154,7 @@ class LamaranController extends Controller
         }
 
         $lamaranModel->tandaiScreeningJikaBelum($id, Auth::penggunaSaatIni()['id']);
-        $lamaran = $lamaranModel->cariDetail($id); // ambil ulang, status mungkin baru berubah
+        $lamaran = $lamaranModel->cariDetail($id);
 
         $mahasiswa = (new Mahasiswa())->cariLengkap((int) $lamaran['mahasiswa_id']);
 
@@ -193,12 +168,6 @@ class LamaranController extends Controller
         ]);
     }
 
-    /**
-     * Satu action untuk beberapa aksi seleksi dari halaman Detail Pelamar,
-     * dibedakan lewat field tersembunyi "aksi": jadwal_interview | tolak.
-     * (Untuk aksi "terima", lihat LamaranController::terima() -- dipisah
-     * karena efeknya lebih besar, jadi enak diaudit terpisah di kode.)
-     */
     public function ubahStatus(int $id)
     {
         $this->wajibPost();
@@ -230,10 +199,6 @@ class LamaranController extends Controller
                 $this->redirect('lamaran/detail-pelamar/' . $id);
             }
 
-            // Field wajib berbeda antara daring dan luring. Interview daring
-            // butuh tautan meeting; interview luring butuh alamat tempat, dan
-            // sebaiknya disertai ruangan, dresscode, serta berkas yang dibawa
-            // supaya pelamar tidak perlu bertanya lagi lewat WhatsApp.
             $data = [
                 'tanggal' => $tanggal,
                 'jam'     => $jam,
@@ -259,7 +224,7 @@ class LamaranController extends Controller
                 $data['dresscode']     = $this->input('dresscode');
                 $data['yang_dibawa']   = $this->input('yang_dibawa');
                 $data['narahubung']    = $this->input('narahubung');
-                $data['lokasi_tautan'] = $tempat; // kolom lama tetap terisi
+                $data['lokasi_tautan'] = $tempat;
             }
 
             $lamaranModel->jadwalkanInterview($id, $penggunaId, $data);
@@ -281,11 +246,6 @@ class LamaranController extends Controller
         $this->redirect('lamaran/detail-pelamar/' . $id);
     }
 
-    /**
-     * Terima pelamar. Method terpisah (bukan lewat ubahStatus) karena ini
-     * memicu transaksi 3-pihak lewat Lamaran::terima() -- lihat komentar di
-     * app/models/Lamaran.php.
-     */
     public function terima(int $id)
     {
         $this->wajibPost();
@@ -309,7 +269,6 @@ class LamaranController extends Controller
             $this->redirect('lamaran/detail-pelamar/' . $id);
         }
 
-        // 11. Notifikasi ke pelamar, perusahaan, dan admin.
         NotifikasiService::pelamarDiterima(
             (int) $lamaran['mahasiswa_pengguna_id'],
             (int) $prsh['pengguna_id'],
@@ -317,7 +276,6 @@ class LamaranController extends Controller
             $lamaran['nama_perusahaan'],
             $lamaran['nama_mahasiswa']
         );
-        // 12. Kalau kuota baru saja penuh, beri tahu perusahaan bahwa lowongan otomatis ditutup.
         if ($kuotaSebelumPenuh) {
             NotifikasiService::kuotaTerpenuhi((int) $prsh['pengguna_id'], $lamaran['posisi']);
         }

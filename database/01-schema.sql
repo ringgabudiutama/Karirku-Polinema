@@ -1,9 +1,6 @@
--- =====================================================================
--- KarirKu Polinema - Skema PostgreSQL
--- Sesuai ERD-KarirKu.png dan EERD-KarirKu.png
--- =====================================================================
+-- ===== KarirKu Polinema - Skema PostgreSQL ===============================
 
--- ------------------------- Referensi -------------------------
+-- ----- Referensi ---------------------------------------------------------
 CREATE TABLE jurusan (
   id            serial PRIMARY KEY,
   nama          varchar(100) NOT NULL UNIQUE
@@ -14,8 +11,6 @@ CREATE TABLE program_studi (
   jurusan_id    integer NOT NULL REFERENCES jurusan(id) ON DELETE RESTRICT,
   nama          varchar(150) NOT NULL,
   jenjang       varchar(10)  NOT NULL CHECK (jenjang IN ('D-II','D-III','D-IV','S2')),
-  -- Satu jurusan bisa punya nama program studi yang sama di dua jenjang,
-  -- misalnya Teknik Elektronika yang dibuka pada D-III dan D-IV.
   UNIQUE (jurusan_id, nama, jenjang)
 );
 
@@ -29,7 +24,7 @@ CREATE TABLE bidang (
   nama          varchar(100) NOT NULL UNIQUE
 );
 
--- ------------------------- Akun dan peran -------------------------
+-- ----- Akun dan peran ----------------------------------------------------
 CREATE TABLE pengguna (
   id             serial PRIMARY KEY,
   email          varchar(255) NOT NULL UNIQUE,
@@ -71,13 +66,6 @@ CREATE TABLE mahasiswa (
   level_jabatan          varchar(50),
   tanggal_mulai_kerja    date,
   karier_diperbarui_pada date,
-  -- Kolom di bawah dipakai bergantung pilihan status_karier (lihat Profil Karier):
-  --   bekerja       : tempat_kerja, posisi_kerja, level_jabatan, tanggal_mulai_kerja
-  --   wirausaha     : tempat_kerja (nama usaha), posisi_kerja, tanggal_mulai_kerja
-  --   studi lanjut  : tempat_kerja (nama kampus), karier_fakultas, posisi_kerja
-  --                   (program studi), karier_tahap_studi, tanggal_mulai_kerja
-  --   mencari kerja : karier_bidang_minat, karier_rencana_posisi
-  --   belum bekerja : karier_bidang_minat
   karier_fakultas        varchar(150),
   karier_bidang_minat    varchar(255),
   karier_rencana_posisi  varchar(255),
@@ -103,7 +91,7 @@ CREATE TABLE perusahaan (
   bukan_outsourcing boolean NOT NULL DEFAULT false
 );
 
--- ------------------------- Verifikasi akun -------------------------
+-- ----- Verifikasi akun ---------------------------------------------------
 CREATE TABLE dokumen_verifikasi (
   id            serial PRIMARY KEY,
   pengguna_id   integer NOT NULL REFERENCES pengguna(id) ON DELETE CASCADE,
@@ -124,7 +112,7 @@ CREATE TABLE verifikasi_akun (
   CHECK (keputusan = 'disetujui' OR keputusan = 'aktif' OR catatan IS NOT NULL)
 );
 
--- ------------------------- Profil karier -------------------------
+-- ----- Profil karier -----------------------------------------------------
 CREATE TABLE profil_item (
   id           serial PRIMARY KEY,
   mahasiswa_id integer NOT NULL REFERENCES mahasiswa(id) ON DELETE CASCADE,
@@ -151,7 +139,7 @@ CREATE TABLE mahasiswa_minat (
   PRIMARY KEY (mahasiswa_id, bidang_id)
 );
 
--- ------------------------- Lowongan -------------------------
+-- ----- Lowongan ----------------------------------------------------------
 CREATE TABLE lowongan (
   id               serial PRIMARY KEY,
   perusahaan_id    integer NOT NULL REFERENCES perusahaan(id) ON DELETE CASCADE,
@@ -189,7 +177,7 @@ CREATE TABLE lowongan_disimpan (
   PRIMARY KEY (mahasiswa_id, lowongan_id)
 );
 
--- ------------------------- Lamaran -------------------------
+-- ----- Lamaran -----------------------------------------------------------
 CREATE TABLE lamaran (
   id                   serial PRIMARY KEY,
   mahasiswa_id         integer NOT NULL REFERENCES mahasiswa(id) ON DELETE CASCADE,
@@ -225,7 +213,6 @@ CREATE TABLE interview (
   mode          varchar(20) NOT NULL CHECK (mode IN ('daring','luring')),
   lokasi_tautan varchar(255) NOT NULL,
   catatan       varchar(500),
-  -- Diisi hanya bila mode = 'luring'
   tempat        varchar(255),
   ruangan       varchar(100),
   dresscode     varchar(255),
@@ -233,7 +220,7 @@ CREATE TABLE interview (
   narahubung    varchar(255)
 );
 
--- ------------------------- Notifikasi dan admin -------------------------
+-- ----- Notifikasi dan admin ----------------------------------------------
 CREATE TABLE notifikasi (
   id          serial PRIMARY KEY,
   pengguna_id integer NOT NULL REFERENCES pengguna(id) ON DELETE CASCADE,
@@ -271,7 +258,7 @@ CREATE TABLE pengaturan (
   diperbarui_pada timestamp NOT NULL DEFAULT now()
 );
 
--- ------------------------- Indeks pendukung -------------------------
+-- ----- Indeks pendukung --------------------------------------------------
 CREATE INDEX idx_lowongan_status     ON lowongan (status, batas_lamaran);
 CREATE INDEX idx_lowongan_perusahaan ON lowongan (perusahaan_id);
 CREATE INDEX idx_lamaran_status      ON lamaran (status);
@@ -279,37 +266,7 @@ CREATE INDEX idx_lamaran_lowongan    ON lamaran (lowongan_id);
 CREATE INDEX idx_notifikasi_belum    ON notifikasi (pengguna_id, dibaca);
 CREATE INDEX idx_profil_item_mhs     ON profil_item (mahasiswa_id, tipe);
 
--- ------------------------- Contoh transaksi saat pelamar diterima -------------------------
--- BEGIN;
---   UPDATE lamaran   SET status = 'diterima', diperbarui_pada = now() WHERE id = :lamaran_id;
---   UPDATE lowongan  SET terisi = terisi + 1,
---                        status = CASE WHEN terisi + 1 >= kuota THEN 'ditutup' ELSE status END
---                  WHERE id = :lowongan_id;
---   UPDATE mahasiswa SET status_karier = 'bekerja',
---                        tempat_kerja  = :nama_perusahaan,
---                        posisi_kerja  = :posisi,
---                        tanggal_mulai_kerja = :tanggal_mulai,
---                        karier_diperbarui_pada = current_date
---                  WHERE id = :mahasiswa_id;
---   INSERT INTO riwayat_lamaran (lamaran_id, status, diubah_oleh) VALUES (:lamaran_id, 'diterima', :pengguna_id);
---   INSERT INTO notifikasi (pengguna_id, tipe, judul, pesan, tautan) VALUES (...);
--- COMMIT;
-
--- =====================================================================
--- KarirKu Polinema - Tambahan opsional: Lupa Kata Sandi
--- PIC   : M. Ubaidillah (Backend dan Database)
--- =====================================================================
--- Kenapa file terpisah, bukan ditambahkan ke 01-schema.sql?
--- Supaya siapa pun yang sudah menjalankan 01-schema.sql dan 02-seed.sql
--- lebih dulu tidak perlu drop database untuk memakai fitur "Lupa Kata
--- Sandi" di AuthController. Tinggal jalankan file ini di atas database
--- yang sudah ada. Kalau tabel ini belum dijalankan, AuthController tetap
--- berjalan normal untuk fitur lain -- hanya menu Lupa Kata Sandi yang
--- akan menampilkan pesan "fitur belum aktif" (lihat AuthController::lupaSandi()).
---
--- Jalankan setelah 01-schema.sql (boleh sebelum/sesudah 02-seed.sql,
--- urutannya tidak masalah karena tabel ini berdiri sendiri).
--- =====================================================================
+-- ===== Tambahan: tabel reset kata sandi (fitur Lupa Kata Sandi) =========
 
 CREATE TABLE IF NOT EXISTS reset_kata_sandi (
   id           serial PRIMARY KEY,
@@ -321,4 +278,3 @@ CREATE TABLE IF NOT EXISTS reset_kata_sandi (
 );
 
 CREATE INDEX IF NOT EXISTS idx_reset_kata_sandi_pengguna ON reset_kata_sandi (pengguna_id);
-

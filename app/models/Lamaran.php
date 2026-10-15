@@ -1,18 +1,11 @@
 <?php
-/**
- * Model tabel lamaran
- * PIC   : Muhamad Nafi' Hanif (Modul Mahasiswa dan Alumni)
- * Status: DIISI.
- *
- * Bagian terpenting: terima() menjalankan transaksi yang sama persis dengan
- * contoh SQL di bagian bawah database/01-schema.sql, memakai model lain
- * (Mahasiswa, Lowongan, RiwayatLamaran) di dalam satu Database::beginTransaction().
- */
+// ===== BACKEND · MODEL · Lamaran (tabel lamaran) =====================
 
 class Lamaran extends Model
 {
     protected string $tabel = 'lamaran';
 
+    // --- Mahasiswa: melamar ------------------------------------------
     public function sudahMelamar(int $mahasiswaId, int $lowonganId): bool
     {
         return Database::fetch(
@@ -21,11 +14,6 @@ class Lamaran extends Model
         ) !== null;
     }
 
-    /**
-     * Ajukan lamaran baru. $snapshot adalah salinan ringkas profil mahasiswa
-     * SAAT melamar (disimpan sebagai JSON) supaya riwayat lamaran tidak
-     * berubah walau mahasiswa mengedit profilnya belakangan.
-     */
     public function ajukan(int $mahasiswaId, int $lowonganId, array $d, array $snapshot, int $penggunaId): int
     {
         Database::beginTransaction();
@@ -52,6 +40,7 @@ class Lamaran extends Model
         }
     }
 
+    // --- Baca data ---------------------------------------------------
     public function cariDetail(int $id): ?array
     {
         return Database::fetch(
@@ -131,7 +120,7 @@ class Lamaran extends Model
         return Database::fetchAll($sql, $params);
     }
 
-    /** Hanya bisa dibatalkan pelamar sendiri, dan hanya selagi masih 'diajukan'. */
+    // --- Ubah status lamaran -----------------------------------------
     public function batalkan(int $id, int $mahasiswaId, int $penggunaId): bool
     {
         $baris = Database::fetch('SELECT status FROM lamaran WHERE id = ? AND mahasiswa_id = ?', [$id, $mahasiswaId]);
@@ -150,7 +139,6 @@ class Lamaran extends Model
         }
     }
 
-    /** Dipanggil otomatis saat perusahaan pertama kali membuka detail pelamar. */
     public function tandaiScreeningJikaBelum(int $id, int $penggunaId): void
     {
         $baris = Database::fetch('SELECT status FROM lamaran WHERE id = ?', [$id]);
@@ -213,15 +201,6 @@ class Lamaran extends Model
         }
     }
 
-    /**
-     * INTI FITUR: saat pelamar diterima, TIGA pihak diperbarui sekaligus
-     * dalam SATU transaksi supaya datanya tidak pernah setengah-setengah:
-     *   1. status lamaran -> diterima, dicatat ke riwayat_lamaran
-     *   2. status_karier mahasiswa -> bekerja (Mahasiswa::tandaiDiterimaKerja)
-     *   3. kuota lowongan bertambah terisi, otomatis ditutup kalau penuh
-     *      (Lowongan::tambahTerisi)
-     * Persis seperti contoh SQL di bagian bawah database/01-schema.sql.
-     */
     public function terima(int $lamaranId, int $penggunaId): void
     {
         $lamaran = $this->cariDetail($lamaranId);
@@ -248,7 +227,6 @@ class Lamaran extends Model
             throw $e;
         }
 
-        // Notifikasi dikirim SETELAH transaksi DB berhasil (bukan bagian dari data transaksional).
         (new Notifikasi())->buat(
             (int) $lamaran['mahasiswa_pengguna_id'],
             'lamaran_diterima',
@@ -258,20 +236,16 @@ class Lamaran extends Model
         );
     }
 
-    /* --------------------- rekap admin --------------------- */
-
+    // --- Rekap admin -------------------------------------------------
     public function rekapAdmin(array $filter = []): array
     {
         $where = ['1=1'];
         $params = [];
-        // Satu kotak pencarian mencakup nama pelamar, nama perusahaan, dan posisi.
-        // Ini menggantikan dropdown filter perusahaan yang dulu terpisah.
         if (!empty($filter['q'])) {
             $where[] = '(m.nama ILIKE ? OR pr.nama_perusahaan ILIKE ? OR l.posisi ILIKE ? OR m.nim ILIKE ?)';
             $cari = '%' . trim($filter['q']) . '%';
             array_push($params, $cari, $cari, $cari, $cari);
         }
-        // Tetap didukung supaya tautan lama "?perusahaan_id=..." tidak rusak.
         if (!empty($filter['perusahaan_id'])) {
             $where[] = 'l.perusahaan_id = ?';
             $params[] = $filter['perusahaan_id'];
@@ -288,7 +262,6 @@ class Lamaran extends Model
             $where[] = 'm.angkatan = ?';
             $params[] = $filter['angkatan'];
         }
-        // Dipakai halaman Admin > profil satu mahasiswa.
         if (!empty($filter['mahasiswa_id'])) {
             $where[] = 'lm.mahasiswa_id = ?';
             $params[] = $filter['mahasiswa_id'];
@@ -314,7 +287,6 @@ class Lamaran extends Model
         return Database::fetchAll($sql, $params);
     }
 
-    /** Daftar bulan (format YYYY-MM + label Indo) yang punya data lamaran, terbaru dulu, untuk <select> filter Rekap Lamaran. */
     public function bulanTersedia(): array
     {
         $namaBulan = ['', 'Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];

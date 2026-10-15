@@ -1,9 +1,5 @@
 <?php
-/**
- * View: publik/lupa-sandi
- * Dipanggil oleh: AuthController::lupaSandi()
- * Variabel tersedia: $tersedia (bool)
- */
+// ===== FRONTEND · PUBLIK · Lupa kata sandi ===========================
 $f = flashAmbil();
 ?>
 <!DOCTYPE html>
@@ -18,18 +14,20 @@ $f = flashAmbil();
 </head>
 <body>
 <div class="auth">
+  <!-- ===== Panel gambar kiri ===== -->
   <aside class="auth-side">
     <img src="<?= url('assets/img/login.jpg') ?>" alt="">
     <div class="shade"></div>
     <div class="hero-pattern"></div>
     <div class="auth-side-content">
-      <a class="brand" href="<?= url('beranda') ?>" style="color:#fff"><img class="brand-mark" src="<?= asetUrl('assets/img/logo-polinema.png') ?>" alt="Logo Politeknik Negeri Malang"><span>KarirKu Polinema<small>Career Center Politeknik Negeri Malang</small></span></a>
+      <a class="brand" href="<?= url('beranda') ?>"><img class="brand-mark" src="<?= asetUrl('assets/img/logo-polinema.png') ?>" alt="Logo Politeknik Negeri Malang"><span>KarirKu Polinema<small>Career Center Politeknik Negeri Malang</small></span></a>
     </div>
   </aside>
+  <!-- ===== Form lupa kata sandi ===== -->
   <main class="auth-main">
     <div class="auth-box">
       <a class="back" href="<?= url('masuk') ?>"><span data-ic="left"></span>Kembali ke halaman masuk</a>
-      <h1 style="font-size:1.8rem">Atur ulang kata sandi</h1>
+      <h1 class="fs-180">Atur ulang kata sandi</h1>
       <p class="muted">Masukkan email akunmu. Kami kirim tautan untuk membuat kata sandi baru, berlaku 60 menit.</p>
 
       <?php if ($f): ?>
@@ -42,7 +40,7 @@ $f = flashAmbil();
         <form method="post" action="<?= url('auth/proses-lupa-sandi') ?>">
           <?= csrfField() ?>
           <div class="field"><label for="email">Email</label><input class="input" id="email" name="email" type="email" required placeholder="nama@email.com"></div>
-          <button class="btn btn-primary" style="width:100%;padding:13px" type="submit">Kirim tautan reset</button>
+          <button class="btn btn-primary btn-block" type="submit">Kirim tautan reset</button>
         </form>
       <?php endif; ?>
     </div>

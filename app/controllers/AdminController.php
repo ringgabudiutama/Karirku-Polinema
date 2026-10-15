@@ -1,22 +1,9 @@
 <?php
-/**
- * Dashboard, verifikasi akun, dan laporan Admin Career Center
- * PIC   : Aqillah (UI/UX, Frontend, dan Integrasi)
- * Status: LOGIKA BACKEND DIISI. Views masih perlu ditimpa dengan desain asli
- *         dari public/admin.html (lihat app/views/PANDUAN-VIEW.md).
- * Catatan: tidak ada login terpisah untuk Admin -- satu form Masuk untuk
- * semua peran (lihat AuthController), peran dikenali otomatis dari akun.
- */
+// ===== BACKEND · CONTROLLER · Admin (Career Center) ==================
 
 class AdminController extends Controller
 {
-    /**
-     * Ambil id baris tabel admin milik pengguna yang sedang login.
-     * Kalau tidak ketemu (sesi basi setelah database di-reset/diisi ulang,
-     * atau akun pengguna_id ini memang belum ada di tabel admin), pengguna
-     * otomatis dikeluarkan dan diarahkan ke halaman Masuk dengan pesan
-     * yang jelas, daripada aplikasi mati dengan layar error putih.
-     */
+    // --- Helper ------------------------------------------------------
     private function adminId(): int
     {
         $id = (new Admin())->idDariPenggunaId(Auth::penggunaSaatIni()['id']);
@@ -28,10 +15,7 @@ class AdminController extends Controller
         return $id;
     }
 
-    /**
-     * View: admin/dashboard. Variabel: $statistik (array angka ringkas),
-     * $antreanVerifikasi (5 pendaftar terlama menunggu), $notifikasi (aktivitas terbaru).
-     */
+    // --- Dashboard ---------------------------------------------------
     public function dashboard()
     {
         Auth::wajibAktif();
@@ -45,15 +29,10 @@ class AdminController extends Controller
         ]);
     }
 
-    /** 6 bulan terakhir (termasuk bulan berjalan): [['label' => 'Apr', 'jumlah' => 120], ...] untuk grafik Dashboard. */
     private function lamaranPerBulan(int $jumlahBulan = 6): array
     {
         $namaBulan = ['', 'Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
 
-        // Acuan "bulan sekarang" mengikuti data lamaran PALING BARU di database
-        // (bukan tanggal asli server), supaya kalau data terbarunya Sep 2026,
-        // grafik otomatis tampil Apr-Sep 2026; kalau terbarunya Agu 2026,
-        // grafik tampil Mar-Agu 2026, dst.
         $tanggalTerbaru = Database::fetch('SELECT MAX(tanggal_lamar) AS t FROM lamaran')['t'];
         $acuan = $tanggalTerbaru ? strtotime($tanggalTerbaru) : time();
 
@@ -83,10 +62,7 @@ class AdminController extends Controller
         ];
     }
 
-    /**
-     * View: admin/persetujuan-akun. Variabel: $antrean (daftar pendaftar
-     * menunggu, dengan filter jurusan opsional), $jurusan, $filter.
-     */
+    // --- Persetujuan akun --------------------------------------------
     public function persetujuan()
     {
         Auth::wajibAktif();
@@ -100,10 +76,6 @@ class AdminController extends Controller
         ]);
     }
 
-    /**
-     * View: admin/persetujuan-detail. Variabel: $pengguna, $profil (data
-     * mahasiswa ATAU perusahaan tergantung role), $dokumen, $riwayat.
-     */
     public function detailPendaftar(int $penggunaId)
     {
         Auth::wajibAktif();
@@ -128,14 +100,13 @@ class AdminController extends Controller
         ]);
     }
 
-    /** Tiga keputusan dari Halaman Detail Pendaftar: Setujui, Minta Perbaikan, Tolak. */
     public function putuskan(int $penggunaId)
     {
         $this->wajibPost();
         Auth::wajibAktif();
         Role::wajib('admin');
 
-        $keputusan = $this->input('keputusan'); // 'disetujui' | 'perbaikan' | 'ditolak'
+        $keputusan = $this->input('keputusan');
         $catatan = $this->input('catatan');
 
         if (!in_array($keputusan, ['disetujui', 'perbaikan', 'ditolak'], true)) {
@@ -161,10 +132,7 @@ class AdminController extends Controller
         $this->redirect('admin/persetujuan');
     }
 
-    /**
-     * View: admin/kelola-pengguna. Variabel: $mahasiswa, $perusahaan, $jurusan, $filter.
-     * (Ditampilkan sebagai dua tab di view: Mahasiswa & Alumni, dan Perusahaan.)
-     */
+    // --- Kelola pengguna ---------------------------------------------
     public function kelolaPengguna()
     {
         Auth::wajibAktif();
@@ -219,15 +187,6 @@ class AdminController extends Controller
         $this->redirect('admin/kelola-pengguna');
     }
 
-    /**
-     * View: admin/profil-mahasiswa. Dibuka dari Kelola Pengguna dengan
-     * mengklik nama mahasiswa. Menampilkan seluruh isi Profil Karier
-     * (data diri, pendidikan, skill, pengalaman, sertifikat, portofolio,
-     * status karier) plus riwayat lamarannya, semuanya hanya baca.
-     *
-     * Variabel: $mhs, $pendidikan, $pengalaman, $sertifikat, $portofolio,
-     * $skill, $minat, $lamaran, $kelengkapan.
-     */
     public function profilMahasiswa(int $mahasiswaId)
     {
         Auth::wajibAktif();
@@ -262,9 +221,7 @@ class AdminController extends Controller
         ]);
     }
 
-    /**
-     * View: admin/monitoring-lowongan. Variabel: $lowongan, $bidang, $jurusan, $filter.
-     */
+    // --- Monitoring lowongan -----------------------------------------
     public function monitoringLowongan()
     {
         Auth::wajibAktif();
@@ -313,7 +270,6 @@ class AdminController extends Controller
         $this->redirect('admin/monitoring-lowongan');
     }
 
-    /** Laporan PDF: Rekap Lowongan per Perusahaan (unduhan dari Monitoring Lowongan). */
     public function unduhRekapLowongan()
     {
         Auth::wajibAktif();
@@ -325,18 +281,12 @@ class AdminController extends Controller
         ]));
     }
 
-    /**
-     * View: admin/rekap-lamaran. Variabel: $lamaran, $perusahaan (untuk
-     * <select> filter), $jurusan, $prodi, $angkatan, $bulan, $filter.
-     */
+    // --- Rekap lamaran -----------------------------------------------
     public function rekapLamaran()
     {
         Auth::wajibAktif();
         Role::wajib('admin');
 
-        // Filter perusahaan sengaja dihapus: kolom pencarian di halaman ini
-        // sudah mencari nama perusahaan, posisi, dan nama pelamar sekaligus,
-        // jadi dropdown terpisah hanya menduplikasi fungsi yang sama.
         $filter = [
             'q'          => $this->query_('q'),
             'jurusan_id' => $this->query_('jurusan_id'),
@@ -350,7 +300,6 @@ class AdminController extends Controller
         $this->view('admin/rekap-lamaran', [
             'lamaran'  => (new Lamaran())->rekapAdmin($filter),
             'jurusan'  => (new Jurusan())->semuaUrut(),
-            // Prodi dan angkatan menyesuaikan jurusan yang sedang dipilih.
             'prodi'    => $mahasiswaModel->prodiDiJurusan($filter['jurusan_id']),
             'angkatan' => $mahasiswaModel->semuaAngkatan($filter['jurusan_id']),
             'bulan'    => (new Lamaran())->bulanTersedia(),
@@ -358,7 +307,6 @@ class AdminController extends Controller
         ]);
     }
 
-    /** Laporan PDF: Rekap Lamaran. */
     public function unduhRekapLamaran()
     {
         Auth::wajibAktif();
@@ -373,20 +321,12 @@ class AdminController extends Controller
         ]));
     }
 
-    /**
-     * View: admin/tracer-karier. Variabel: $alumni (daftar alumni dengan
-     * filter), $ringkasanStatus (untuk grafik status karier), $sebaranBidang
-     * (untuk panel Sebaran bidang perusahaan), $pembaruanTerbaru (untuk
-     * panel Pembaruan terbaru), $jurusan, $filter.
-     */
+    // --- Tracer karier -----------------------------------------------
     public function tracerKarier()
     {
         Auth::wajibAktif();
         Role::wajib('admin');
 
-        // Tracer bawaannya menampilkan alumni, karena itu memang maksudnya.
-        // Tetapi mahasiswa aktif juga bisa mengisi status karier, jadi Admin
-        // bisa memilih "Mahasiswa aktif" atau "Semua" supaya datanya terlihat.
         $status = $this->query_('status_mahasiswa');
         if (!in_array($status, ['alumni', 'aktif', 'semua'], true)) {
             $status = 'alumni';
@@ -408,20 +348,15 @@ class AdminController extends Controller
             'sebaranBidang'    => $mahasiswaModel->sebaranBidangKerja($filter),
             'pembaruanTerbaru' => $mahasiswaModel->pembaruanTerbaru($filter, 6),
             'jurusan'          => (new Jurusan())->semuaUrut(),
-            // Pilihan angkatan hanya yang benar-benar ada di jurusan terpilih,
-            // supaya Admin tidak memilih kombinasi yang hasilnya pasti kosong.
             'angkatan'         => $mahasiswaModel->semuaAngkatan($filter['jurusan_id']),
             'filter'           => $filter,
         ]);
     }
 
-    /** Laporan PDF: Tracer Karier. */
     public function unduhTracerKarier()
     {
         Auth::wajibAktif();
         Role::wajib('admin');
-        // Laporan mengikuti filter yang sedang dipakai di layar, termasuk
-        // pilihan status mahasiswa, supaya isi PDF sama dengan yang dilihat.
         $status = $this->query_('status_mahasiswa');
         if (!in_array($status, ['alumni', 'aktif', 'semua'], true)) {
             $status = 'alumni';
@@ -433,12 +368,7 @@ class AdminController extends Controller
         ]));
     }
 
-    /**
-     * View: admin/pengaturan. Variabel: $pengaturan (peta kunci => nilai),
-     * $kontakJurusan (untuk form nomor WA 7 admin jurusan -- disimpan lewat
-     * KirimLokerController::simpanKontak(), bukan di sini), $pengguna
-     * (data admin yang sedang login, untuk form ganti kata sandi).
-     */
+    // --- Pengaturan --------------------------------------------------
     public function pengaturan()
     {
         Auth::wajibAktif();
@@ -451,7 +381,6 @@ class AdminController extends Controller
         ]);
     }
 
-    /** Simpan template pesan WA/email/alasan penolakan (field bebas kunci=>nilai dari form). */
     public function simpanPengaturan()
     {
         $this->wajibPost();
@@ -471,8 +400,6 @@ class AdminController extends Controller
             }
         }
 
-        // Supaya setelah redirect admin tetap berada di tab yang barusan
-        // diisi (bukan balik ke tab pertama "Kontak admin jurusan").
         if (isset($_POST['daftar_alasan_penolakan'])) {
             $tabAsal = 'alasan';
         } elseif (isset($_POST['template_wa_loker'])) {
@@ -487,7 +414,6 @@ class AdminController extends Controller
         $this->redirect('admin/pengaturan#' . $tabAsal);
     }
 
-    /** Ganti kata sandi Admin (form terpisah di halaman Pengaturan). */
     public function gantiPassword()
     {
         $this->wajibPost();

@@ -1,12 +1,5 @@
 <?php
-/**
- * Layout: app-header (sidebar + topbar)
- * PIC: Ringga Budi Utama (Project Lead, UI/UX, dan Frontend)
- *
- * Di-include di baris pertama setiap view mahasiswa/perusahaan/admin.
- * WAJIB set $page_title dan $active_menu sebelum include file ini.
- * Ditutup oleh layouts/app-footer.php di baris terakhir view.
- */
+// ===== FRONTEND · LAYOUT · Kerangka dashboard: sidebar + topbar (pembuka) ====
 $user = Auth::penggunaSaatIni();
 $role = $user['role'];
 
@@ -37,6 +30,7 @@ if ($role === 'mahasiswa') {
     $subTampil = 'Career Center';
 }
 
+// --- Menu sidebar per peran ---
 $menuMahasiswa = [
     ['dashboard', 'Dashboard', 'home', 'mahasiswa/dashboard'],
     ['lowongan', 'Lowongan', 'briefcase', 'lowongan/daftar'],
@@ -62,10 +56,7 @@ $menuAdmin = [
 $menuUtama = $role === 'mahasiswa' ? $menuMahasiswa : ($role === 'perusahaan' ? $menuPerusahaan : $menuAdmin);
 $labelPeran = $role === 'mahasiswa' ? 'Mahasiswa dan alumni' : ($role === 'perusahaan' ? 'Perusahaan' : 'Career Center');
 
-// Notifikasi berlaku untuk semua peran, termasuk Admin (lonceng topbar +
-// halaman Notifikasi, isinya diambil dari tabel notifikasi yang sama
-// dengan yang dipakai NotifikasiService::pendaftarBaruUntukAdmin() dan
-// NotifikasiService::pelamarDiterima()).
+// --- Notifikasi & tautan akun ---
 $jumlahNotif = jumlahNotifBelumDibaca($user['id']);
 $notifTerbaru = notifTerbaru($user['id'], 5);
 $hrefNotif = url('notifikasi/semua');
@@ -84,6 +75,7 @@ $hrefProfil = $role === 'admin' ? url('admin/pengaturan') : url($role . '/profil
 </head>
 <body>
 <div class="app">
+  <!-- ===== Sidebar ===== -->
   <aside class="side" aria-label="Menu utama">
     <div class="side-inner">
       <a class="brand" href="<?= url($role . '/dashboard') ?>"><img class="brand-mark" src="<?= asetUrl('assets/img/logo-polinema.png') ?>" alt="Logo Politeknik Negeri Malang"><span>KarirKu<small><?= e($labelPeran) ?></small></span></a>
@@ -102,6 +94,7 @@ $hrefProfil = $role === 'admin' ? url('admin/pengaturan') : url($role . '/profil
   </aside>
 
   <div class="main">
+    <!-- ===== Topbar ===== -->
     <header class="topbar">
       <button class="icon-btn menu-toggle" aria-label="Buka menu" data-ic="menu"></button>
       <b class="top-title"><?= e($page_title) ?></b>
@@ -111,7 +104,7 @@ $hrefProfil = $role === 'admin' ? url('admin/pengaturan') : url($role . '/profil
           <div class="pop" id="popN">
             <div class="pop-head">Notifikasi <a href="<?= url('notifikasi/tandai-semua-dibaca') ?>">Tandai dibaca</a></div>
             <?php if (empty($notifTerbaru)): ?>
-              <div class="item muted" style="padding:14px">Belum ada notifikasi.</div>
+              <div class="item muted p-14">Belum ada notifikasi.</div>
             <?php else: foreach ($notifTerbaru as $n): ?>
               <a class="item <?= $n['dibaca'] ? '' : 'unread' ?>" href="<?= url('notifikasi/tandai-dibaca/' . $n['id']) ?>">
                 <span class="list-ic" data-ic="bell"></span>
@@ -126,7 +119,7 @@ $hrefProfil = $role === 'admin' ? url('admin/pengaturan') : url($role . '/profil
             <img src="<?= e($fotoTampil) ?>" alt="">
             <span><b><?= e($namaTampil) ?></b><small><?= e($subTampil) ?></small></span>
           </button>
-          <div class="pop" id="popU" style="width:220px">
+          <div class="pop pop-kecil" id="popU">
             <?php if ($role !== 'admin'): ?><a class="item" href="<?= $hrefProfil ?>"><?= $role === 'mahasiswa' ? 'Profil Karier' : 'Profil Perusahaan' ?></a><?php endif; ?>
             <a class="item" href="<?= $hrefPengaturan ?>">Pengaturan Akun</a>
             <a class="item" href="<?= url('keluar') ?>">Keluar</a>
@@ -134,6 +127,7 @@ $hrefProfil = $role === 'admin' ? url('admin/pengaturan') : url($role . '/profil
         </div>
       </div>
     </header>
+    <!-- ===== Isi halaman (diisi oleh view) ===== -->
     <div class="page">
       <?php $flashShell = flashAmbil(); if ($flashShell): ?>
         <div class="alert alert-<?= $flashShell['tipe'] === 'ok' ? 'ok' : ($flashShell['tipe'] === 'warn' ? 'warn' : 'bad') ?>"><span data-ic="alert"></span><span><?= e($flashShell['pesan']) ?></span></div>

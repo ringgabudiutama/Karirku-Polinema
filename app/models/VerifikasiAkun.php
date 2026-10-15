@@ -1,9 +1,5 @@
 <?php
-/**
- * Model tabel verifikasi_akun
- * PIC   : Aqillah (UI/UX, Frontend, dan Integrasi)
- * Status: DIISI.
- */
+// ===== BACKEND · MODEL · VerifikasiAkun (tabel verifikasi_akun) ======
 
 class VerifikasiAkun extends Model
 {
@@ -19,11 +15,6 @@ class VerifikasiAkun extends Model
         );
     }
 
-    /**
-     * Simpan satu keputusan + perbarui status_akun pengguna, dalam SATU
-     * transaksi supaya baris riwayat dan status akun tidak pernah beda.
-     * $keputusan salah satu dari: disetujui, perbaikan, ditolak, nonaktif, aktif.
-     */
     public function putuskan(int $penggunaId, int $adminId, string $keputusan, ?string $catatan): void
     {
         $petaStatus = [
@@ -36,8 +27,6 @@ class VerifikasiAkun extends Model
         if (!isset($petaStatus[$keputusan])) {
             throw new InvalidArgumentException('Keputusan tidak dikenal: ' . $keputusan);
         }
-        // aturan sama seperti CHECK di database/01-schema.sql: keputusan selain
-        // disetujui/aktif wajib punya catatan.
         if (!in_array($keputusan, ['disetujui', 'aktif'], true) && !validasiWajibIsi((string) $catatan)) {
             throw new InvalidArgumentException('Catatan wajib diisi untuk keputusan ini.');
         }

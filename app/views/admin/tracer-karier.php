@@ -1,9 +1,5 @@
 <?php
-/**
- * View: admin/tracer-karier
- * Dipanggil oleh: AdminController::tracerKarier()
- * Variabel: $alumni, $ringkasanStatus, $sebaranBidang, $pembaruanTerbaru, $jurusan, $filter
- */
+// ===== FRONTEND · ADMIN · Tracer karier ==============================
 $page_title = 'Tracer Karier';
 $active_menu = 'tracer';
 require __DIR__ . '/../layouts/app-header.php';
@@ -23,15 +19,10 @@ foreach ($alumni as $a) {
     }
 }
 arsort($levelCount);
-/* Daftar angkatan datang dari controller dan sudah disaring mengikuti jurusan
-   yang sedang dipilih. Tidak diambil dari $alumni, karena begitu satu angkatan
-   dipilih, isi $alumni menyusut sehingga pilihan lain ikut hilang. */
 $angkatanTerpakai = $angkatan ?? array_unique(array_column($alumni, 'angkatan'));
 ?>
 <section class="view active">
   <?php
-/* Label dipakai di beberapa tempat, supaya Admin selalu tahu kelompok mana
-   yang sedang ditampilkan. */
 $statusDipilih = $filter['status_mahasiswa'] ?? 'alumni';
 $labelKelompok = ['alumni' => 'alumni', 'aktif' => 'mahasiswa aktif',
                   'semua'  => 'mahasiswa dan alumni'][$statusDipilih] ?? 'alumni';
@@ -39,6 +30,7 @@ $labelKelompok = ['alumni' => 'alumni', 'aktif' => 'mahasiswa aktif',
 <div class="page-head"><div><h1>Tracer karier</h1><p>Data diperbarui otomatis dari lamaran diterima dan status karier yang diisi sendiri.</p></div>
     <a class="btn btn-primary" href="<?= url('admin/unduh-tracer-karier?' . http_build_query($filter)) ?>" target="_blank"><span data-ic="download"></span>Unduh laporan PDF</a>
   </div>
+  <!-- ===== Filter ===== -->
   <form class="filters" method="get" action="<?= url('admin/tracer-karier') ?>">
     <select class="input jur-filter" name="jurusan_id" onchange="this.form.submit()">
       <option value="">Semua jurusan</option>
@@ -49,9 +41,6 @@ $labelKelompok = ['alumni' => 'alumni', 'aktif' => 'mahasiswa aktif',
       <?php foreach ($angkatanTerpakai as $ang): ?><option value="<?= (int) $ang ?>" <?= (string) $filter['angkatan'] === (string) $ang ? 'selected' : '' ?>>Angkatan <?= (int) $ang ?></option><?php endforeach; ?>
     </select>
     <?php
-      /* Tracer memang untuk alumni, jadi itu pilihan bawaannya. Mahasiswa aktif
-         yang sudah mengisi status karier tetap bisa dilihat lewat pilihan ini,
-         supaya datanya tidak tersembunyi. */
       $opsiStatus = ['alumni' => 'Alumni saja', 'aktif' => 'Mahasiswa aktif saja',
                      'semua'  => 'Mahasiswa dan alumni'];
     ?>
@@ -69,10 +58,11 @@ $labelKelompok = ['alumni' => 'alumni', 'aktif' => 'mahasiswa aktif',
     </span></div>
   <?php endif; ?>
 
+  <!-- ===== Grafik ===== -->
   <div class="grid g2">
     <div class="panel">
       <h3>Status karier <?= e($labelKelompok) ?></h3>
-      <div style="display:flex;gap:28px;align-items:center;flex-wrap:wrap;margin-top:10px">
+      <div class="d-flex flex-wrap items-center gap-28 mt-10">
         <div class="donut"><span><span><b><?= $totalAlumni ?></b><?= $statusDipilih === 'alumni' ? 'alumni' : 'orang' ?></span></span></div>
         <ul class="legend">
           <?php foreach ($ringkasanStatus as $r): $pct = $totalAlumni > 0 ? round($r['jumlah'] / $totalAlumni * 100) : 0; ?>
@@ -84,7 +74,7 @@ $labelKelompok = ['alumni' => 'alumni', 'aktif' => 'mahasiswa aktif',
     </div>
     <div class="panel">
       <h3>Sebaran bidang perusahaan</h3>
-      <div class="bars" style="margin-top:14px">
+      <div class="bars mt-14">
         <?php $maxBidang = $sebaranBidang ? max(array_column($sebaranBidang, 'jumlah')) : 1; foreach ($sebaranBidang as $sb): ?>
           <div class="bar-row"><span><?= e($sb['nama_bidang']) ?></span><div class="bar-track"><i style="width:<?= round($sb['jumlah'] / $maxBidang * 100) ?>%"></i></div><b><?= $sb['jumlah'] ?></b></div>
         <?php endforeach; ?>
@@ -93,7 +83,7 @@ $labelKelompok = ['alumni' => 'alumni', 'aktif' => 'mahasiswa aktif',
     </div>
     <div class="panel">
       <h3>Level jabatan</h3>
-      <div class="bars" style="margin-top:14px">
+      <div class="bars mt-14">
         <?php $maxLevel = $levelCount ? max($levelCount) : 1; foreach ($levelCount as $lv => $jml): ?>
           <div class="bar-row"><span><?= e(ucfirst($lv)) ?></span><div class="bar-track"><i style="width:<?= round($jml / $maxLevel * 100) ?>%"></i></div><b><?= $jml ?></b></div>
         <?php endforeach; ?>
@@ -116,11 +106,12 @@ $labelKelompok = ['alumni' => 'alumni', 'aktif' => 'mahasiswa aktif',
     </div>
   </div>
 
+  <!-- ===== Tabel daftar mahasiswa/alumni ===== -->
   <div class="panel">
     <div class="panel-head"><h3>Daftar <?= e($labelKelompok) ?></h3></div>
     <div class="table-wrap"><table class="t">
       <tr><th>Nama</th><th>Jurusan</th><th>Angkatan</th><th>Status karier</th><th>Tempat kerja</th><th>Diperbarui</th></tr>
-      <?php if (empty($alumni)): ?><tr><td colspan="6" class="muted" style="text-align:center;padding:30px">Tidak ada data.</td></tr><?php endif; ?>
+      <?php if (empty($alumni)): ?><tr><td colspan="6" class="muted kosong">Tidak ada data.</td></tr><?php endif; ?>
       <?php foreach (array_slice($alumni, 0, 200) as $a): ?>
         <tr>
           <td><?= e($a['nama']) ?></td>
