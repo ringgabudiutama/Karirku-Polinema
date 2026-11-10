@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Info Loker | KarirKu Polinema</title>
+<!-- Open Graph: agar pamflet tampil sebagai gambar pratinjau saat tautan dikirim di WhatsApp -->
+<meta property="og:title" content="Info Loker: Web Developer di PT Nusantara Digital">
+<meta property="og:description" content="Batas lamaran 30 Oktober 2026. Lamar lewat KarirKu Polinema.">
+<meta property="og:image" content="assets/img/pamflet-1.jpg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body style="background:var(--sky)">
+<header class="simple-top">
+  <div class="container">
+    <a class="brand" href="index.html"><img class="brand-mark" src="assets/img/logo-polinema.png" alt="Logo Politeknik Negeri Malang"><span>KarirKu Polinema</span></a>
+    <span class="muted" style="margin-left:auto;font-size:.9rem">Info loker dari Career Center</span>
+  </div>
+</header>
+<main class="container" style="max-width:980px;padding:32px 0 60px">
+  <div class="detail" id="box"></div>
+</main>
+<script src="assets/js/app.js"></script>
+<script>
+const id=new URLSearchParams(location.search).get('id')||1;
+const j=jobById(id);
+const expired=j.status!=='aktif';
+document.title=`${j.pos} di ${j.co} | KarirKu Polinema`;
+document.getElementById('box').innerHTML= expired ? `
+  <div class="panel" style="grid-column:1/-1;text-align:center;padding:48px">
+    <div class="feature-ic" style="margin:0 auto 14px" >${ic('clock')}</div>
+    <h1 style="font-size:1.6rem">Info loker ini sudah tidak berlaku</h1>
+    <p class="muted">Lowongan sudah ditutup atau melewati batas lamaran.</p>
+    <a class="btn btn-primary" href="masuk.html">Masuk untuk melihat lowongan lain</a>
+  </div>` : `
+  <div>
+    <div class="poster">
+      <img src="assets/img/pamflet-${j.id}.jpg" alt="Pamflet lowongan ${j.pos} ${j.co}">
+      <div class="actions"><a class="btn btn-primary btn-sm" style="flex:1" href="assets/img/pamflet-${j.id}.jpg" download="Pamflet-${j.pos.replace(/ /g,'-')}.jpg">${ic('download')}Unduh pamflet</a></div>
+    </div>
+  </div>
+  <div class="panel">
+    <div class="person" style="margin-bottom:14px">${logo(j)}<div><b>${j.co}</b><small>${ic('shield')} Mitra terverifikasi Career Center</small></div></div>
+    <h1 style="font-size:1.9rem;margin-bottom:6px">${j.pos}</h1>
+    <div class="meta"><span>${ic('pin')}${j.loc}</span><span>${ic('briefcase')}${j.type}</span><span>${ic('calendar')}Batas ${j.dl}</span></div>
+    <div class="kv">
+      <div><small>Sistem kerja</small><b>${j.mode}</b></div>
+      <div><small>Kuota</small><b>${j.quota} orang</b></div>
+      <div><small>Bidang</small><b>${j.field}</b></div>
+      <div><small>Jurusan sasaran</small><b>${j.jur.join(', ')}</b></div>
+    </div>
+    <h3>Ringkasan kualifikasi</h3>
+    <ul class="bullets"><li>Lulusan D-III atau D-IV Politeknik Negeri Malang</li><li>Menguasai keterampilan dasar di bidang ${j.field.toLowerCase()}</li><li>Mampu bekerja dalam tim dan siap belajar</li></ul>
+    <div class="alert alert-info">${ic('lock')}<span>Detail lengkap dan pengiriman lamaran hanya tersedia untuk mahasiswa dan alumni Polinema yang sudah masuk.</span></div>
+    <a class="btn btn-primary" style="width:100%;padding:13px" href="masuk.html?next=${j.id}">Lamar lewat KarirKu</a>
+    <p class="muted" style="text-align:center;font-size:.88rem;margin-top:12px">Belum punya akun? <a href="daftar.html">Daftar di sini</a></p>
+  </div>`;
+</script>
+</body>
+</html>

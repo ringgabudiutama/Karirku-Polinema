@@ -1,0 +1,16 @@
+# Rahasia: JANGAN ikut di-deploy (di Vercel isi lewat Environment Variables)
+app/config/database.lokal.php
+
+# Tidak dibutuhkan di server
+tests/
+scripts/
+docs/
+.vscode/
+backup/
+storage/logs/*
+storage/uploads/_sementara/*
+*.sql.gz
+*.dump
+jalankan.sh
+jalankan.bat
+server-dev.php

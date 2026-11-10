@@ -1,0 +1,22 @@
+# =====================================================================
+# KarirKu Polinema · jadwal backup  (pasang: sudo cp ini /etc/cron.d/karirku-backup)
+# Ubah /opt/karirku ke lokasi proyek di server. Kolom ke-6 = akun OS penjalan
+# (postgres = tersambung ke database lewat socket lokal, tanpa password).
+# =====================================================================
+SHELL=/bin/bash
+PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+
+# BACKUP: tiap hari 02:15. Skrip sendiri menambah salinan MINGGUAN (hari Minggu)
+# dan BULANAN (tanggal 1), lalu memangkas yang lama.
+15 2 * * *  postgres  /opt/karirku/scripts/backup-db.sh >> /var/log/karirku-backup.log 2>&1
+
+# UJI PULIH: tiap Minggu 04:00 backup terbaru dipulihkan ke database sementara
+# lalu dihapus. Backup yang tidak pernah diuji belum bisa dipercaya.
+0 4 * * 0   postgres  /opt/karirku/scripts/restore-db.sh --uji >> /var/log/karirku-backup.log 2>&1
+
+# RETENSI DATA: tiap tanggal 2 jam 03:30 hapus log email & notifikasi lama (Bab 6).
+30 3 2 * *  postgres  psql -d karirku_polinema -c "SELECT * FROM fn_bersihkan_data_lama()" >> /var/log/karirku-backup.log 2>&1
+
+# SALIN KE TEMPAT LAIN (aturan 3-2-1): contoh dengan rclone ke penyimpanan awan/server lain.
+# Pasang & atur rclone dulu. Hanya jalankan SESUDAH backup selesai (jam 02:15).
+# 45 2 * * *  postgres  rclone sync /var/backups/karirku remote:karirku-backup --log-file=/var/log/karirku-backup.log
