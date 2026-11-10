@@ -6,7 +6,7 @@
  * tetapi field-nya tidak pernah ada di form.
  */
 $B = 'http://127.0.0.1:8000';
-$jarDir = '/tmp/claude-0/-home-claude/34c7d75d-6ec8-5e75-91f4-7f39653d6878/scratchpad';
+$jarDir = sys_get_temp_dir();
 
 function req(string $url, array $post = null, string $jar = ''): array {
     $ch = curl_init($url);

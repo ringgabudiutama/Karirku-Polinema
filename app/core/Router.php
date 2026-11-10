@@ -27,14 +27,26 @@ class Router
             return;
         }
 
-        if (preg_match('#^info-loker/([a-f0-9]+)$#', $url, $m)) {
+        if (preg_match('#^info-loker/([a-f0-9]{16,64})$#', $url, $m)) {
             $this->panggil('LowonganController', 'pratinjau', [$m[1]]);
+            return;
+        }
+
+        // Revisi A: halaman detail perusahaan mitra yang bisa dibuka sebelum login.
+        if (preg_match('#^mitra/(\d+)$#', $url, $m)) {
+            $this->panggil('MitraController', 'detail', [(int) $m[1]]);
             return;
         }
 
         $segmen = $url === '' ? [] : explode('/', $url);
         $controllerSegmen = array_shift($segmen) ?? '';
         $methodSegmen = array_shift($segmen) ?? 'index';
+
+        // Hanya huruf kecil, angka, dan tanda hubung yang boleh menjadi nama controller/method.
+        if (!preg_match('/^[a-z][a-z0-9-]*$/', $controllerSegmen) || !preg_match('/^[a-z][a-z0-9-]*$/', $methodSegmen)) {
+            $this->halaman404();
+            return;
+        }
 
         $controllerNama = $this->keKelas($controllerSegmen) . 'Controller';
         $methodNama = $this->keMethod($methodSegmen);
@@ -55,6 +67,10 @@ class Router
             return;
         }
 
+        if (!is_subclass_of($controllerNama, 'Controller')) {
+            $this->halaman404();
+            return;
+        }
         $controller = new $controllerNama();
         if (!method_exists($controller, $methodNama)) {
             $this->halaman404();
@@ -119,7 +135,7 @@ class Router
         $statistik = ['perusahaan' => 0, 'lowongan' => 0, 'mahasiswa' => 0];
 
         try {
-            $mitra = (new Perusahaan())->mitraTerverifikasi(18);
+            $mitra = (new Perusahaan())->mitraTerverifikasi(60);
             $lowonganTerbaru = (new Lowongan())->terbaruUntukPublik(6);
             $statistik = Database::fetch(
                 "SELECT

@@ -11,12 +11,21 @@ if ($sudahLogin) {
 <html lang="id">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
+<meta name="theme-color" content="#ffffff">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="KarirKu">
+<link rel="manifest" href="<?= url('manifest.webmanifest') ?>">
+<link rel="icon" type="image/png" sizes="192x192" href="<?= url('assets/img/ikon-192.png') ?>">
+<link rel="apple-touch-icon" href="<?= url('assets/img/ikon-180.png') ?>">
 <title>KarirKu Polinema | Pusat Karier Politeknik Negeri Malang</title>
 <meta name="description" content="Pusat karier mahasiswa dan alumni Politeknik Negeri Malang. Lowongan dari perusahaan mitra terverifikasi Career Center.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="<?= url('assets/css/style.css') ?>">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Fraunces:opsz,wght@9..144,500..700&display=swap" rel="stylesheet" media="(max-width: 768px)">
+<link rel="stylesheet" href="<?= asetUrl('assets/css/style.css') ?>">
 </head>
 <body>
 
@@ -195,14 +204,15 @@ if ($sudahLogin) {
       <p>Perusahaan yang sudah terverifikasi dan merekrut lulusan vokasi Polinema.</p>
     </div>
     <?php if (!empty($mitra)): ?>
-      <div class="partners">
-        <?php foreach ($mitra as $m): ?>
+      <?php $batasAwalMitra = 8; ?>
+      <div class="partners" id="daftar-mitra">
+        <?php foreach ($mitra as $i => $m): ?>
           <?php
             $tanpaBadan = preg_replace('/^(PT|CV)\s+/i', '', $m['nama_perusahaan']);
             $inisial    = mb_strtoupper(mb_substr($tanpaBadan, 0, 1));
             $aktif      = (int) ($m['lowongan_aktif'] ?? 0);
           ?>
-          <div class="partner">
+          <a class="partner<?= $i >= $batasAwalMitra ? ' partner-extra' : '' ?>" href="<?= url('mitra/' . (int) $m['id']) ?>" title="Lihat profil <?= e($m['nama_perusahaan']) ?>">
             <span class="ikon">
               <?php if (!empty($m['logo'])): ?>
                 <img src="<?= url('unduh.php?tipe=logo&file=' . urlencode($m['logo'])) ?>"
@@ -221,13 +231,23 @@ if ($sudahLogin) {
                 <?php endif; ?>
               </span>
             </span>
-          </div>
+          </a>
         <?php endforeach; ?>
         <?php $sisa = (int) ($statistik['perusahaan'] ?? 0) - count($mitra); ?>
         <?php if ($sisa > 0): ?>
-          <div class="partner partner-sisa">dan <?= $sisa ?> perusahaan lainnya</div>
+          <div class="partner partner-sisa partner-extra">dan <?= $sisa ?> perusahaan lainnya</div>
         <?php endif; ?>
       </div>
+      <?php if (count($mitra) > $batasAwalMitra): ?>
+        <div class="partners-more">
+          <button type="button" class="btn btn-outline" id="btn-mitra-semua"
+                  aria-expanded="false" aria-controls="daftar-mitra"
+                  data-lihat="Lihat semua mitra (<?= count($mitra) + max(0, $sisa) ?>)"
+                  data-tutup="Tampilkan lebih sedikit">
+            Lihat semua mitra (<?= count($mitra) + max(0, $sisa) ?>)
+          </button>
+        </div>
+      <?php endif; ?>
     <?php else: ?>
       <p class="muted">Belum ada perusahaan terverifikasi. Perusahaan yang lolos verifikasi Career Center akan muncul di sini.</p>
     <?php endif; ?>
@@ -247,8 +267,8 @@ if ($sudahLogin) {
             <span class="pt"><?= e($l['nama_perusahaan']) ?></span>
             <div class="meta">
               <span><?= e($l['lokasi']) ?></span>
-              <span><?= e($l['jenis_pekerjaan']) ?></span>
-              <span><?= e($l['sistem_kerja']) ?></span>
+              <span><?= e(['full_time' => 'Penuh waktu', 'part_time' => 'Paruh waktu', 'kontrak' => 'Kontrak', 'magang' => 'Magang', 'freelance' => 'Freelance'][$l['jenis_pekerjaan']] ?? $l['jenis_pekerjaan']) ?></span>
+              <span><?= e(['wfo' => 'WFO', 'hybrid' => 'Hybrid', 'wfh' => 'WFH'][$l['sistem_kerja']] ?? $l['sistem_kerja']) ?></span>
             </div>
             <div class="meta">Lamar sebelum <?= e(tanggalIndo($l['batas_lamaran'])) ?></div>
             <?php if (!empty($l['jurusan_sasaran'])): ?>
@@ -342,6 +362,6 @@ if ($sudahLogin) {
 
 <a class="fab" href="#kontak"><span data-ic="chat"></span>Tanya Career Center</a>
 
-<script src="<?= url('assets/js/app.js') ?>"></script>
+<script src="<?= asetUrl('assets/js/app.js') ?>"></script>
 </body>
 </html>

@@ -4,6 +4,15 @@ Sistem Informasi Manajemen Karier, Lowongan Kerja, dan Rekrutmen Terpusat
 bagi Mahasiswa, Alumni, dan Perusahaan Mitra Politeknik Negeri Malang.
 Proyek PBL Terintegrasi Teknologi Informasi Semester 3.
 
+> **Hosting & keamanan:** baca `docs/05-panduan-hosting-aman.md` (akun database terbatas, backup
+> harian/mingguan/bulanan, daftar periksa sebelum online). Penerapan materi dosen per bab ada di
+> `docs/06-penerapan-materi-dosen.md`. Kapasitas 20.000+ pengguna dan tahapan naik skala ada di
+> `docs/07-kapasitas-dan-skala.md`. Hasil audit keamanan aplikasi web (temuan, bukti, perbaikan) ada di
+> `docs/08-keamanan-aplikasi-web.md`, dan skrip pengujiannya di `tests/keamanan/`.
+
+> **Revisi dosen (Oktober 2026)** sudah diterapkan seluruhnya di PHP native
+> (tanpa framework). Rinciannya per poin A sampai M ada di `REVISI-DOSEN.md`.
+
 ## Cara menjalankan saat ini
 
 Backend sudah aktif (Router, Model, Controller, Service, dan seluruh query
@@ -18,15 +27,23 @@ disiapkan tiap halaman.
 2. Buat database `karirku_polinema`, jalankan `database/01-schema.sql` lalu
    `database/02-seed.sql`. Akan terbentuk 24 tabel berisi 7 jurusan, 32 program
    studi, 51 akun mahasiswa dan alumni, 16 perusahaan, 40 lowongan, dan 34
-   lamaran dengan status bervariasi. Kalau databasenya sudah dibuat dengan
-   skema versi lama, jalankan juga `database/03-migrasi-revisi.sql`.
-3. Isi password PostgreSQL di `app/config/database.php`.
-4. Sesuaikan `base_url` di `app/config/config.php`:
-   kosongkan (`''`) kalau `public/` jadi document root, atau isi
-   `/karirku-polinema/public` kalau diakses lewat subfolder XAMPP.
+   lamaran dengan status bervariasi. File `03`, `04`, dan `06` (revisi dosen) akan
+   dijalankan otomatis oleh aplikasi bila belum; boleh juga dijalankan manual.
+   Data dummy (140 lowongan bergambar, logo, akun ringga.perusahaan@karirku.id) ada di
+   `database/05-data-dummy.sql`; paling mudah jalankan `database/00-INSTAL-ULANG.sql`.
+3. Isi password PostgreSQL di `app/config/database.lokal.php` (salin dari `database.lokal.contoh.php`; jangan ditulis di `database.php`).
+4. `base_url` di `app/config/config.php` biarkan kosong (`''`): terdeteksi
+   otomatis, termasuk saat diakses lewat subfolder XAMPP.
 5. Jalankan. Paling cepat: klik dua kali `jalankan.bat` (tanpa perlu Apache),
    lalu buka `http://localhost:8000`.
-6. Buka `/cek-sistem.php` lebih dulu untuk memastikan PHP, koneksi database,
+6. Supaya email benar-benar terkirim, isi SMTP lewat variabel lingkungan
+   (`SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`, `SMTP_ENKRIPSI`,
+   `SMTP_DARI`) atau langsung di `app/config/config.php`, dan isi `APP_URL`
+   (misal `http://localhost:8000`) agar tautan di email dan WhatsApp lengkap.
+   Tanpa SMTP aplikasi tetap jalan, tetapi email hanya dicatat dan statusnya
+   tampil jujur sebagai "dicatat, belum terkirim" di Admin > Pengaturan > Email.
+   Untuk Gmail pakai App Password. Jangan pernah mengirim kredensial lewat chat.
+7. Buka `/cek-sistem.php` lebih dulu untuk memastikan PHP, koneksi database,
    tabel, dan izin folder sudah benar.
 
 Akun demo (ada di `database/02-seed.sql`, **wajib diganti** sebelum dipakai
@@ -37,6 +54,7 @@ sungguhan):
 | Admin | `admin@polinema.ac.id` | `admin123` |
 | Mahasiswa | `mahasiswa@polinema.ac.id` | `mahasiswa123` |
 | Perusahaan | `perusahaan@polinema.ac.id` | `perusahaan123` |
+| Perusahaan (pemilik, berisi 6 lowongan + 35 pelamar) | `ringga.perusahaan@karirku.id` | `ringga123` |
 
 `composer install` sifatnya opsional: tanpa itu aplikasi tetap jalan, hanya
 email dicatat ke `storage/logs/email.log` dan PDF tampil sebagai halaman HTML
@@ -74,6 +92,9 @@ karirku-polinema/
 │   ├── 01-schema.sql                     Skema utama
 │   ├── 02-seed.sql                       Data acuan + data uji lengkap
 │   ├── 03-migrasi-revisi.sql             Tambahan kolom untuk database lama
+│   ├── 04-revisi-dosen.sql               Revisi dosen A-M (wajib dijalankan)
+│   ├── 07-peningkatan-materi-dosen.sql   Index FK, Full-Text Search, View, Trigger (materi Advanced Database)
+│   ├── 08-hardening-produksi.sql         Akun database terbatas untuk server (jalankan manual, sekali)
 ├── docs/                ERD, EERD, flowchart, alur demo, pembagian tugas
 ├── storage/             Hasil unggahan dan log, di luar folder publik
 ├── composer.json        Dependensi PHPMailer & Dompdf (jalankan composer install)

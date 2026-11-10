@@ -316,3 +316,41 @@ Login dengan tiga akun demo di `PANDUAN-JALANKAN.md`, lalu:
    berganti. Coba simpan dengan tempat kosong, akan ditolak.
 5. Admin, Kelola Pengguna, klik salah satu nama.
 6. Admin, Tracer Karier, pilih jurusan, lihat daftar angkatannya ikut berubah.
+
+---
+
+## Revisi tahap 3 (10 November 2026)
+
+**1. Kolom kanan sejajar dengan kolom kiri**
+Panel "Proses seleksi" (detail pelamar), panel samping di detail lowongan admin,
+persetujuan detail, dan form pasang lowongan dulu turun ±34px. Penyebabnya
+`position: sticky; top: 88px` dihitung dari jendela, padahal yang digulir adalah
+area `.page` di bawah topbar. Sekarang `top: 16px` dan tinggi maksimal mengikuti
+tinggi area isi. File: `style.css` bagian 32a.
+
+**2. Teks panjang tanpa spasi tidak merusak tampilan**
+Diuji dengan mengisi alasan, catatan, alamat, URL, deskripsi, dan nama di database
+dengan teks 110 karakter tanpa spasi, lalu membuka semua halaman tiga peran di
+layar 1440px dan 390px. Sebelumnya 40-an halaman bisa digeser ke samping (sampai
+800px di HP); sekarang 0. Teks dipatahkan rapi di dalam kotaknya, tabel lebar
+menggulir di dalam kotaknya sendiri. File: `style.css` 32b, `PdfService.php`.
+
+**3. Tombol Kembali di semua halaman**
+Helper baru `kepalaKembali()` (app/helpers/tampilan.php): jejak halaman + tombol
+Kembali. Dipasang di 20 halaman yang belum punya, termasuk Notifikasi. Halaman
+Pelamar yang dibuka dari menu **Kelola → Kelola pelamar** kembali ke Lowongan Saya.
+Halaman publik: reset kata sandi, status akun, dan 403 ikut diberi jalan kembali.
+Pengecualian sengaja: halaman wajib ganti sandi (hanya ada "Keluar dulu").
+
+**5. Panduan kata sandi kuat**
+Tampil sejak awal (sebelum menekan Lanjut/Simpan) di pendaftaran, reset sandi,
+ganti sandi wajib, dan Pengaturan akun tiga peran. Berisi syarat wajib (sama persis
+dengan `validasiPassword()` di server), rekomendasi, meter kekuatan, dan tips.
+Kata sandi yang terlalu umum langsung ditolak di browser.
+
+**6. Pesan galat di tengah layar**
+Semua `alert()`, `confirm()`, dan gelembung validasi bawaan browser diganti dialog
+di tengah layar (di HP muncul dari bawah). Dialog validasi menampilkan daftar isian
+yang salah; klik salah satu langsung menuju isiannya. Pesan galat dari server
+(mis. gagal masuk) juga dibuka sebagai dialog. Sekalian diperbaiki: form dengan
+`data-konfirmasi` dulu menanyakan konfirmasi **dua kali**. File: `app.js` bagian R3.

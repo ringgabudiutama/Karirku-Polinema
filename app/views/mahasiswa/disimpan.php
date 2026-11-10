@@ -5,6 +5,7 @@ $active_menu = 'disimpan';
 require __DIR__ . '/../layouts/app-header.php';
 ?>
 <section class="view active">
+  <?= kepalaKembali('mahasiswa/dashboard', [['Dashboard', 'mahasiswa/dashboard'], ['Disimpan']]) ?>
   <div class="page-head"><div><h1>Disimpan</h1><p>Lowongan yang kamu tandai. Perhatikan batas lamarannya.</p></div></div>
   <div class="jobs">
     <?php if (empty($lowongan)): ?>

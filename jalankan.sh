@@ -9,4 +9,5 @@ echo "    http://localhost:8000/masuk            (halaman login)"
 echo
 echo "  Tekan Ctrl+C untuk menghentikan server."
 echo
+export APP_DEBUG=1   # mode pengembangan lokal (di server produksi JANGAN diaktifkan)
 php -S localhost:8000 -t public server-dev.php

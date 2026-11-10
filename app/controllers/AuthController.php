@@ -4,6 +4,7 @@
 class AuthController extends Controller
 {
     // --- Masuk (login) -----------------------------------------------
+    // [URL] GET /masuk  →  tampil: views/publik/masuk.php
     public function formMasuk()
     {
         if (Auth::sudahLogin()) {
@@ -14,6 +15,7 @@ class AuthController extends Controller
         unset($_SESSION['_masuk_email']);
     }
 
+    // [URL] POST /auth/proses-masuk  →  simpan lalu kembali ke /masuk
     public function prosesMasuk()
     {
         $this->wajibPost();
@@ -35,7 +37,7 @@ class AuthController extends Controller
         $penggunaModel = new Pengguna();
         $pengguna = $penggunaModel->cariByEmail($email);
 
-        if (!$pengguna || !cocokkanPassword($password, $pengguna['password_hash'])) {
+        if (!cocokkanPasswordAtauPalsu($password, $pengguna['password_hash'] ?? null)) {
             catatLoginGagal($email);
             $this->flash('bad', 'Email atau kata sandi salah.');
             $this->redirect('masuk');
@@ -47,18 +49,35 @@ class AuthController extends Controller
         }
 
         resetLoginGagal($email);
-        Auth::loginkan($pengguna);
+        // Revisi B & J: "Ingat saya" menyimpan token acak (bukan kata sandi) di cookie.
+        Auth::loginkan($pengguna, isset($_POST['ingat_saya']));
         $penggunaModel->perbaruiTerakhirLogin((int) $pengguna['id']);
         unset($_SESSION['_masuk_email']);
 
         if ($pengguna['status_akun'] !== 'aktif') {
             $this->redirect('status-akun');
         }
+        if (!empty($_SESSION['user']['wajib_ganti_sandi'])) {
+            $this->redirect('akun/ganti-sandi-wajib');
+        }
 
         if ($pengguna['role'] === 'mahasiswa') {
             $mhs = (new Mahasiswa())->cariByPenggunaId((int) $pengguna['id']);
             if ($mhs) {
                 NotifikasiService::ingatkanLowonganDisimpanHampirTutup((int) $pengguna['id'], (int) $mhs['id']);
+            }
+        }
+
+        // Revisi B: kembali ke halaman yang tadi ingin dibuka sebelum diminta masuk.
+        $tujuan = $_SESSION['tujuan_setelah_login'] ?? '';
+        unset($_SESSION['tujuan_setelah_login']);
+        $awalanPeran = ['mahasiswa' => ['mahasiswa/', 'lowongan/', 'lamaran/lamaran-saya', 'lamaran/kirim/', 'notifikasi/'],
+                        'perusahaan' => ['perusahaan/', 'lowongan/form-pasang', 'lamaran/detail-pelamar/', 'notifikasi/'],
+                        'admin' => ['admin/', 'kirim-loker', 'notifikasi/']][$pengguna['role']] ?? [];
+        $tujuan = jalurInternalAman($tujuan, '');
+        foreach ($awalanPeran as $awalan) {
+            if ($tujuan !== '' && str_starts_with($tujuan, $awalan)) {
+                $this->redirect($tujuan);
             }
         }
 
@@ -73,6 +92,7 @@ class AuthController extends Controller
     }
 
     // --- Daftar (registrasi) -----------------------------------------
+    // [URL] GET /daftar  →  tampil: views/publik/daftar.php
     public function formDaftar()
     {
         if (Auth::sudahLogin()) {
@@ -82,14 +102,22 @@ class AuthController extends Controller
         $this->view('publik/daftar', [
             'jurusan'       => (new Jurusan())->semuaUrut(),
             'prodi'         => (new ProgramStudi())->semuaDenganJurusan(),
-            'peranTerpilih' => $this->query_('peran') ?: null,
+            'peranTerpilih' => in_array($this->query_('peran'), ['mahasiswa', 'perusahaan'], true) ? $this->query_('peran') : null,
         ]);
     }
 
+    // [URL] POST /auth/proses-daftar  →  simpan lalu kembali ke /daftar?peran=
     public function prosesDaftar()
     {
         $this->wajibPost();
         $peran = $this->input('peran');
+
+        // Batas pendaftaran per IP: 60 per jam (longgar untuk jaringan kampus bersama; menahan pembuatan akun massal).
+        if (batasLaju('daftar-ip', ipKlien(), 60, 60)) {
+            http_response_code(429);
+            $this->flash('bad', 'Terlalu banyak pendaftaran dari jaringan ini. Coba lagi dalam satu jam.');
+            $this->redirect('daftar');
+        }
 
         try {
             if ($peran === 'mahasiswa') {
@@ -100,9 +128,15 @@ class AuthController extends Controller
                 throw new RuntimeException('Peran pendaftaran tidak dikenal.');
             }
         } catch (RuntimeException $e) {
+            // Kata sandi yang sudah benar tidak perlu diketik ulang: simpan HASH-nya saja di sesi.
+            $p = $this->input('password');
+            if (validasiPassword($p) && $p === $this->input('konfirmasi_password') && validasiEmail($this->input('email'))) {
+                $_SESSION['_daftar_sandi'] = ['hash' => buatHashPassword($p), 'email' => $this->input('email'), 'waktu' => time()];
+            }
             $this->flash('bad', $e->getMessage());
-            $this->redirect('daftar?peran=' . e($peran));
+            $this->redirect('daftar?peran=' . urlencode($peran));
         }
+        unset($_SESSION['_daftar_sandi']);
     }
 
     private function daftarMahasiswa(): void
@@ -119,6 +153,16 @@ class AuthController extends Controller
         $tahunLulus = $this->input('tahun_lulus');
 
         $this->validasiUmumAkun($email, $password, $konfirmasi);
+        if (!validasiWajibIsi($nama) || mb_strlen($nama) > 255) {
+            throw new RuntimeException('Nama lengkap wajib diisi.');
+        }
+        if (!(new ProgramStudi())->cari($programStudiId)) {
+            throw new RuntimeException('Pilih jurusan dan program studi.');
+        }
+        $tahunIni = (int) date('Y');
+        if ($angkatan < $tahunIni - 15 || $angkatan > $tahunIni) {
+            throw new RuntimeException('Tahun angkatan tidak valid.');
+        }
         if (!validasiNim($nim)) {
             throw new RuntimeException('Format NIM tidak valid.');
         }
@@ -150,7 +194,7 @@ class AuthController extends Controller
 
         Database::beginTransaction();
         try {
-            $penggunaId = (new Pengguna())->buat($email, $password, 'mahasiswa');
+            $penggunaId = (new Pengguna())->buat($email, $password, 'mahasiswa', $this->hashSandiTersimpan);
             $mahasiswaId = (new Mahasiswa())->buat([
                 'pengguna_id'      => $penggunaId,
                 'program_studi_id' => $programStudiId,
@@ -173,6 +217,7 @@ class AuthController extends Controller
         NotifikasiService::pendaftarBaruUntukAdmin($nama, 'mahasiswa');
 
         Auth::loginkan($pengguna);
+        unset($_SESSION['_daftar_sandi']);
         $this->flash('ok', 'Pendaftaran berhasil dikirim. Silakan pantau statusnya di bawah ini.');
         $this->redirect('status-akun');
     }
@@ -193,6 +238,17 @@ class AuthController extends Controller
         $whatsappPic = $this->input('whatsapp_pic');
 
         $this->validasiUmumAkun($email, $password, $konfirmasi);
+        foreach (['Nama perusahaan' => $namaPerusahaan, 'Bidang usaha' => $bidangUsaha, 'Alamat kantor' => $alamat, 'Kota' => $kota, 'Nama PIC' => $namaPic] as $label => $nilai) {
+            if (!validasiWajibIsi($nilai)) {
+                throw new RuntimeException($label . ' wajib diisi.');
+            }
+        }
+        if (!in_array($jenisPerusahaan, PerusahaanController::JENIS_PERUSAHAAN, true)) {
+            throw new RuntimeException('Pilih jenis perusahaan.');
+        }
+        if ($jabatanPic === '') {
+            $jabatanPic = '-';
+        }
         if (!validasiWhatsapp($whatsappPic)) {
             throw new RuntimeException('Format nomor WhatsApp PIC tidak valid.');
         }
@@ -228,7 +284,7 @@ class AuthController extends Controller
 
         Database::beginTransaction();
         try {
-            $penggunaId = (new Pengguna())->buat($email, $password, 'perusahaan');
+            $penggunaId = (new Pengguna())->buat($email, $password, 'perusahaan', $this->hashSandiTersimpan);
             (new Perusahaan())->buat([
                 'pengguna_id'      => $penggunaId,
                 'nama_perusahaan'  => $namaPerusahaan,
@@ -261,8 +317,19 @@ class AuthController extends Controller
         NotifikasiService::pendaftarBaruUntukAdmin($namaPerusahaan, 'perusahaan');
 
         Auth::loginkan($pengguna);
+        unset($_SESSION['_daftar_sandi']);
         $this->flash('ok', 'Pendaftaran berhasil dikirim. Silakan pantau statusnya di bawah ini.');
         $this->redirect('status-akun');
+    }
+
+    /** Hash kata sandi dari percobaan pendaftaran sebelumnya yang gagal (revisi G). */
+    private ?string $hashSandiTersimpan = null;
+
+    /** Data sandi pendaftaran yang tersimpan di sesi (hanya HASH, bukan teks asli), maks. 2 jam. */
+    public static function sandiDaftarTersimpan(string $email): bool
+    {
+        $s = $_SESSION['_daftar_sandi'] ?? null;
+        return $s && time() - (int) $s['waktu'] < 7200 && strcasecmp($s['email'], trim($email)) === 0 && $email !== '';
     }
 
     private function validasiUmumAkun(string $email, string $password, string $konfirmasi): void
@@ -270,8 +337,12 @@ class AuthController extends Controller
         if (!validasiEmail($email)) {
             throw new RuntimeException('Format email tidak valid.');
         }
+        if ($password === '' && $konfirmasi === '' && self::sandiDaftarTersimpan($email)) {
+            $this->hashSandiTersimpan = $_SESSION['_daftar_sandi']['hash'];
+            return;
+        }
         if (!validasiPassword($password)) {
-            throw new RuntimeException('Kata sandi minimal 8 karakter.');
+            throw new RuntimeException(PESAN_PASSWORD);
         }
         if ($password !== $konfirmasi) {
             throw new RuntimeException('Konfirmasi kata sandi tidak cocok.');
@@ -279,6 +350,7 @@ class AuthController extends Controller
     }
 
     // --- Status akun & perbaikan berkas ------------------------------
+    // [URL] GET /status-akun  →  tampil: views/publik/status-akun.php
     public function statusAkun()
     {
         Auth::wajibLogin();
@@ -296,6 +368,7 @@ class AuthController extends Controller
         ]);
     }
 
+    // [URL] POST /auth/kirim-perbaikan  →  simpan lalu kembali ke /status-akun
     public function kirimPerbaikan()
     {
         $this->wajibPost();
@@ -344,33 +417,76 @@ class AuthController extends Controller
     }
 
     // --- Lupa & reset kata sandi -------------------------------------
+    // [URL] GET /auth/lupa-sandi  →  tampil: views/publik/lupa-sandi.php
     public function lupaSandi()
     {
         $this->view('publik/lupa-sandi', ['tersedia' => (new Pengguna())->fiturResetTersedia()]);
     }
 
+    // [URL] POST /auth/proses-lupa-sandi  →  simpan lalu kembali ke /auth/lupa-sandi
     public function prosesLupaSandi()
     {
         $this->wajibPost();
         $email = $this->input('email');
         $penggunaModel = new Pengguna();
 
+        if (!validasiEmail($email)) {
+            $this->flash('bad', 'Format email tidak valid.');
+            $this->redirect('auth/lupa-sandi');
+        }
         if (!$penggunaModel->fiturResetTersedia()) {
-            $this->flash('bad', 'Fitur reset kata sandi belum aktif. Jalankan database/03-tambahan-reset-password.sql terlebih dahulu.');
-            $this->redirect('lupa-sandi');
+            $this->flash('bad', 'Fitur reset kata sandi belum aktif di database. Hubungi Career Center.');
+            $this->redirect('auth/lupa-sandi');
+        }
+        // Revisi B: jujur bila server belum bisa mengirim email sama sekali.
+        // Pesan ini sama untuk semua alamat, jadi tidak membocorkan email terdaftar.
+        if (!MailService::siapKirim()) {
+            $this->flash('bad', 'Pengiriman email dari sistem belum aktif, sehingga tautan reset tidak bisa dikirim. '
+                . 'Hubungi Admin Career Center agar kata sandi Anda diatur ulang secara langsung.');
+            $this->redirect('auth/lupa-sandi');
+        }
+
+        // Batas permintaan dihitung di DATABASE (bukan sesi): membuang cookie tidak mengulang hitungan.
+        // Per alamat email: 3 per 15 menit (mencegah membanjiri satu korban dengan email).
+        // Per IP: 30 per 15 menit (longgar, karena satu jaringan kampus bisa dipakai banyak orang).
+        if (batasLaju('reset-email', $email, 3, 15) || batasLaju('reset-ip', ipKlien(), 30, 15)) {
+            http_response_code(429);
+            $this->flash('bad', 'Terlalu banyak permintaan reset. Tunggu 15 menit lalu coba lagi.');
+            $this->redirect('auth/lupa-sandi');
         }
 
         $pengguna = $penggunaModel->cariByEmail($email);
-        if ($pengguna) {
+        if ($pengguna && $pengguna['status_akun'] !== 'nonaktif') {
             $token = $penggunaModel->buatTokenReset((int) $pengguna['id']);
-            $tautan = url('auth/reset-sandi/' . $token);
-            MailService::kirimResetKataSandi($pengguna['email'], $tautan);
+            // Tautan lengkap (https://...), karena dibuka dari aplikasi email.
+            $tujuan = (string) $pengguna['email'];
+            $tautan = urlAbsolut('auth/reset-sandi/' . $token);
+            // Email dikirim SETELAH jawaban sampai ke pengunjung. Mengirim di dalam permintaan membuat
+            // email terdaftar lebih lambat (± 1 detik) daripada email tak terdaftar, dan selisih itu
+            // membocorkan siapa yang punya akun. (Di PHP-FPM jawaban dilepas dulu; di server dev PHP
+            // bawaan tetap berurutan.) Solusi lebih besar: antrean kirim lewat cron.
+            register_shutdown_function(static function () use ($tujuan, $tautan): void {
+                // Lepas kunci sesi lebih dulu: kalau tidak, halaman berikutnya milik pengunjung yang sama
+                // ikut menunggu sampai email selesai terkirim.
+                if (session_status() === PHP_SESSION_ACTIVE) {
+                    session_write_close();
+                }
+                if (function_exists('fastcgi_finish_request')) {
+                    fastcgi_finish_request();
+                }
+                try {
+                    MailService::kirimResetKataSandi($tujuan, $tautan);
+                } catch (Throwable $e) {
+                    error_log('[KarirKu] Gagal kirim email reset: ' . $e->getMessage());
+                }
+            });
         }
 
-        $this->flash('ok', 'Kalau email tersebut terdaftar, tautan reset kata sandi sudah kami kirim. Cek juga folder Spam.');
+        $this->flash('ok', 'Kalau email tersebut terdaftar, tautan reset kata sandi sudah kami kirim dan berlaku 60 menit. Cek juga folder Spam.');
         $this->redirect('masuk');
     }
 
+    // [URL] GET /auth/reset-sandi/{token}  →  tampil: views/publik/reset-sandi.php
     public function resetSandi(string $token)
     {
         $penggunaModel = new Pengguna();
@@ -382,6 +498,7 @@ class AuthController extends Controller
         $this->view('publik/reset-sandi', ['token' => $token]);
     }
 
+    // [URL] POST /auth/proses-reset-sandi/{token}  →  simpan lalu kembali ke /masuk
     public function prosesResetSandi(string $token)
     {
         $this->wajibPost();
@@ -395,21 +512,36 @@ class AuthController extends Controller
         $password = $this->input('password');
         $konfirmasi = $this->input('konfirmasi_password');
         if (!validasiPassword($password) || $password !== $konfirmasi) {
-            $this->flash('bad', 'Kata sandi minimal 8 karakter dan konfirmasi harus cocok.');
+            $this->flash('bad', validasiPassword($password) ? 'Konfirmasi kata sandi harus sama.' : PESAN_PASSWORD);
             $this->redirect('auth/reset-sandi/' . $token);
         }
 
-        $penggunaModel->gantiPassword((int) $reset['pengguna_id'], $password);
+        // Revisi J: semua sesi lama & "Ingat saya" dicabut setelah sandi diganti.
+        Auth::gantiSandiDanCabutSesi((int) $reset['pengguna_id'], $password, false, false);
         $penggunaModel->tandaiResetDipakai((int) $reset['id']);
+        Database::execute('UPDATE reset_kata_sandi SET dipakai_pada = now() WHERE pengguna_id = ? AND dipakai_pada IS NULL',
+                          [(int) $reset['pengguna_id']]);
 
         $this->flash('ok', 'Kata sandi berhasil diganti. Silakan masuk dengan kata sandi baru.');
         $this->redirect('masuk');
     }
 
     // --- Keluar (logout) ---------------------------------------------
+    // [URL] GET /keluar  →  tampil: views/publik/keluar.php
+    /** Revisi J: keluar wajib lewat POST + token CSRF (tautan GET bisa dipicu situs lain). */
     public function keluar()
     {
+        if (($_SERVER['REQUEST_METHOD'] ?? 'GET') !== 'POST') {
+            // Dibuka lewat alamat langsung: tampilkan konfirmasi, jangan langsung keluar.
+            if (!Auth::sudahLogin()) {
+                $this->redirect('masuk');
+            }
+            $this->view('publik/keluar');
+            return;
+        }
+        csrfVerifikasi();
         Auth::keluar();
-        $this->redirect('beranda');
+        $_SESSION['flash'] = ['tipe' => 'ok', 'pesan' => 'Anda sudah keluar. Sampai jumpa lagi.'];
+        $this->redirect('masuk');
     }
 }

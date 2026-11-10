@@ -21,6 +21,7 @@ $grupOpsi = [
 $daftarTampil = array_filter($lamaran, fn($a) => $dalamGrup($a, $grup));
 ?>
 <section class="view active">
+  <?= kepalaKembali('mahasiswa/dashboard', [['Dashboard', 'mahasiswa/dashboard'], ['Lamaran saya']]) ?>
   <div class="page-head"><div><h1>Lamaran Saya</h1><p>Pantau setiap lamaran dari diajukan sampai hasil akhir.</p></div></div>
 
   <!-- ===== Tab status ===== -->
@@ -43,6 +44,14 @@ $daftarTampil = array_filter($lamaran, fn($a) => $dalamGrup($a, $grup));
       $logoUrl = !empty($a['logo']) ? url('unduh.php?tipe=logo&file=' . urlencode($a['logo'])) : null;
   ?>
     <article class="app-card">
+      <?php [$bjHp, $btHp, $tahapHp, $ketHp] = hpStatusLamaran($a['status']); ?>
+      <a class="hp m-lam-kepala" href="<?= url('lowongan/detail/' . $a['lowongan_id']) ?>">
+        <span style="display:flex;gap:12px;align-items:flex-start"><?= hpLogo($a['nama_perusahaan'], $a['logo'] ?? null, 44) ?>
+          <span style="flex:1;min-width:0"><span style="display:flex;justify-content:space-between;gap:8px;align-items:flex-start"><b style="font-size:15px;letter-spacing:-.15px;color:#122036"><?= e($a['posisi']) ?></b><?= hpBadge($bjHp, $btHp) ?></span>
+            <span class="m-muted m-small" style="display:block;margin-top:1px"><?= e($a['nama_perusahaan']) ?> · CV <?= $a['jenis_cv'] === 'unggah' ? 'unggahan' : 'otomatis' ?></span></span></span>
+        <?= hpBarTahap($tahapHp) ?>
+        <span class="m-lbl"><span><?= e($ketHp) ?></span><span style="font-weight:500">Dilamar <?= e(tanggalIndo($a['tanggal_lamar'])) ?></span></span>
+      </a>
       <div class="app-card-head">
         <?php if ($logoUrl): ?><img class="avatar" src="<?= e($logoUrl) ?>" alt=""><?php else: ?><span class="avatar avatar-inisial"><?= e(inisial($a['nama_perusahaan'])) ?></span><?php endif; ?>
         <div class="grow"><a href="<?= url('lowongan/detail/' . $a['lowongan_id']) ?>"><b><?= e($a['posisi']) ?></b></a><div class="muted fs-90"><?= e($a['nama_perusahaan']) ?>, dilamar <?= tanggalIndo($a['tanggal_lamar']) ?>, dengan <?= $a['jenis_cv'] === 'unggah' ? 'CV unggahan' : 'CV otomatis' ?></div></div>
@@ -85,7 +94,7 @@ $daftarTampil = array_filter($lamaran, fn($a) => $dalamGrup($a, $grup));
                   <td><?= e($label) ?></td>
                   <td>
                     <?php if ($label === 'Tautan'): ?>
-                      <a href="<?= e($isi) ?>" target="_blank" rel="noopener"><?= e($isi) ?></a>
+                      <a href="<?= e(tautanAman($isi)) ?>" target="_blank" rel="noopener noreferrer"><?= e($isi) ?></a>
                     <?php else: ?>
                       <?= e($isi) ?>
                     <?php endif; ?>
@@ -105,7 +114,7 @@ $daftarTampil = array_filter($lamaran, fn($a) => $dalamGrup($a, $grup));
 
       <?php if ($a['status'] === 'diajukan'): ?>
         <div class="text-right mt-10">
-          <form class="d-inline" method="post" action="<?= url('lamaran/batalkan/' . $a['id']) ?>" onsubmit="return confirm('Batalkan lamaran ini? Lamaran yang dibatalkan tidak bisa dikirim ulang untuk lowongan yang sama.')">
+          <form class="d-inline" method="post" action="<?= url('lamaran/batalkan/' . $a['id']) ?>" data-konfirmasi="Batalkan lamaran ini? Lamaran yang dibatalkan tidak bisa dikirim ulang untuk lowongan yang sama.">
             <?= csrfField() ?>
             <button class="btn btn-sm btn-outline" type="submit">Batalkan lamaran</button>
           </form>

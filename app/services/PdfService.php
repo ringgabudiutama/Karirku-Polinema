@@ -35,13 +35,18 @@ class PdfService
             .bar button { background:#fff; color:#0A2656; }
             .bar a { background:transparent; color:#fff; border:1.5px solid rgba(255,255,255,.6); }
             .bar small { opacity:.85; flex-basis:100%; text-align:center; font-weight:400; }
+            /* Revisi tahap 3: teks panjang tanpa spasi tidak melebarkan kertas; layar HP menggulir tabel saja. */
+            .kertas { overflow-wrap:anywhere; word-break:break-word; }
+            .kertas th { white-space:nowrap; }
+            @media (max-width: 640px) { .kertas { margin:0; padding:18px 14px; min-height:0; box-shadow:none; }
+                                        .kertas table { display:block; overflow-x:auto; } }
             @media print { .bar { display:none !important; }
                            body { background:#fff; }
                            .kertas { margin:0; padding:0; box-shadow:none; max-width:none; min-height:0; } }
           </style>
           <div class="bar">
-            <button type="button" onclick="window.print()">Simpan sebagai PDF</button>
-            <a href="javascript:history.back()">Kembali</a>
+            <button type="button" id="btnCetak">Simpan sebagai PDF</button>
+            <a href="#" id="btnKembali">Kembali</a>
             <small>Pada jendela cetak, pilih Destination atau Tujuan: <b>Save as PDF</b>, lalu Save.</small>
           </div>';
 
@@ -50,6 +55,10 @@ class PdfService
            . '<title>' . $judul . '</title></head><body>'
            . $panel
            . '<div class="kertas">' . self::isiBody($html) . '</div>'
+           . '<script nonce="' . cspNonce() . '">'
+           . 'document.getElementById("btnCetak").addEventListener("click",function(){window.print();});'
+           . 'document.getElementById("btnKembali").addEventListener("click",function(e){e.preventDefault();history.back();});'
+           . '</script>'
            . '</body></html>';
         exit;
     }
@@ -64,8 +73,11 @@ class PdfService
             h2{font-size:13px;margin:18px 0 6px;border-bottom:1.5px solid #16305e;padding-bottom:4px;color:#16305e}
             .sub{color:#5b6472;margin:0 0 14px}
             .item{margin-bottom:10px}
-            .item b{display:block}
+            .item > b{display:block}
+            .item .kepala{font-weight:700}
+            .item .kepala .periode{font-weight:400}
             .item .periode{color:#5b6472;font-size:11px}
+            .item .lbl{display:inline;font-weight:600}.item .detail{font-size:11px;color:#333}
             .chip{display:inline-block;background:#eaf0fb;color:#16305e;border-radius:10px;padding:3px 10px;margin:2px 4px 2px 0;font-size:11px}
             </style></head><body>';
         $html .= '<h1>' . e($mahasiswa['nama']) . '</h1>';
@@ -85,21 +97,21 @@ class PdfService
         if ($pendidikan) {
             $html .= '<h2>Pendidikan</h2>';
             foreach ($pendidikan as $p) {
-                $html .= self::itemHtml($p);
+                $html .= self::itemHtml($p, 'pendidikan');
             }
         }
 
         if ($pengalaman) {
             $html .= '<h2>Pengalaman</h2>';
             foreach ($pengalaman as $p) {
-                $html .= self::itemHtml($p);
+                $html .= self::itemHtml($p, 'pengalaman');
             }
         }
 
         if ($sertifikat) {
             $html .= '<h2>Sertifikat</h2>';
             foreach ($sertifikat as $p) {
-                $html .= self::itemHtml($p);
+                $html .= self::itemHtml($p, 'sertifikat');
             }
         }
 
@@ -139,37 +151,86 @@ class PdfService
         self::keluarkan($html, $namaFile);
     }
 
-    private static function itemHtml(array $p): string
+    private static function itemHtml(array $p, string $tipe = ''): string
     {
+        if (isset(SKEMA_ITEM[$tipe])) {
+            // Revisi tahap 2: detail lengkap (jenjang, NIM, nilai, jenis, nomor kredensial, dll.)
+            $lencana = implode(' · ', array_filter([nilaiItem($p, 'jenjang'), nilaiItem($p, 'jenis')]));
+            $sub = trim(($p['instansi'] ?? '') . ($tipe === 'pendidikan' && nilaiItem($p, 'fakultas') ? ', ' . nilaiItem($p, 'fakultas') : ''));
+            $periode = periodeItem($p, $tipe);
+            $det = [];
+            foreach (detailTampilItem($p, $tipe) as $k => $v) {
+                if (in_array($k, ['Kontak referensi'], true)) continue;
+                $det[] = '<b class="lbl">' . e($k) . ':</b> ' . e($v);
+            }
+            $desk = trim((string) ($p['deskripsi'] ?? ''));
+            $capai = nilaiItem($p, 'pencapaian');
+            return '<div class="item"><div class="kepala">' . e($p['judul']) . ($lencana ? ' <span class="periode">(' . e($lencana) . ')</span>' : '') . '</div>'
+                . ($sub ? e($sub) . '<br>' : '')
+                . ($periode ? '<span class="periode">' . e($periode) . '</span><br>' : '')
+                . ($det ? '<span class="detail">' . implode(' &nbsp;|&nbsp; ', array_diff($det, ['<b class="lbl">Pencapaian / hasil kerja:</b> ' . e($capai)])) . '</span><br>' : '')
+                . ($desk ? nl2br(e($desk)) . '<br>' : '')
+                . ($capai ? '<i>Pencapaian:</i> ' . nl2br(e($capai)) : '')
+                . '</div>';
+        }
         $periode = trim(($p['mulai'] ? tanggalIndo($p['mulai']) : '') . ($p['selesai'] ? ' - ' . tanggalIndo($p['selesai']) : ($p['mulai'] ? ' - sekarang' : '')));
         return '<div class="item"><b>' . e($p['judul']) . '</b>'
             . ($p['instansi'] ? e($p['instansi']) . '<br>' : '')
+            . ($p['tautan'] ?? '' ? e($p['tautan']) . '<br>' : '')
             . ($periode ? '<span class="periode">' . e($periode) . '</span><br>' : '')
             . ($p['deskripsi'] ? nl2br(e($p['deskripsi'])) : '')
             . '</div>';
     }
 
     // --- Laporan admin -----------------------------------------------
-    public static function rekapLowongan(array $baris): void
+    /** Daftar filter aktif dicetak di bawah judul laporan (revisi I). */
+    private static function blokFilter(array $labelFilter, int $jumlah, string $satuan): string
     {
-        $html = self::headerLaporan('Rekap Lowongan per Perusahaan');
-        $html .= '<table><tr><th>Perusahaan</th><th>Posisi</th><th>Bidang</th><th>Kuota</th><th>Terisi</th><th>Status</th><th>Batas Lamar</th></tr>';
+        $teks = $labelFilter ? implode(' &middot; ', array_map('e', $labelFilter)) : 'Tanpa filter (semua data)';
+        return '<p class="sub"><b>Filter:</b> ' . $teks . '<br><b>Jumlah:</b> ' . $jumlah . ' ' . e($satuan) . '</p>';
+    }
+
+    public static function rekapLowongan(array $baris, array $labelFilter = []): void
+    {
+        $html = self::headerLaporan('Rekap Lowongan per Perusahaan') . self::blokFilter($labelFilter, count($baris), 'lowongan');
+        $html .= '<table><tr><th>Perusahaan</th><th>Posisi</th><th>Bidang</th><th>Pelamar</th><th>Diterima/Kuota</th><th>Status</th><th>Batas Lamar</th></tr>';
         foreach ($baris as $b) {
             $html .= '<tr><td>' . e($b['nama_perusahaan']) . '</td><td>' . e($b['posisi']) . '</td><td>' . e($b['nama_bidang']) . '</td>'
-                . '<td>' . e((string) $b['kuota']) . '</td><td>' . e((string) $b['terisi']) . '</td><td>' . e($b['status']) . '</td>'
-                . '<td>' . tanggalIndo($b['batas_lamaran']) . '</td></tr>';
+                . '<td>' . (int) ($b['jumlah_pelamar'] ?? 0) . '</td><td>' . (int) $b['terisi'] . '/' . (int) $b['kuota'] . '</td>'
+                . '<td>' . e(labelStatusLowongan($b['status'])[0]) . '</td><td>' . tanggalIndo($b['batas_lamaran']) . '</td></tr>';
+        }
+        if (!$baris) {
+            $html .= '<tr><td colspan="7">Tidak ada data dengan filter ini.</td></tr>';
         }
         $html .= '</table>' . self::footerLaporan();
         self::keluarkan($html, 'Rekap-Lowongan-per-Perusahaan.pdf');
     }
 
-    public static function rekapLamaran(array $baris): void
+    public static function rekapLamaran(array $baris, array $labelFilter = [], array $ringkasan = [], array $perPerusahaan = []): void
     {
-        $html = self::headerLaporan('Rekap Lamaran');
-        $html .= '<table><tr><th>Mahasiswa</th><th>Prodi</th><th>Angkatan</th><th>Jurusan</th><th>Posisi</th><th>Perusahaan</th><th>Status</th><th>Tanggal Lamar</th></tr>';
+        $html = self::headerLaporan('Rekap Lamaran') . self::blokFilter($labelFilter, count($baris), 'lamaran');
+        if ($ringkasan) {
+            $html .= '<table style="margin-bottom:12px"><tr><th>Total</th><th>Diajukan</th><th>Screening</th><th>Interview</th><th>Diterima</th><th>Ditolak</th><th>Dibatalkan</th></tr><tr>';
+            foreach (['total', 'diajukan', 'screening', 'interview', 'diterima', 'ditolak', 'dibatalkan'] as $k) {
+                $html .= '<td>' . (int) ($ringkasan[$k] ?? 0) . '</td>';
+            }
+            $html .= '</tr></table>';
+        }
+        if ($perPerusahaan) {
+            $html .= '<h2 style="font-size:13px;color:#16305e">Per perusahaan</h2><table style="margin-bottom:12px"><tr><th>Perusahaan</th><th>Total</th><th>Diproses</th><th>Diterima</th><th>Ditolak</th></tr>';
+            foreach ($perPerusahaan as $p) {
+                $html .= '<tr><td>' . e($p['nama_perusahaan']) . '</td><td>' . (int) $p['total'] . '</td><td>' . (int) $p['diproses'] . '</td><td>' . (int) $p['diterima'] . '</td><td>' . (int) $p['ditolak'] . '</td></tr>';
+            }
+            $html .= '</table><h2 style="font-size:13px;color:#16305e">Rincian lamaran</h2>';
+        }
+        $html .= '<table><tr><th>Mahasiswa</th><th>NIM</th><th>Prodi</th><th>Angkatan</th><th>Posisi</th><th>Perusahaan</th><th>Status</th><th>Tanggal Lamar</th></tr>';
         foreach ($baris as $b) {
-            $html .= '<tr><td>' . e($b['nama_mahasiswa']) . '</td><td>' . e($b['nama_prodi'] ?? '-') . '</td><td>' . e((string) ($b['angkatan'] ?? '-')) . '</td><td>' . e($b['nama_jurusan']) . '</td><td>' . e($b['posisi']) . '</td>'
-                . '<td>' . e($b['nama_perusahaan']) . '</td><td>' . e($b['status']) . '</td><td>' . tanggalIndo($b['tanggal_lamar']) . '</td></tr>';
+            $html .= '<tr><td>' . e($b['nama_mahasiswa']) . '</td><td>' . e($b['nim'] ?? '-') . '</td><td>' . e(trim(($b['jenjang'] ?? '') . ' ' . ($b['nama_prodi'] ?? '-'))) . '</td>'
+                . '<td>' . e((string) ($b['angkatan'] ?? '-')) . '</td><td>' . e($b['posisi']) . '</td>'
+                . '<td>' . e($b['nama_perusahaan']) . '</td><td>' . e(labelStatusLamaran($b['status'])[0]) . '</td><td>' . tanggalWaktuIndo($b['tanggal_lamar']) . '</td></tr>';
+        }
+        if (!$baris) {
+            $html .= '<tr><td colspan="8">Tidak ada data dengan filter ini.</td></tr>';
         }
         $html .= '</table>' . self::footerLaporan();
         self::keluarkan($html, 'Rekap-Lamaran.pdf');
@@ -181,7 +242,7 @@ class PdfService
         $html .= '<table><tr><th>Nama</th><th>Jurusan</th><th>Angkatan</th><th>Tahun Lulus</th><th>Status Karier</th><th>Tempat Kerja</th></tr>';
         foreach ($baris as $b) {
             $html .= '<tr><td>' . e($b['nama']) . '</td><td>' . e($b['nama_jurusan']) . '</td><td>' . e((string) $b['angkatan']) . '</td>'
-                . '<td>' . e((string) ($b['tahun_lulus'] ?? '-')) . '</td><td>' . e($b['status_karier'] ?? 'belum bekerja') . '</td>'
+                . '<td>' . e((string) ($b['tahun_lulus'] ?? '-')) . '</td><td>' . e(ucfirst($b['status_karier'] ?? 'belum bekerja')) . '</td>'
                 . '<td>' . e($b['tempat_kerja'] ?? '-') . '</td></tr>';
         }
         $html .= '</table>' . self::footerLaporan();
@@ -198,10 +259,11 @@ class PdfService
             .sub{color:#5b6472;margin:0 0 16px;font-size:11px}
             table{width:100%;border-collapse:collapse}
             th,td{border:1px solid #dfe3ea;padding:6px 8px;text-align:left}
+            td{overflow-wrap:anywhere;word-break:break-word}
             th{background:#eaf0fb;color:#16305e}
             </style></head><body>
             <h1>' . e($judul) . '</h1>
-            <p class="sub">KarirKu Polinema &middot; Diunduh ' . tanggalWaktuIndo(date('Y-m-d H:i:s')) . '</p>';
+            <p class="sub">KarirKu Polinema &middot; Career Center Politeknik Negeri Malang &middot; Diunduh ' . tanggalWaktuIndo(date('Y-m-d H:i:s')) . ' WIB</p>';
     }
 
     private static function footerLaporan(): string

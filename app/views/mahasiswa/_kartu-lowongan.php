@@ -5,8 +5,9 @@ $tutup = $l['status'] !== 'aktif';
 $sisa = sisaHari($l['batas_lamaran']);
 $pamfletUrl = !empty($l['pamflet']) ? url('unduh.php?tipe=pamflet&file=' . urlencode($l['pamflet'])) : url('assets/img/hero-1.jpg');
 ?>
-<article class="job">
-  <a href="<?= url('lowongan/detail/' . $l['id']) ?>"><img class="thumb" src="<?= e($pamfletUrl) ?>" alt="Pamflet <?= e($l['posisi']) ?>"></a>
+<?= hpKartuLowongan($l, (bool) $sudahDisimpan) ?>
+<article class="job hanya-laptop">
+  <a href="<?= url('lowongan/detail/' . $l['id']) ?>"><?php if (pamfletPdf($l['pamflet'] ?? null)): ?><span class="thumb pamflet-ikon-pdf">PDF</span><?php else: ?><img class="thumb" src="<?= e($pamfletUrl) ?>" alt="Pamflet <?= e($l['posisi']) ?>" loading="lazy"><?php endif; ?></a>
   <div>
     <h3><a href="<?= url('lowongan/detail/' . $l['id']) ?>"><?= e($l['posisi']) ?></a></h3>
     <div class="person gap-6"><span class="muted"><?= e($l['nama_perusahaan']) ?></span> <span class="d-inline-flex text-ok" title="Mitra terverifikasi"><span data-ic="shield"></span></span></div>
@@ -24,7 +25,7 @@ $pamfletUrl = !empty($l['pamflet']) ? url('unduh.php?tipe=pamflet&file=' . urlen
   <div class="job-actions">
     <form class="d-inline" method="post" action="<?= url('lowongan/simpan/' . $l['id']) ?>">
       <?= csrfField() ?>
-      <input type="hidden" name="kembali" value="<?= e($_SERVER['REQUEST_URI'] ?? '') ?>">
+      <input type="hidden" name="kembali" value="<?= e(Auth::pathSaatIni()) ?>">
       <button class="btn btn-sm btn-outline save-btn <?= $sudahDisimpan ? 'saved' : '' ?>" type="submit"><span data-ic="bookmark"></span><?= $sudahDisimpan ? 'Disimpan' : 'Simpan' ?></button>
     </form>
     <a class="btn btn-sm btn-primary" href="<?= url('lowongan/detail/' . $l['id']) ?>">Lihat detail</a>

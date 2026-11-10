@@ -1,8 +1,8 @@
 #!/bin/bash
 # Memastikan berkas pribadi TETAP tertolak untuk yang tidak berhak.
-S=/tmp/claude-0/-home-claude/34c7d75d-6ec8-5e75-91f4-7f39653d6878/scratchpad
+S=$(mktemp -d)
 B=http://127.0.0.1:8000
-export PGHOST=/tmp PGUSER=postgres
+export PGHOST=${DB_HOST:-127.0.0.1} PGUSER=${DB_USER:-postgres} PGPASSWORD=${DB_PASS:-postgres}
 DB="psql -tAq -d karirku_polinema -c"
 GAGAL=0
 
@@ -10,8 +10,8 @@ login() { rm -f "$3"; T=$(curl -s -c "$3" "$B/masuk" | grep -oP 'name="csrf_toke
   curl -s -b "$3" -c "$3" -o /dev/null -d "csrf_token=$T" --data-urlencode "email=$1" --data-urlencode "password=$2" "$B/auth/proses-masuk"; }
 
 harus() { # $1 jar  $2 url  $3 harapan(buka|tolak)  $4 label
-  kode=$(curl -s -b "$1" -o /tmp/hasil-berkas -w "%{http_code}" "$B/$2")
-  jenis=$(file -b --mime-type /tmp/hasil-berkas)
+  kode=$(curl -s -b "$1" -o $S/hasil-berkas -w "%{http_code}" "$B/$2")
+  jenis=$(file -b --mime-type $S/hasil-berkas)
   if [ "$3" = "buka" ]; then
     if [ "$kode" = "200" ] && [ "$jenis" != "text/html" ]; then echo "  ok     $4 -> terbuka"
     else echo "  GAGAL  $4 -> seharusnya BISA dibuka, tapi http $kode ($jenis)"; GAGAL=$((GAGAL+1)); fi

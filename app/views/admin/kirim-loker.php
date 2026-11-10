@@ -9,6 +9,7 @@ $jumlahJurusan = count($jurusan);
 $pamfletUrl = $lowonganDipilih ? url('unduh.php?tipe=pamflet&file=' . urlencode($lowonganDipilih['pamflet'])) : null;
 ?>
 <section class="view active">
+  <?= kepalaKembali('admin/dashboard', [['Dashboard', 'admin/dashboard'], ['Kirim loker ke jurusan']]) ?>
   <div class="page-head"><div><h1>Kirim loker ke jurusan</h1><p>Pilih lowongan, periksa pesan, lalu klik admin jurusan tujuan. WhatsApp langsung terbuka di tab baru.</p></div></div>
   <div class="grid g-320 items-start gap-20">
     <!-- ===== Langkah 1: pilih lowongan ===== -->
@@ -17,8 +18,8 @@ $pamfletUrl = $lowonganDipilih ? url('unduh.php?tipe=pamflet&file=' . urlencode(
       <div class="pick">
         <?php foreach ($lowongan as $l): ?>
           <label>
-            <input type="radio" name="pilihLowongan" onclick="location.href='<?= url('kirim-loker?lowongan_id=' . $l['id']) ?>'" <?= $lowonganDipilih && (int) $lowonganDipilih['id'] === (int) $l['id'] ? 'checked' : '' ?>>
-            <img src="<?= url('unduh.php?tipe=pamflet&file=' . urlencode($l['pamflet'])) ?>" alt="">
+            <input type="radio" name="pilihLowongan" data-href="<?= e(url('kirim-loker?lowongan_id=' . $l['id'])) ?>" <?= $lowonganDipilih && (int) $lowonganDipilih['id'] === (int) $l['id'] ? 'checked' : '' ?>>
+            <?= pamfletHtml($l['pamflet'], 'mini') ?>
             <span><b><?= e($l['posisi']) ?></b><br><small class="muted"><?= e($l['nama_perusahaan']) ?></small></span>
           </label>
         <?php endforeach; ?>
@@ -35,8 +36,12 @@ $pamfletUrl = $lowonganDipilih ? url('unduh.php?tipe=pamflet&file=' . urlencode(
           <h3>2. Periksa pamflet dan pesan</h3>
           <div class="grid g-200 items-start gap-16">
             <div>
+              <?php if (pamfletPdf($lowonganDipilih['pamflet'])): ?>
+                <?= pamfletHtml($lowonganDipilih['pamflet'], 'besar') ?>
+              <?php else: ?>
               <img class="gambar-bingkai w-100" id="pamfletImg" src="<?= e($pamfletUrl) ?>" alt="Pamflet lowongan">
               <button type="button" class="btn btn-sm btn-link d-block w-100 text-center" id="btnSalinPamflet" data-src="<?= e($pamfletUrl) ?>"><span data-ic="copy"></span>Salin pamflet</button>
+              <?php endif; ?>
               <a class="btn btn-sm btn-link d-block w-100 text-center" href="<?= e($pamfletUrl) ?>" download><span data-ic="download"></span>Unduh pamflet</a>
             </div>
             <div>
@@ -74,7 +79,7 @@ $pamfletUrl = $lowonganDipilih ? url('unduh.php?tipe=pamflet&file=' . urlencode(
   </div>
 </section>
 <!-- ===== Script salin pesan & pamflet ===== -->
-<script>
+<script nonce="<?= cspNonce() ?>">
 (function(){
   var btnPesan = document.getElementById('btnSalinPesan');
   if (btnPesan) {
@@ -84,7 +89,7 @@ $pamfletUrl = $lowonganDipilih ? url('unduh.php?tipe=pamflet&file=' . urlencode(
         var asli = btnPesan.innerHTML;
         btnPesan.innerHTML = '<span data-ic="check"></span>Pesan disalin'; hydrateIcons(btnPesan);
         setTimeout(function(){ btnPesan.innerHTML = asli; hydrateIcons(btnPesan); }, 1800);
-      }).catch(function(){ alert('Gagal menyalin pesan. Salin manual dari kotak pesan.'); });
+      }).catch(function(){ KarirKu.pesan('Pesan belum tersalin. Salin manual dari kotak pesan, atau coba lagi.', 'Gagal menyalin', 'warn'); });
     });
   }
   var btnPamflet = document.getElementById('btnSalinPamflet');
@@ -96,7 +101,7 @@ $pamfletUrl = $lowonganDipilih ? url('unduh.php?tipe=pamflet&file=' . urlencode(
         var asli = btnPamflet.innerHTML;
         btnPamflet.innerHTML = '<span data-ic="check"></span>Pamflet disalin'; hydrateIcons(btnPamflet);
         setTimeout(function(){ btnPamflet.innerHTML = asli; hydrateIcons(btnPamflet); }, 1800);
-      }).catch(function(){ alert('Perangkat/browser ini belum mendukung salin gambar. Gunakan tombol Unduh pamflet.'); });
+      }).catch(function(){ KarirKu.pesan('Perangkat atau browser ini belum mendukung salin gambar. Gunakan tombol Unduh pamflet.', 'Belum bisa menyalin gambar', 'warn'); });
     });
   }
 })();

@@ -1,7 +1,7 @@
 #!/bin/bash
-S=/tmp/claude-0/-home-claude/34c7d75d-6ec8-5e75-91f4-7f39653d6878/scratchpad
+S=$(mktemp -d)
 B=http://127.0.0.1:8000
-export PGHOST=/tmp PGUSER=postgres
+export PGHOST=${DB_HOST:-127.0.0.1} PGUSER=${DB_USER:-postgres} PGPASSWORD=${DB_PASS:-postgres}
 DB="psql -tAq -d karirku_polinema -c"
 GAGAL=0
 

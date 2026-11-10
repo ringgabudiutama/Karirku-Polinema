@@ -1,12 +1,12 @@
 -- ===== KarirKu Polinema - Skema PostgreSQL ===============================
 
 -- ----- Referensi ---------------------------------------------------------
-CREATE TABLE jurusan (
+CREATE TABLE IF NOT EXISTS jurusan (
   id            serial PRIMARY KEY,
   nama          varchar(100) NOT NULL UNIQUE
 );
 
-CREATE TABLE program_studi (
+CREATE TABLE IF NOT EXISTS program_studi (
   id            serial PRIMARY KEY,
   jurusan_id    integer NOT NULL REFERENCES jurusan(id) ON DELETE RESTRICT,
   nama          varchar(150) NOT NULL,
@@ -14,18 +14,18 @@ CREATE TABLE program_studi (
   UNIQUE (jurusan_id, nama, jenjang)
 );
 
-CREATE TABLE skill (
+CREATE TABLE IF NOT EXISTS skill (
   id            serial PRIMARY KEY,
   nama          varchar(100) NOT NULL UNIQUE
 );
 
-CREATE TABLE bidang (
+CREATE TABLE IF NOT EXISTS bidang (
   id            serial PRIMARY KEY,
   nama          varchar(100) NOT NULL UNIQUE
 );
 
 -- ----- Akun dan peran ----------------------------------------------------
-CREATE TABLE pengguna (
+CREATE TABLE IF NOT EXISTS pengguna (
   id             serial PRIMARY KEY,
   email          varchar(255) NOT NULL UNIQUE,
   password_hash  varchar(255) NOT NULL,
@@ -36,13 +36,13 @@ CREATE TABLE pengguna (
   terakhir_login timestamp
 );
 
-CREATE TABLE admin (
+CREATE TABLE IF NOT EXISTS admin (
   id            serial PRIMARY KEY,
   pengguna_id   integer NOT NULL UNIQUE REFERENCES pengguna(id) ON DELETE CASCADE,
   nama          varchar(255) NOT NULL
 );
 
-CREATE TABLE mahasiswa (
+CREATE TABLE IF NOT EXISTS mahasiswa (
   id                     serial PRIMARY KEY,
   pengguna_id            integer NOT NULL UNIQUE REFERENCES pengguna(id) ON DELETE CASCADE,
   program_studi_id       integer NOT NULL REFERENCES program_studi(id) ON DELETE RESTRICT,
@@ -74,7 +74,7 @@ CREATE TABLE mahasiswa (
   CHECK (status_mahasiswa = 'aktif' OR tahun_lulus IS NOT NULL)
 );
 
-CREATE TABLE perusahaan (
+CREATE TABLE IF NOT EXISTS perusahaan (
   id                serial PRIMARY KEY,
   pengguna_id       integer NOT NULL UNIQUE REFERENCES pengguna(id) ON DELETE CASCADE,
   nama_perusahaan   varchar(255) NOT NULL,
@@ -92,7 +92,7 @@ CREATE TABLE perusahaan (
 );
 
 -- ----- Verifikasi akun ---------------------------------------------------
-CREATE TABLE dokumen_verifikasi (
+CREATE TABLE IF NOT EXISTS dokumen_verifikasi (
   id            serial PRIMARY KEY,
   pengguna_id   integer NOT NULL REFERENCES pengguna(id) ON DELETE CASCADE,
   tipe          varchar(20) NOT NULL
@@ -102,7 +102,7 @@ CREATE TABLE dokumen_verifikasi (
   diunggah_pada timestamp NOT NULL DEFAULT now()
 );
 
-CREATE TABLE verifikasi_akun (
+CREATE TABLE IF NOT EXISTS verifikasi_akun (
   id          serial PRIMARY KEY,
   pengguna_id integer NOT NULL REFERENCES pengguna(id) ON DELETE CASCADE,
   admin_id    integer NOT NULL REFERENCES admin(id) ON DELETE RESTRICT,
@@ -113,7 +113,7 @@ CREATE TABLE verifikasi_akun (
 );
 
 -- ----- Profil karier -----------------------------------------------------
-CREATE TABLE profil_item (
+CREATE TABLE IF NOT EXISTS profil_item (
   id           serial PRIMARY KEY,
   mahasiswa_id integer NOT NULL REFERENCES mahasiswa(id) ON DELETE CASCADE,
   tipe         varchar(20) NOT NULL CHECK (tipe IN ('pendidikan','pengalaman','sertifikat','portofolio')),
@@ -127,20 +127,20 @@ CREATE TABLE profil_item (
   CHECK (selesai IS NULL OR mulai IS NULL OR selesai >= mulai)
 );
 
-CREATE TABLE mahasiswa_skill (
+CREATE TABLE IF NOT EXISTS mahasiswa_skill (
   mahasiswa_id integer NOT NULL REFERENCES mahasiswa(id) ON DELETE CASCADE,
   skill_id     integer NOT NULL REFERENCES skill(id) ON DELETE CASCADE,
   PRIMARY KEY (mahasiswa_id, skill_id)
 );
 
-CREATE TABLE mahasiswa_minat (
+CREATE TABLE IF NOT EXISTS mahasiswa_minat (
   mahasiswa_id integer NOT NULL REFERENCES mahasiswa(id) ON DELETE CASCADE,
   bidang_id    integer NOT NULL REFERENCES bidang(id) ON DELETE CASCADE,
   PRIMARY KEY (mahasiswa_id, bidang_id)
 );
 
 -- ----- Lowongan ----------------------------------------------------------
-CREATE TABLE lowongan (
+CREATE TABLE IF NOT EXISTS lowongan (
   id               serial PRIMARY KEY,
   perusahaan_id    integer NOT NULL REFERENCES perusahaan(id) ON DELETE CASCADE,
   bidang_id        integer NOT NULL REFERENCES bidang(id) ON DELETE RESTRICT,
@@ -164,13 +164,13 @@ CREATE TABLE lowongan (
   CHECK (terisi <= kuota)
 );
 
-CREATE TABLE lowongan_jurusan (
+CREATE TABLE IF NOT EXISTS lowongan_jurusan (
   lowongan_id integer NOT NULL REFERENCES lowongan(id) ON DELETE CASCADE,
   jurusan_id  integer NOT NULL REFERENCES jurusan(id) ON DELETE CASCADE,
   PRIMARY KEY (lowongan_id, jurusan_id)
 );
 
-CREATE TABLE lowongan_disimpan (
+CREATE TABLE IF NOT EXISTS lowongan_disimpan (
   mahasiswa_id integer NOT NULL REFERENCES mahasiswa(id) ON DELETE CASCADE,
   lowongan_id  integer NOT NULL REFERENCES lowongan(id) ON DELETE CASCADE,
   dibuat_pada  timestamp NOT NULL DEFAULT now(),
@@ -178,7 +178,7 @@ CREATE TABLE lowongan_disimpan (
 );
 
 -- ----- Lamaran -----------------------------------------------------------
-CREATE TABLE lamaran (
+CREATE TABLE IF NOT EXISTS lamaran (
   id                   serial PRIMARY KEY,
   mahasiswa_id         integer NOT NULL REFERENCES mahasiswa(id) ON DELETE CASCADE,
   lowongan_id          integer NOT NULL REFERENCES lowongan(id) ON DELETE CASCADE,
@@ -196,7 +196,7 @@ CREATE TABLE lamaran (
   UNIQUE (mahasiswa_id, lowongan_id)
 );
 
-CREATE TABLE riwayat_lamaran (
+CREATE TABLE IF NOT EXISTS riwayat_lamaran (
   id          serial PRIMARY KEY,
   lamaran_id  integer NOT NULL REFERENCES lamaran(id) ON DELETE CASCADE,
   status      varchar(20) NOT NULL,
@@ -205,7 +205,7 @@ CREATE TABLE riwayat_lamaran (
   tanggal     timestamp NOT NULL DEFAULT now()
 );
 
-CREATE TABLE interview (
+CREATE TABLE IF NOT EXISTS interview (
   id            serial PRIMARY KEY,
   lamaran_id    integer NOT NULL UNIQUE REFERENCES lamaran(id) ON DELETE CASCADE,
   tanggal       date NOT NULL,
@@ -221,7 +221,7 @@ CREATE TABLE interview (
 );
 
 -- ----- Notifikasi dan admin ----------------------------------------------
-CREATE TABLE notifikasi (
+CREATE TABLE IF NOT EXISTS notifikasi (
   id          serial PRIMARY KEY,
   pengguna_id integer NOT NULL REFERENCES pengguna(id) ON DELETE CASCADE,
   tipe        varchar(30) NOT NULL,
@@ -232,7 +232,7 @@ CREATE TABLE notifikasi (
   dibuat_pada timestamp NOT NULL DEFAULT now()
 );
 
-CREATE TABLE admin_jurusan_kontak (
+CREATE TABLE IF NOT EXISTS admin_jurusan_kontak (
   id              serial PRIMARY KEY,
   jurusan_id      integer NOT NULL UNIQUE REFERENCES jurusan(id) ON DELETE CASCADE,
   nama_kontak     varchar(255),
@@ -241,7 +241,7 @@ CREATE TABLE admin_jurusan_kontak (
   diperbarui_pada timestamp NOT NULL DEFAULT now()
 );
 
-CREATE TABLE pengiriman_loker (
+CREATE TABLE IF NOT EXISTS pengiriman_loker (
   id          serial PRIMARY KEY,
   lowongan_id integer NOT NULL REFERENCES lowongan(id) ON DELETE CASCADE,
   jurusan_id  integer NOT NULL REFERENCES jurusan(id) ON DELETE CASCADE,
@@ -250,7 +250,7 @@ CREATE TABLE pengiriman_loker (
   UNIQUE (lowongan_id, jurusan_id)
 );
 
-CREATE TABLE pengaturan (
+CREATE TABLE IF NOT EXISTS pengaturan (
   id              serial PRIMARY KEY,
   kunci           varchar(100) NOT NULL UNIQUE,
   nilai           text NOT NULL,
@@ -259,12 +259,12 @@ CREATE TABLE pengaturan (
 );
 
 -- ----- Indeks pendukung --------------------------------------------------
-CREATE INDEX idx_lowongan_status     ON lowongan (status, batas_lamaran);
-CREATE INDEX idx_lowongan_perusahaan ON lowongan (perusahaan_id);
-CREATE INDEX idx_lamaran_status      ON lamaran (status);
-CREATE INDEX idx_lamaran_lowongan    ON lamaran (lowongan_id);
-CREATE INDEX idx_notifikasi_belum    ON notifikasi (pengguna_id, dibaca);
-CREATE INDEX idx_profil_item_mhs     ON profil_item (mahasiswa_id, tipe);
+CREATE INDEX IF NOT EXISTS idx_lowongan_status     ON lowongan (status, batas_lamaran);
+CREATE INDEX IF NOT EXISTS idx_lowongan_perusahaan ON lowongan (perusahaan_id);
+CREATE INDEX IF NOT EXISTS idx_lamaran_status      ON lamaran (status);
+CREATE INDEX IF NOT EXISTS idx_lamaran_lowongan    ON lamaran (lowongan_id);
+CREATE INDEX IF NOT EXISTS idx_notifikasi_belum    ON notifikasi (pengguna_id, dibaca);
+CREATE INDEX IF NOT EXISTS idx_profil_item_mhs     ON profil_item (mahasiswa_id, tipe);
 
 -- ===== Tambahan: tabel reset kata sandi (fitur Lupa Kata Sandi) =========
 

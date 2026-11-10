@@ -25,5 +25,7 @@ echo     http://localhost:8000/masuk            (halaman login)
 echo.
 echo  Tekan Ctrl+C untuk menghentikan server.
 echo.
+REM Mode pengembangan lokal (di server produksi JANGAN diaktifkan)
+set APP_DEBUG=1
 php -S localhost:8000 -t public server-dev.php
 pause

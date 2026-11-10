@@ -22,9 +22,17 @@ function galatBerkas(int $kode, string $judul, string $pesan, string $saran = ''
 <html lang="id">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
+<meta name="theme-color" content="#ffffff">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="KarirKu">
+<link rel="manifest" href="<?= url('manifest.webmanifest') ?>">
+<link rel="icon" type="image/png" sizes="192x192" href="<?= url('assets/img/ikon-192.png') ?>">
+<link rel="apple-touch-icon" href="<?= url('assets/img/ikon-180.png') ?>">
 <title><?= e($judul) ?> | KarirKu Polinema</title>
-<link rel="stylesheet" href="<?= url('assets/css/style.css') ?>">
+<link rel="stylesheet" href="<?= asetUrl('assets/css/style.css') ?>">
 </head>
 <body class="halaman-galat">
   <div class="max-w-460 text-center">
@@ -45,6 +53,21 @@ function galatBerkas(int $kode, string $judul, string $pesan, string $saran = ''
 
 $tipe = $_GET['tipe'] ?? '';
 $file = basename($_GET['file'] ?? '');
+
+// Berkas sementara dari formulir yang gagal: hanya untuk sesi pemiliknya.
+if (($_GET['tipe'] ?? '') === 'sementara') {
+    $b = BerkasSementara::milikSesi($file);
+    if (!$b || !is_file($b['path'])) {
+        galatBerkas(404, 'Berkas tidak ditemukan', 'Berkas sementara sudah kedaluwarsa atau sudah tersimpan permanen.');
+    }
+    header('Content-Type: ' . deteksiMime($b['path']));
+    header('Content-Length: ' . filesize($b['path']));
+    header('X-Content-Type-Options: nosniff');
+    header('Cache-Control: private, no-store');
+    header('Content-Disposition: inline; filename="' . preg_replace('/[^A-Za-z0-9._-]/', '_', $b['nama']) . '"');
+    readfile($b['path']);
+    exit;
+}
 
 $tipePublik = ['pamflet', 'logo'];
 $tipeMahasiswa = ['foto', 'cv', 'ktm', 'ijazah', 'surat_pengantar', 'dokumen_lamaran', 'portofolio'];
@@ -83,7 +106,7 @@ if (!is_file($path)) {
         'Biasanya karena berkas belum pernah benar-benar diunggah. Minta pemiliknya mengunggah ulang.');
 }
 
-$mime = mime_content_type($path) ?: 'application/octet-stream';
+$mime = deteksiMime($path);
 header('Content-Type: ' . $mime);
 header('Content-Length: ' . filesize($path));
 header('X-Content-Type-Options: nosniff');
@@ -120,8 +143,8 @@ function bolehLihatFilePribadi(string $tipe, string $file, int $penggunaId): boo
     if ($tipe === 'portofolio') {
         if (Database::fetch(
             'SELECT 1 FROM profil_item pi JOIN mahasiswa m ON m.id = pi.mahasiswa_id
-              WHERE m.pengguna_id = ? AND pi.file = ?',
-            [$penggunaId, $file])) {
+              WHERE m.pengguna_id = ? AND (pi.file = ? OR pi.detail->>\'file2\' = ?)',
+            [$penggunaId, $file, $file])) {
             return true;
         }
     }
@@ -181,8 +204,8 @@ function bolehLihatFilePribadi(string $tipe, string $file, int $penggunaId): boo
             'SELECT 1 FROM lamaran lm
                JOIN lowongan l ON l.id = lm.lowongan_id
                JOIN profil_item pi ON pi.mahasiswa_id = lm.mahasiswa_id
-              WHERE l.perusahaan_id = ? AND pi.file = ?',
-            [$perusahaanId, $file]
+              WHERE l.perusahaan_id = ? AND (pi.file = ? OR pi.detail->>\'file2\' = ?)',
+            [$perusahaanId, $file, $file]
         );
     }
 

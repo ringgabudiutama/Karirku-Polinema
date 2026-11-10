@@ -1,10 +1,9 @@
+# Rahasia dan data pribadi: jangan masuk repositori
+app/config/database.lokal.php
 storage/uploads/*
-!storage/uploads/*/.gitkeep
+!storage/uploads/.gitkeep
 storage/logs/*
 !storage/logs/.gitkeep
-app/config/config.local.php
-vendor/
-node_modules/
-.DS_Store
-Thumbs.db
-*.log
+*.sql.gz
+*.dump
+backup/

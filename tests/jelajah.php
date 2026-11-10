@@ -7,8 +7,10 @@
  * karena bug notifikasi kemarin lolos justru di situ: statusnya 302, tapi
  * tujuannya halaman yang tidak ada.
  */
-$B = 'http://127.0.0.1:8000';
-$S = '/tmp/claude-0/-home-claude/34c7d75d-6ec8-5e75-91f4-7f39653d6878/scratchpad';
+$B = rtrim(getenv('APP_URL') ?: 'http://127.0.0.1:8000', '/');
+$ASAL = preg_replace('#^(https?://[^/]+).*$#', '$1', $B);
+$BASE = (string) parse_url($B, PHP_URL_PATH);
+$S = sys_get_temp_dir();
 
 function ambil(string $url, string $jar, bool $ikuti = true): array {
     $ch = curl_init($url);
@@ -79,7 +81,9 @@ foreach ($awal as $peran => [$akun, $halamanAwal]) {
         $bersih = strtok(ltrim($jalur, '/'), '?');
         if (in_array($bersih, $lewati, true)) continue;
 
-        [$kode, $isi, $akhir] = ambil("$B/" . ltrim($jalur, '/'), $jar, true);
+        // Tautan yang keluar dari folder aplikasi (lupa base_url) dibuka apa adanya, supaya ketahuan rusak.
+        $alamat = str_starts_with($jalur, '@') ? $ASAL . substr($jalur, 1) : "$B/" . ltrim($jalur, '/');
+        [$kode, $isi, $akhir] = ambil($alamat, $jar, true);
         $totalCek++;
 
         if (getenv('DEBUG_TANDAI') && strpos($jalur, 'tandai') !== false) {
@@ -120,8 +124,12 @@ foreach ($awal as $peran => [$akun, $halamanAwal]) {
             foreach ($m[1] as $t) {
                 if (preg_match('#^(https?:|mailto:|tel:|javascript:|data:)#i', $t)) continue;
                 $t = html_entity_decode($t);
-                $t = ltrim($t, '/');
+                if ($BASE !== '' && str_starts_with($t, '/')) {
+                    $t = str_starts_with($t, $BASE . '/') ? substr($t, strlen($BASE)) : '@' . $t;
+                }
+                $t = str_starts_with($t, '@') ? $t : ltrim($t, '/');
                 if ($t === '' || str_starts_with($t, 'assets/')) continue;
+                if (!str_starts_with($t, '@') && !preg_match('#^[a-z0-9]#i', $t)) continue;
                 if (!isset($sudah[$t]) && !in_array($t, $antre, true)) {
                     $antre[] = $t;
                     if (!isset($asal[$t])) $asal[$t] = "/$jalur";

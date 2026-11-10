@@ -1,5 +1,13 @@
 -- ===== Migrasi revisi KarirKu Polinema ===================================
 
+DO $cek$
+BEGIN
+  IF to_regclass('public.lowongan') IS NULL THEN
+    RAISE EXCEPTION 'Tabel belum ada. Jalankan 01-schema.sql dan 02-seed.sql dulu, atau cukup jalankan 00-INSTAL-ULANG.sql.';
+  END IF;
+END
+$cek$;
+
 -- ----- 1. Status karier yang menyesuaikan pilihan mahasiswa --------------
 ALTER TABLE mahasiswa ADD COLUMN IF NOT EXISTS karier_fakultas       varchar(150);
 ALTER TABLE mahasiswa ADD COLUMN IF NOT EXISTS karier_bidang_minat   varchar(255);

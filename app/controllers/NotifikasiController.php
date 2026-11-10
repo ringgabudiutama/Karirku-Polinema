@@ -4,19 +4,26 @@
 class NotifikasiController extends Controller
 {
     // --- Daftar notifikasi -------------------------------------------
+    // [URL] GET /notifikasi/semua  →  tampil: views/umum/notifikasi.php
     public function semua()
     {
         Auth::wajibAktif();
         Role::wajib('mahasiswa', 'perusahaan', 'admin');
 
         $user = Auth::penggunaSaatIni();
-        $view = $user['role'] . '/notifikasi';
-        $this->view($view, ['notifikasi' => (new Notifikasi())->milikPengguna($user['id'])]);
+        $model = new Notifikasi();
+        $total = $model->hitungMilik((int) $user['id']);
+        [$hal, $per, $offset] = $this->halaman($total);
+        $this->view('umum/notifikasi', [
+            'notifikasi' => $model->milikPengguna((int) $user['id'], $per, $offset),
+            'paginasi'   => $this->infoPaginasi($total, $hal, $per),
+        ]);
     }
 
     // --- Tandai dibaca -----------------------------------------------
     private const HALAMAN_NOTIFIKASI = 'notifikasi/semua';
 
+    // [URL] GET /notifikasi/tandai-dibaca/{id}  →  proses
     public function tandaiDibaca(int $id)
     {
         Auth::wajibAktif();
@@ -27,8 +34,10 @@ class NotifikasiController extends Controller
         $this->redirect($this->tujuanAman($tautan));
     }
 
+    // [URL] POST /notifikasi/tandai-semua-dibaca  →  proses
     public function tandaiSemuaDibaca()
     {
+        $this->wajibPost();
         Auth::wajibAktif();
         (new Notifikasi())->tandaiSemuaDibaca(Auth::penggunaSaatIni()['id']);
         $this->redirect(self::HALAMAN_NOTIFIKASI);

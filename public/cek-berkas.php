@@ -1,6 +1,13 @@
 <?php
 // ===== ALAT BANTU · Cek berkas unggahan ==============================
 
+// Halaman ini membuka informasi sistem; hanya tersedia saat APP_DEBUG aktif (lokal).
+// Di server produksi tampil 404 seolah halamannya tidak ada.
+if (!(require __DIR__ . '/../app/config/config.php')['debug']) {
+    http_response_code(404);
+    exit('Halaman tidak ditemukan.');
+}
+
 require __DIR__ . '/../app/core/bootstrap.php';
 
 $upload = rtrim((require __DIR__ . '/../app/config/config.php')['upload_dir'], '/');
@@ -70,7 +77,15 @@ foreach ($yatim as $folder => $daftar) {
 <html lang="id">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
+<meta name="theme-color" content="#ffffff">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="KarirKu">
+<link rel="manifest" href="<?= url('manifest.webmanifest') ?>">
+<link rel="icon" type="image/png" sizes="192x192" href="<?= url('assets/img/ikon-192.png') ?>">
+<link rel="apple-touch-icon" href="<?= url('assets/img/ikon-180.png') ?>">
 <title>Cek Berkas | KarirKu Polinema</title>
 <style>
   :root{--navy:#0A2656;--blue:#1D5BC6;--ok:#067647;--okbg:#ECFDF3;--bad:#D92D20;--badbg:#FEF3F2;--line:#E4E7EC;--muted:#667085}

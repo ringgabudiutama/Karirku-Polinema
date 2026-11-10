@@ -34,11 +34,20 @@ $jumlahNotif = jumlahNotifBelumDibaca($pengguna['id']);
 <html lang="id">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
+<meta name="theme-color" content="#ffffff">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="KarirKu">
+<link rel="manifest" href="<?= url('manifest.webmanifest') ?>">
+<link rel="icon" type="image/png" sizes="192x192" href="<?= url('assets/img/ikon-192.png') ?>">
+<link rel="apple-touch-icon" href="<?= url('assets/img/ikon-180.png') ?>">
 <title>Status Akun | KarirKu Polinema</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="<?= url('assets/css/style.css') ?>">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Fraunces:opsz,wght@9..144,500..700&display=swap" rel="stylesheet" media="(max-width: 768px)">
+<link rel="stylesheet" href="<?= asetUrl('assets/css/style.css') ?>">
 </head>
 <body class="bg-sky">
 <!-- ===== Header ===== -->
@@ -55,17 +64,18 @@ $jumlahNotif = jumlahNotifBelumDibaca($pengguna['id']);
           <?php endforeach; ?>
         </div>
       </div>
-      <a class="btn btn-sm btn-outline" href="<?= url('keluar') ?>"><span data-ic="logout"></span>Keluar</a>
+      <form class="d-inline" method="post" action="<?= url('keluar') ?>"><?= csrfField() ?><button class="btn btn-sm btn-outline" type="submit"><span data-ic="logout"></span>Keluar</button></form>
     </div>
   </div>
 </header>
 
 <main class="container halaman-status">
+  <a class="btn btn-outline btn-sm btn-kembali mb-12" href="<?= url('beranda') ?>"><span data-ic="left"></span>Kembali ke beranda</a>
   <p class="muted mb-6">Halo, <?= e($nama) ?></p>
   <h1 class="fs-190">Status akun</h1>
 
   <?php if ($f): ?>
-    <div class="alert alert-<?= $f['tipe'] === 'ok' ? 'ok' : 'bad' ?>"><span data-ic="alert"></span><span><?= e($f['pesan']) ?></span></div>
+    <div class="alert flash alert-<?= $f['tipe'] === 'ok' ? 'ok' : 'bad' ?>"><span data-ic="alert"></span><span><?= e($f['pesan']) ?></span></div>
   <?php endif; ?>
 
   <!-- ===== Banner status ===== -->
@@ -174,6 +184,7 @@ $jumlahNotif = jumlahNotifBelumDibaca($pengguna['id']);
 </div>
 <?php endif; ?>
 
-<script src="<?= url('assets/js/app.js') ?>"></script>
+<?= skripPemulihanFormulir() ?>
+<script src="<?= asetUrl('assets/js/app.js') ?>"></script>
 </body>
 </html>

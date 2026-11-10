@@ -1,9 +1,0 @@
-# Rahasia dan data pribadi: jangan masuk repositori
-app/config/database.lokal.php
-storage/uploads/*
-!storage/uploads/.gitkeep
-storage/logs/*
-!storage/logs/.gitkeep
-*.sql.gz
-*.dump
-backup/

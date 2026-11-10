@@ -15,6 +15,7 @@ class MahasiswaController extends Controller
     }
 
     // --- Dashboard ---------------------------------------------------
+    // [URL] GET /mahasiswa/dashboard  →  tampil: views/mahasiswa/dashboard.php · peran: mahasiswa
     public function dashboard()
     {
         Auth::wajibAktif();
@@ -41,6 +42,7 @@ class MahasiswaController extends Controller
     }
 
     // --- Lowongan disimpan -------------------------------------------
+    // [URL] GET /mahasiswa/disimpan  →  tampil: views/mahasiswa/disimpan.php · peran: mahasiswa
     public function disimpan()
     {
         Auth::wajibAktif();
@@ -59,6 +61,7 @@ class MahasiswaController extends Controller
     }
 
     // --- Profil karier -----------------------------------------------
+    // [URL] GET /mahasiswa/profil  →  tampil: views/mahasiswa/profil.php · peran: mahasiswa
     public function profil()
     {
         Auth::wajibAktif();
@@ -71,8 +74,19 @@ class MahasiswaController extends Controller
         $jumlahProfilItem = $profilItemModel->hitungMilik((int) $mhs['id']);
         $skillTerpilih = $skillModel->milikMahasiswa((int) $mhs['id']);
 
+        // Auto input status karier dari lamaran yang DITERIMA (bila kolomnya masih kosong).
+        $diterima = Database::fetch(
+            "SELECT pr.nama_perusahaan, l.posisi, l.jenis_pekerjaan, COALESCE(
+                    (SELECT MAX(r.tanggal) FROM riwayat_lamaran r WHERE r.lamaran_id = lm.id AND r.status = 'diterima'),
+                    lm.tanggal_lamar)::date AS tanggal_diterima
+               FROM lamaran lm JOIN lowongan l ON l.id = lm.lowongan_id JOIN perusahaan pr ON pr.id = l.perusahaan_id
+              WHERE lm.mahasiswa_id = ? AND lm.status = 'diterima' ORDER BY tanggal_diterima DESC LIMIT 1",
+            [(int) $mhs['id']]
+        );
+
         $this->view('mahasiswa/profil', [
             'mahasiswa'     => $mhs,
+            'karierOtomatis' => $diterima,
             'kelengkapan'   => (new Mahasiswa())->kelengkapanProfil($mhs, $jumlahProfilItem, count($skillTerpilih)),
             'pendidikan'    => $profilItemModel->milikMahasiswa((int) $mhs['id'], 'pendidikan'),
             'pengalaman'    => $profilItemModel->milikMahasiswa((int) $mhs['id'], 'pengalaman'),
@@ -86,6 +100,7 @@ class MahasiswaController extends Controller
         ]);
     }
 
+    // [URL] POST /mahasiswa/simpan-profil  →  simpan lalu kembali ke /mahasiswa/profil · peran: mahasiswa
     public function simpanProfil()
     {
         $this->wajibPost();
@@ -95,17 +110,36 @@ class MahasiswaController extends Controller
         $mhs = $this->mahasiswaSaya();
         $mahasiswaId = (int) $mhs['id'];
         $aksi = $this->input('aksi');
+        // Revisi: setelah menyimpan, kembali ke tab yang sedang dibuka (bukan selalu Data diri).
+        $tabKembali = [
+            'data_diri' => 'diri', 'foto' => '', 'dokumen' => 'dokumen', 'skill' => 'skill', 'skill_baru' => 'skill',
+            'skill_hapus' => 'skill', 'minat' => 'minat',
+        ][$aksi] ?? '';
+        if ($aksi === 'item_hapus') {
+            $itemHapus = (new ProfilItem())->cariMilik((int) $this->input('id'), $mahasiswaId);
+            $tabKembali = $itemHapus['tipe'] ?? '';
+        }
 
         try {
             switch ($aksi) {
                 case 'data_diri':
-                    (new Mahasiswa())->perbaruiProfil($mahasiswaId, [
+                    $d = [
                         'nama'        => $this->input('nama'),
                         'no_whatsapp' => $this->input('no_whatsapp'),
-                        'domisili'    => $this->input('domisili'),
+                        'domisili'    => $mhs['domisili'] ?? '',   // kota diubah di Pengaturan Akun > Alamat (revisi F)
                         'tentang'     => $this->input('tentang'),
-                        'ipk'         => $this->input('ipk'),
-                    ]);
+                        'ipk'         => str_replace(',', '.', $this->input('ipk')),
+                    ];
+                    $galat = [];
+                    if (!validasiWajibIsi($d['nama']) || mb_strlen($d['nama']) > 255) $galat[] = 'Nama lengkap wajib diisi (maksimal 255 karakter).';
+                    if (!validasiWhatsapp($d['no_whatsapp'])) $galat[] = 'Format nomor WhatsApp tidak valid. Contoh: 081234567890.';
+                    if ($d['ipk'] !== '' && !validasiRentangAngka($d['ipk'], 0, 4)) $galat[] = 'IPK harus angka 0 sampai 4, misalnya 3.45.';
+                    if (mb_strlen($d['tentang']) > 2000) $galat[] = 'Tentang saya maksimal 2000 karakter.';
+                    if ($galat) {
+                        $this->flash('bad', implode("\n", $galat));
+                        break;
+                    }
+                    (new Mahasiswa())->perbaruiProfil($mahasiswaId, $d);
                     $this->flash('ok', 'Data diri berhasil diperbarui.');
                     break;
 
@@ -130,19 +164,66 @@ class MahasiswaController extends Controller
                     break;
 
                 case 'item_tambah':
-                    (new ProfilItem())->tambah($mahasiswaId, [
-                        'tipe'      => $this->input('tipe'),
-                        'judul'     => $this->input('judul'),
-                        'instansi'  => $this->input('instansi'),
-                        'mulai'     => $this->input('mulai'),
-                        'selesai'   => $this->input('selesai'),
-                        'deskripsi' => $this->input('deskripsi'),
-                        'tautan'    => $this->input('tautan'),
-                        'file'      => !empty($_FILES['file']['name'])
-                            ? UploadService::simpan('file', 'portofolio', ['pdf', 'jpg', 'jpeg', 'png'])['nama']
-                            : null,
-                    ]);
-                    $this->flash('ok', 'Item berhasil ditambahkan.');
+                case 'item_ubah':
+                    $tipe = $this->input('tipe');
+                    if (!in_array($tipe, ['pendidikan', 'pengalaman', 'sertifikat', 'portofolio'], true)) {
+                        $this->flash('bad', 'Jenis data tidak dikenal.');
+                        break;
+                    }
+                    $tabKembali = $tipe;
+                    if ($tipe === 'portofolio') {
+                        // Portofolio: tautan sederhana (GitHub, Behance, dll.)
+                        $tautan = $this->input('tautan');
+                        if (!validasiWajibIsi($this->input('judul')) || !urlHttpValid($tautan)) {
+                            $this->flash('bad', 'Pilih jenis portofolio dan isi tautan lengkap (diawali https://).');
+                            break;
+                        }
+                        (new ProfilItem())->tambah($mahasiswaId, ['tipe' => 'portofolio', 'judul' => $this->input('judul'), 'instansi' => '',
+                            'mulai' => '', 'selesai' => '', 'deskripsi' => $this->input('deskripsi'), 'tautan' => $tautan]);
+                        $this->flash('ok', 'Portofolio berhasil ditambahkan.');
+                        break;
+                    }
+                    $model = new ProfilItem();
+                    $lama = null;
+                    if ($aksi === 'item_ubah') {
+                        $lama = $model->cariMilik((int) $this->input('id'), $mahasiswaId);
+                        if (!$lama || $lama['tipe'] !== $tipe) {
+                            $this->flash('bad', 'Data yang akan diubah tidak ditemukan. Muat ulang halaman.');
+                            break;
+                        }
+                    }
+                    [$galatItem, $kolom, $detail] = validasiItem($tipe, $_POST, (bool) $lama, $lama);
+                    if ($galatItem) {
+                        $this->flash('bad', implode("\n", $galatItem));
+                        break;
+                    }
+                    // Berkas: diunggah setelah validasi; berkas lama diganti/dihapus bila diminta.
+                    $berkasLama = [];
+                    foreach (['file', 'file2'] as $kf) {
+                        $adaFieldIni = in_array($kf, array_column(SKEMA_ITEM[$tipe]['field'], 0), true);
+                        if (!$adaFieldIni) continue;
+                        $nilaiLama = $lama ? nilaiItem($lama, $kf) : '';
+                        $baru = null;
+                        if (($_FILES[$kf]['error'] ?? UPLOAD_ERR_NO_FILE) !== UPLOAD_ERR_NO_FILE) {
+                            $baru = UploadService::simpan($kf, 'portofolio', ['pdf', 'jpg', 'jpeg', 'png'])['nama'];
+                        }
+                        if ($baru !== null || !empty($_POST['hapus_' . $kf])) {
+                            if ($nilaiLama !== '') $berkasLama[] = $nilaiLama;
+                            $nilaiAkhir = $baru;
+                        } else {
+                            $nilaiAkhir = $nilaiLama !== '' ? $nilaiLama : null;
+                        }
+                        if ($kf === 'file') $kolom['file'] = $nilaiAkhir;
+                        elseif ($nilaiAkhir) $detail['file2'] = $nilaiAkhir;
+                        else unset($detail['file2']);
+                    }
+                    if ($lama) {
+                        $model->ubahLengkap((int) $lama['id'], $mahasiswaId, $kolom, $detail);
+                    } else {
+                        $model->tambahLengkap($mahasiswaId, $tipe, $kolom, $detail);
+                    }
+                    foreach ($berkasLama as $bl) UploadService::hapus('portofolio', $bl);
+                    $this->flash('ok', ucfirst(SKEMA_ITEM[$tipe]['judul_tab']) . ($lama ? ' berhasil diperbarui.' : ' berhasil ditambahkan.'));
                     break;
 
                 case 'item_hapus':
@@ -151,7 +232,7 @@ class MahasiswaController extends Controller
                     break;
 
                 case 'skill':
-                    (new Skill())->setUntukMahasiswa($mahasiswaId, $_POST['skill_id'] ?? []);
+                    (new Skill())->setUntukMahasiswa($mahasiswaId, (array) ($_POST['skill_id'] ?? []));
                     $this->flash('ok', 'Skill berhasil diperbarui.');
                     break;
 
@@ -178,7 +259,7 @@ class MahasiswaController extends Controller
                     break;
 
                 case 'minat':
-                    (new Bidang())->setMinatMahasiswa($mahasiswaId, $_POST['bidang_id'] ?? []);
+                    (new Bidang())->setMinatMahasiswa($mahasiswaId, (array) ($_POST['bidang_id'] ?? []));
                     $this->flash('ok', 'Bidang minat berhasil diperbarui. Rekomendasi lowongan ikut diperbarui.');
                     break;
 
@@ -189,10 +270,11 @@ class MahasiswaController extends Controller
             $this->flash('bad', $e->getMessage());
         }
 
-        $this->redirect('mahasiswa/profil');
+        $this->redirect('mahasiswa/profil' . ($tabKembali ? '#' . $tabKembali : ''));
     }
 
     // --- CV ----------------------------------------------------------
+    // [URL] GET /mahasiswa/generate-cv  →  proses · peran: mahasiswa
     public function generateCv()
     {
         Auth::wajibAktif();
@@ -211,6 +293,7 @@ class MahasiswaController extends Controller
         );
     }
 
+    // [URL] POST /mahasiswa/unggah-cv  →  simpan lalu kembali ke /mahasiswa/profil · peran: mahasiswa
     public function unggahCv()
     {
         $this->wajibPost();
@@ -229,6 +312,7 @@ class MahasiswaController extends Controller
     }
 
     // --- Status karier (tracer) --------------------------------------
+    // [URL] POST /mahasiswa/status-karier  →  simpan lalu kembali ke /mahasiswa/profil#karier · peran: mahasiswa
     public function statusKarier()
     {
         $this->wajibPost();
@@ -241,7 +325,7 @@ class MahasiswaController extends Controller
         $statusDikenal = ['bekerja', 'wirausaha', 'studi lanjut', 'mencari kerja', 'belum bekerja'];
         if (!in_array($status, $statusDikenal, true)) {
             $this->flash('bad', 'Pilih dulu status kariermu sebelum menyimpan.');
-            $this->redirect('mahasiswa/profil');
+            $this->redirect('mahasiswa/profil#karier');
             return;
         }
 
@@ -272,17 +356,18 @@ class MahasiswaController extends Controller
         foreach ($wajib as $field => $label) {
             if (trim((string) $data[$field]) === '') {
                 $this->flash('bad', $label . ' wajib diisi untuk status "' . $status . '".');
-                $this->redirect('mahasiswa/profil');
+                $this->redirect('mahasiswa/profil#karier');
                 return;
             }
         }
 
         (new Mahasiswa())->perbaruiStatusKarier((int) $mhs['id'], $data);
         $this->flash('ok', 'Status karier berhasil diperbarui.');
-        $this->redirect('mahasiswa/profil');
+        $this->redirect('mahasiswa/profil#karier');
     }
 
     // --- Pengaturan akun ---------------------------------------------
+    // [URL] GET /mahasiswa/pengaturan-akun  →  tampil: views/mahasiswa/pengaturan.php · peran: mahasiswa
     public function pengaturanAkun()
     {
         Auth::wajibAktif();
@@ -293,6 +378,7 @@ class MahasiswaController extends Controller
         ]);
     }
 
+    // [URL] POST /mahasiswa/simpan-pengaturan-akun  →  simpan lalu kembali ke /mahasiswa/pengaturan-akun#alamat · peran: mahasiswa
     public function simpanPengaturanAkun()
     {
         $this->wajibPost();
@@ -309,7 +395,7 @@ class MahasiswaController extends Controller
 
             if (!validasiEmail($emailBaru)) {
                 $this->flash('bad', 'Format email tidak valid.');
-            } elseif ($penggunaModel->emailSudahDipakai($emailBaru) && $emailBaru !== $user['email']) {
+            } elseif ($emailBaru !== $user['email'] && $penggunaModel->emailSudahDipakai($emailBaru)) {
                 $this->flash('bad', 'Email sudah dipakai akun lain.');
             } elseif (!validasiWhatsapp($noWa)) {
                 $this->flash('bad', 'Format nomor WhatsApp tidak valid.');
@@ -322,22 +408,27 @@ class MahasiswaController extends Controller
 
                 $this->flash('ok', 'Kontak akun berhasil diperbarui.');
             }
-        } elseif ($aksi === 'password') {
-            $lama = $this->input('password_lama');
-            $baru = $this->input('password_baru');
-            $konfirmasi = $this->input('konfirmasi_password');
-            $pengguna = $penggunaModel->cari($user['id']);
-
-            if (!cocokkanPassword($lama, $pengguna['password_hash'])) {
-                $this->flash('bad', 'Kata sandi lama tidak sesuai.');
-            } elseif (!validasiPassword($baru)) {
-                $this->flash('bad', 'Kata sandi baru minimal 8 karakter.');
-            } elseif ($baru !== $konfirmasi) {
-                $this->flash('bad', 'Konfirmasi kata sandi baru tidak cocok.');
+        } elseif ($aksi === 'alamat') {
+            // Revisi F: alamat domisili mahasiswa. Kolom lama `domisili` tetap
+            // dipakai sebagai kota/kabupaten supaya data lama tidak dobel.
+            $d = [
+                'alamat'   => $this->input('alamat'),
+                'kota'     => $this->input('kota'),
+                'provinsi' => $this->input('provinsi'),
+                'kode_pos' => $this->input('kode_pos'),
+            ];
+            $galat = validasiAlamat($d, false);
+            if ($galat) {
+                $this->flash('bad', implode("\n", $galat));
             } else {
-                $penggunaModel->gantiPassword($user['id'], $baru);
-                $this->flash('ok', 'Kata sandi berhasil diperbarui.');
+                (new Mahasiswa())->perbaruiAlamat((int) $this->mahasiswaSaya()['id'], $d);
+                $this->flash('ok', 'Alamat berhasil disimpan.');
             }
+            $this->redirect('mahasiswa/pengaturan-akun#alamat');
+        } elseif ($aksi === 'password') {
+            $this->prosesGantiSandiSendiri('mahasiswa/pengaturan-akun#keamanan');
+        } else {
+            $this->flash('bad', 'Aksi tidak dikenal.');
         }
 
         $this->redirect('mahasiswa/pengaturan-akun');

@@ -1,4 +1,20 @@
 -- ===== DATA AWAL & DATA UJI KarirKu Polinema ===============================
+-- AMAN DIJALANKAN ULANG: kalau database sudah berisi data (tabel jurusan tidak
+-- kosong: tabel pengguna sudah berisi), seluruh isi file ini DILEWATI dan tidak menimbulkan error
+-- "duplicate key". Untuk mengulang dari nol, pakai database/00-INSTAL-ULANG.sql.
+DO $seed_karirku$
+BEGIN
+  IF to_regclass('public.jurusan') IS NULL THEN
+    RAISE EXCEPTION 'Tabel belum ada. Jalankan database/01-schema.sql lebih dulu (atau pakai 00-INSTAL-ULANG.sql).';
+  END IF;
+  IF EXISTS (SELECT 1 FROM pengguna) THEN
+    RAISE NOTICE 'Data awal sudah ada, 02-seed.sql dilewati.';
+    RETURN;
+  END IF;
+  IF EXISTS (SELECT 1 FROM jurusan) THEN
+    RAISE EXCEPTION 'Urutan file tertukar: 03 sudah dijalankan sebelum 02. Paling mudah: jalankan database/00-INSTAL-ULANG.sql (membuat ulang semuanya).';
+  END IF;
+  EXECUTE $isi_seed$
 
 -- ----- Jurusan dan program studi -----------------------------------------
 INSERT INTO jurusan (nama) VALUES
@@ -1767,3 +1783,8 @@ INSERT INTO dokumen_verifikasi (pengguna_id, tipe, file, ukuran_kb)
   SELECT m.pengguna_id, 'ktm', m.file_ktm, 2
     FROM mahasiswa m JOIN pengguna p ON p.id = m.pengguna_id
    WHERE p.status_akun = 'menunggu';
+
+$isi_seed$;
+  RAISE NOTICE 'Data awal berhasil dimasukkan.';
+END
+$seed_karirku$;

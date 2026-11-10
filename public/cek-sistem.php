@@ -1,6 +1,13 @@
 <?php
 // ===== ALAT BANTU · Cek kesiapan sistem ==============================
 
+// Halaman ini membuka informasi sistem; hanya tersedia saat APP_DEBUG aktif (lokal).
+// Di server produksi tampil 404 seolah halamannya tidak ada.
+if (!(require __DIR__ . '/../app/config/config.php')['debug']) {
+    http_response_code(404);
+    exit('Halaman tidak ditemukan.');
+}
+
 $hasil = [];
 function cek(string $nama, bool $ok, string $pesanOk, string $pesanGagal, string $solusi = ''): array
 {
@@ -21,6 +28,42 @@ $hasil[] = cek(
     'Aktif',
     'Belum aktif',
     'Buka php.ini, hapus tanda titik koma di depan baris extension=pdo_pgsql dan extension=pgsql, lalu restart Apache.'
+);
+
+$hasil[] = cek(
+    'Ekstensi mbstring',
+    extension_loaded('mbstring'),
+    'Aktif',
+    'Belum aktif (teks Indonesia, pemotongan judul, dan validasi akan error)',
+    'Buka php.ini, hapus titik koma di depan extension=mbstring, lalu restart Apache.'
+);
+$hasil[] = cek(
+    'Ekstensi openssl (untuk kirim email Gmail)',
+    extension_loaded('openssl'),
+    'Aktif',
+    'Belum aktif: email lewat SMTP TLS/SSL tidak bisa terkirim',
+    'Buka php.ini, hapus titik koma di depan extension=openssl, lalu restart Apache.'
+);
+$hasil[] = cek(
+    'Ekstensi fileinfo (disarankan)',
+    extension_loaded('fileinfo'),
+    'Aktif',
+    'Belum aktif: aplikasi tetap jalan memakai pengecekan cadangan',
+    'Opsional. Hapus titik koma di depan extension=fileinfo di php.ini lalu restart Apache.'
+);
+$hasil[] = cek(
+    'Ekstensi gd (penting untuk keamanan unggahan)',
+    extension_loaded('gd'),
+    'Aktif: foto dibuat ulang saat diunggah sehingga kode yang diselipkan terbuang',
+    'Belum aktif: foto hanya dipindai, tidak dibuat ulang (kurang aman)',
+    'Aktifkan extension=gd di php.ini (Linux: apt install php-gd) lalu restart web server.'
+);
+$hasil[] = cek(
+    'Ekstensi exif (agar foto ponsel tidak miring)',
+    extension_loaded('exif'),
+    'Aktif',
+    'Belum aktif: foto ponsel yang diambil miring bisa tampil miring',
+    'Aktifkan extension=exif di php.ini lalu restart web server.'
 );
 
 $cfgPath = __DIR__ . '/../app/config/config.php';
@@ -55,10 +98,34 @@ if ($pdo) {
 }
 $hasil[] = cek(
     'Tabel database',
-    $jumlahTabel >= 20,
+    $jumlahTabel >= 24,
     $jumlahTabel . ' tabel ditemukan',
-    $jumlahTabel . ' tabel (harusnya 24)',
+    $jumlahTabel . ' tabel (harusnya 28)',
     'Jalankan database/01-schema.sql lalu database/02-seed.sql di database ini.'
+);
+
+$revisiDosen = false;
+if ($pdo) {
+    $revisiDosen = (int) $pdo->query("SELECT COUNT(*) FROM information_schema.tables WHERE table_schema='public' AND table_name IN ('log_email','token_ingat','riwayat_lowongan','log_aktivitas_admin')")->fetchColumn() === 4;
+}
+$hasil[] = cek(
+    'Migrasi revisi dosen',
+    $revisiDosen,
+    'Tabel persetujuan lowongan, log email, Ingat saya, dan log admin tersedia',
+    'Tabel revisi dosen belum ada',
+    'Jalankan database/03-migrasi-revisi.sql lalu database/04-revisi-dosen.sql.'
+);
+
+$revisiProfil = false;
+if ($pdo) {
+    $revisiProfil = (int) $pdo->query("SELECT COUNT(*) FROM information_schema.columns WHERE table_schema='public' AND ((table_name='profil_item' AND column_name='detail') OR (table_name='admin' AND column_name='foto'))")->fetchColumn() === 2;
+}
+$hasil[] = cek(
+    'Migrasi revisi tahap 2 (profil lengkap)',
+    $revisiProfil,
+    'Kolom detail pendidikan/pengalaman/sertifikat dan profil admin tersedia',
+    'Kolom revisi tahap 2 belum ada',
+    'Buka aplikasi sekali (migrasi otomatis) atau jalankan database/06-revisi-profil.sql.'
 );
 
 $jumlahAkun = 0;
@@ -90,10 +157,10 @@ $basePerkiraan = rtrim(str_replace('\\', '/', dirname($_SERVER['SCRIPT_NAME'])),
 $baseTersimpan = rtrim($cfg['base_url'] ?? '', '/');
 $hasil[] = cek(
     'Pengaturan base_url',
-    $baseTersimpan === $basePerkiraan,
-    "Sudah cocok ('" . ($baseTersimpan ?: '(kosong)') . "')",
+    $baseTersimpan === $basePerkiraan || $baseTersimpan === '',
+    $baseTersimpan === '' ? "Otomatis ('" . ($basePerkiraan ?: '/') . "')" : "Sudah cocok ('" . $baseTersimpan . "')",
     "Tersimpan '" . ($baseTersimpan ?: '(kosong)') . "' tapi seharusnya '" . ($basePerkiraan ?: '(kosong)') . "'",
-    "Buka app/config/config.php, ubah baris 'base_url' menjadi '" . $basePerkiraan . "'"
+    "Buka app/config/config.php, ubah baris 'base_url' menjadi '" . $basePerkiraan . "' atau kosongkan ('') supaya terdeteksi otomatis"
 );
 
 $pakaiApache = stripos($_SERVER['SERVER_SOFTWARE'] ?? '', 'apache') !== false;
@@ -118,7 +185,7 @@ $linkMasuk = ($baseTersimpan === $basePerkiraan ? $baseTersimpan : $basePerkiraa
 <html lang="id">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
 <title>Cek Sistem | KarirKu Polinema</title>
 <style>
   :root{--navy:#0A2656;--blue:#1D5BC6;--ok:#067647;--okbg:#ECFDF3;--bad:#D92D20;--badbg:#FEF3F2;--line:#E4E7EC;--muted:#667085}

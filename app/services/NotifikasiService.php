@@ -29,7 +29,8 @@ class NotifikasiService
         }
     }
 
-    public static function statusAkunBerubah(int $penggunaId, string $email, string $keputusan, ?string $catatan): void
+    /** Mengembalikan true bila email benar-benar diterima server SMTP. */
+    public static function statusAkunBerubah(int $penggunaId, string $email, string $keputusan, ?string $catatan): bool
     {
         $judul = [
             'disetujui' => 'Akun Anda telah disetujui',
@@ -37,24 +38,39 @@ class NotifikasiService
             'ditolak'   => 'Pendaftaran tidak dapat disetujui',
         ][$keputusan] ?? 'Status akun diperbarui';
 
-        self::notif()->buat($penggunaId, 'status_akun', $judul, $catatan ?: 'Silakan cek Halaman Status Akun.', 'status-akun');
-        MailService::kirimStatusAkun($email, $keputusan, $catatan);
+        self::notif()->buat($penggunaId, 'status_akun', $judul, mb_substr($catatan ?: 'Silakan cek Halaman Status Akun.', 0, 500), 'status-akun');
+        return MailService::kirimStatusAkun($email, $keputusan, $catatan);
     }
 
-    public static function statusAktivasiBerubah(int $penggunaId, string $email, bool $nonaktif, ?string $alasan): void
+    public static function statusAktivasiBerubah(int $penggunaId, string $email, bool $nonaktif, ?string $alasan): bool
     {
         $judul = $nonaktif ? 'Akun Anda dinonaktifkan' : 'Akun Anda diaktifkan kembali';
-        self::notif()->buat($penggunaId, 'status_akun', $judul, $alasan ?: '-', 'masuk');
-        MailService::kirimStatusAktivasi($email, $nonaktif, $alasan);
+        self::notif()->buat($penggunaId, 'status_akun', $judul, mb_substr($alasan ?: 'Silakan masuk seperti biasa.', 0, 500), $nonaktif ? null : 'beranda');
+        return MailService::kirimStatusAktivasi($email, $nonaktif, $alasan);
+    }
+
+    /** Pesan tambahan yang jujur tentang email untuk ditampilkan ke Admin. */
+    public static function keteranganEmail(): string
+    {
+        $t = MailService::$terakhir;
+        if (!$t) {
+            return '';
+        }
+        return match ($t['status']) {
+            'terkirim' => ' Email pemberitahuan terkirim.',
+            'gagal'    => ' Namun email pemberitahuan GAGAL dikirim (' . $t['keterangan'] . '). Kirim ulang dari Pengaturan > Email.',
+            default    => ' Email belum dikirim karena SMTP belum dikonfigurasi (hanya dicatat di log). Pengguna tetap mendapat notifikasi di aplikasi.',
+        };
     }
 
     // --- Lowongan ----------------------------------------------------
     public static function lowonganBaruSesuaiMinat(int $lowonganId, string $posisi, string $namaPerusahaan, int $bidangId): void
     {
         $peminat = Database::fetchAll(
-            'SELECT m.pengguna_id FROM mahasiswa_minat mm
+            "SELECT m.pengguna_id FROM mahasiswa_minat mm
              JOIN mahasiswa m ON m.id = mm.mahasiswa_id
-             WHERE mm.bidang_id = ?',
+             JOIN pengguna p ON p.id = m.pengguna_id
+             WHERE mm.bidang_id = ? AND p.status_akun = 'aktif'",
             [$bidangId]
         );
         foreach ($peminat as $p) {
@@ -97,7 +113,7 @@ class NotifikasiService
             'lamaran_masuk',
             'Lamaran baru masuk',
             $namaMahasiswa . ' melamar sebagai ' . $posisi,
-            'lowongan/pelamar/' . $lowonganId
+            'perusahaan/pelamar?lowongan_id=' . $lowonganId
         );
     }
 
@@ -121,7 +137,7 @@ class NotifikasiService
 
         self::notif()->buat(
             $mahasiswaPenggunaId, 'status_lamaran', $judul,
-            $posisi . ($catatan ? ' - ' . $catatan : ''),
+            mb_substr($posisi . ($catatan ? ' - ' . $catatan : ''), 0, 500),
             'lamaran/lamaran-saya'
         );
     }
@@ -145,6 +161,48 @@ class NotifikasiService
         }
     }
 
+    // --- Persetujuan lowongan (revisi M) ------------------------------
+    public static function lowonganMenungguUntukAdmin(int $lowonganId, string $posisi, string $namaPerusahaan, bool $ulang): void
+    {
+        foreach (Database::fetchAll('SELECT pengguna_id FROM admin') as $a) {
+            self::notif()->buat(
+                (int) $a['pengguna_id'], 'lowongan_menunggu',
+                $ulang ? 'Lowongan diajukan ulang' : 'Lowongan baru menunggu persetujuan',
+                $posisi . ' - ' . $namaPerusahaan,
+                'admin/detail-lowongan/' . $lowonganId
+            );
+        }
+    }
+
+    /** Notifikasi + email ke perusahaan. Mengembalikan true bila email terkirim. */
+    public static function statusLowonganUntukPerusahaan(int $perusahaanPenggunaId, string $email, string $keputusan, string $posisi, ?string $alasan): bool
+    {
+        $judul = [
+            'disetujui' => 'Lowongan disetujui dan tayang',
+            'ditutup'   => 'Lowongan disetujui (langsung ditutup)',
+            'revisi'    => 'Lowongan perlu direvisi',
+            'ditolak'   => 'Lowongan ditolak',
+            'nonaktif'  => 'Lowongan dinonaktifkan Admin',
+        ][$keputusan] ?? 'Status lowongan diperbarui';
+        $pesan = $posisi . ($alasan ? ' - ' . $alasan : '');
+        if ($keputusan === 'ditutup') {
+            $pesan = $posisi . ' disetujui, tetapi batas lamaran sudah lewat atau kuota penuh. Gunakan tombol Perpanjang.';
+        }
+        self::notif()->buat($perusahaanPenggunaId, 'status_lowongan', $judul, mb_substr($pesan, 0, 500), 'perusahaan/lowongan');
+        return MailService::kirimStatusLowongan($email, $keputusan === 'ditutup' ? 'disetujui' : $keputusan, $posisi, $alasan);
+    }
+
+    public static function lowonganDiperpanjangUntukAdmin(int $lowonganId, string $posisi, string $namaPerusahaan, string $batasBaru): void
+    {
+        foreach (Database::fetchAll('SELECT pengguna_id FROM admin') as $a) {
+            self::notif()->buat(
+                (int) $a['pengguna_id'], 'lowongan_diperpanjang', 'Lowongan diperpanjang perusahaan',
+                $posisi . ' - ' . $namaPerusahaan . ' sampai ' . tanggalIndo($batasBaru),
+                'admin/detail-lowongan/' . $lowonganId
+            );
+        }
+    }
+
     // --- Lowongan (perusahaan) ---------------------------------------
     public static function kuotaTerpenuhi(int $perusahaanPenggunaId, string $posisi): void
     {
@@ -154,12 +212,16 @@ class NotifikasiService
         );
     }
 
-    public static function lowonganDinonaktifkanAdmin(int $perusahaanPenggunaId, string $posisi, string $alasan): void
+    public static function lowonganDinonaktifkanAdmin(int $perusahaanPenggunaId, string $posisi, string $alasan, ?string $email = null): bool
     {
+        if ($email !== null) {
+            return self::statusLowonganUntukPerusahaan($perusahaanPenggunaId, $email, 'nonaktif', $posisi, $alasan);
+        }
         self::notif()->buat(
             $perusahaanPenggunaId, 'lowongan_nonaktif', 'Lowongan dinonaktifkan Admin',
-            $posisi . ' - alasan: ' . $alasan
+            mb_substr($posisi . ' - alasan: ' . $alasan, 0, 500), 'perusahaan/lowongan'
         );
+        return false;
     }
 
     // --- Tracer karier -----------------------------------------------

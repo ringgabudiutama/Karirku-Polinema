@@ -11,12 +11,20 @@ $pendidikan = $per('pendidikan');
 $pengalaman = $per('pengalaman');
 $sertifikat = $per('sertifikat');
 $portofolio = $per('portofolio');
-$snapshot = json_decode($lamaran['snapshot_profil'] ?? '{}', true) ?: [];
+$snapshot = $snapshot ?? (json_decode($lamaran['snapshot_profil'] ?? '{}', true) ?: []);
+// Revisi E: bandingkan data saat melamar dengan profil terkini.
+$bedaProfil = function (string $kunciSnap, $nilaiKini) use ($snapshot): bool {
+    return array_key_exists($kunciSnap, $snapshot) && (string) $snapshot[$kunciSnap] !== (string) $nilaiKini;
+};
+$kuotaPenuh = (int) $lamaran['terisi'] >= (int) $lamaran['kuota'];
 
 $labelRiwayat = ['diajukan' => 'Lamaran diajukan', 'screening' => 'CV dibuka, status Screening CV', 'interview' => 'Interview dijadwalkan', 'diterima' => 'Pelamar diterima', 'ditolak' => 'Pelamar ditolak', 'dibatalkan' => 'Lamaran dibatalkan pelamar'];
 ?>
 <section class="view active">
-  <div class="crumb"><a href="<?= url('perusahaan/pelamar') ?>">Pelamar</a> <span>/</span> <span><?= e($mahasiswa['nama']) ?></span></div>
+  <div class="kepala-halaman">
+    <div class="crumb"><a href="<?= url('perusahaan/pelamar') ?>">Pelamar</a> <span>/</span> <span><?= e($mahasiswa['nama']) ?></span></div>
+    <?= tombolKembali('perusahaan/pelamar') ?>
+  </div>
 
   <div class="grid g-side items-start">
     <div>
@@ -32,15 +40,34 @@ $labelRiwayat = ['diajukan' => 'Lamaran diajukan', 'screening' => 'CV dibuka, st
         </div>
       </div>
 
-      <div class="panel"><h3>Data diri</h3>
-        <dl class="dl"><dt>Email</dt><dd><?= e($mahasiswa['email']) ?></dd><dt>WhatsApp</dt><dd><?= e($mahasiswa['no_whatsapp']) ?></dd><dt>Domisili</dt><dd><?= e($mahasiswa['domisili'] ?: '-') ?></dd><dt>Tentang</dt><dd><?= nl2br(e($mahasiswa['tentang'] ?: '-')) ?></dd></dl>
+      <!-- ===== Revisi E: data yang terkirim saat melamar (tidak berubah walau profil diubah) ===== -->
+      <div class="panel"><div class="panel-head"><h3>Data saat melamar</h3><small class="muted">Disalin otomatis dari profil pada <?= tanggalWaktuIndo($snapshot['diambil_pada'] ?? $lamaran['tanggal_lamar']) ?></small></div>
+        <dl class="dl">
+          <dt>Nama</dt><dd><?= e($snapshot['nama'] ?? $mahasiswa['nama']) ?></dd>
+          <dt>NIM</dt><dd><?= e($snapshot['nim'] ?? $mahasiswa['nim']) ?></dd>
+          <dt>Email</dt><dd><?= e($snapshot['email'] ?? '-') ?></dd>
+          <dt>WhatsApp</dt><dd><?= e($snapshot['no_whatsapp'] ?? '-') ?></dd>
+          <dt>Program studi</dt><dd><?= e(trim(($snapshot['jenjang'] ?? '') . ' ' . ($snapshot['prodi'] ?? '-'))) ?><?= !empty($snapshot['jurusan']) ? ', ' . e($snapshot['jurusan']) : '' ?></dd>
+          <dt>Angkatan</dt><dd><?= e((string) ($snapshot['angkatan'] ?? '-')) ?><?= ($snapshot['status_mahasiswa'] ?? '') === 'alumni' ? ' (alumni, lulus ' . e((string) ($snapshot['tahun_lulus'] ?? '-')) . ')' : '' ?></dd>
+          <dt>IPK</dt><dd><?= e((string) ($snapshot['ipk'] ?? '-') ?: '-') ?></dd>
+          <dt>Domisili</dt><dd><?= e(implode(', ', array_filter([$snapshot['alamat'] ?? null, $snapshot['domisili'] ?? null, $snapshot['provinsi'] ?? null])) ?: '-') ?></dd>
+          <dt>Skill</dt><dd><?= e(!empty($snapshot['skill']) ? implode(', ', (array) $snapshot['skill']) : '-') ?></dd>
+        </dl>
+      </div>
+
+      <div class="panel"><div class="panel-head"><h3>Profil terkini</h3><small class="muted">Data terbaru di profil pelamar</small></div>
+        <dl class="dl">
+          <dt>Email</dt><dd><?= e($mahasiswa['email']) ?><?= $bedaProfil('email', $mahasiswa['email']) ? ' <span class="pill p-revisi">berubah</span>' : '' ?></dd>
+          <dt>WhatsApp</dt><dd><?= e($mahasiswa['no_whatsapp']) ?><?= $bedaProfil('no_whatsapp', $mahasiswa['no_whatsapp']) ? ' <span class="pill p-revisi">berubah</span>' : '' ?></dd>
+          <dt>IPK</dt><dd><?= e((string) ($mahasiswa['ipk'] ?? '-') ?: '-') ?><?= $bedaProfil('ipk', $mahasiswa['ipk']) ? ' <span class="pill p-revisi">berubah</span>' : '' ?></dd>
+          <dt>Domisili</dt><dd><?= e(implode(', ', array_filter([$mahasiswa['alamat'] ?? null, $mahasiswa['domisili'] ?? null, $mahasiswa['provinsi'] ?? null])) ?: '-') ?></dd>
+          <dt>Tentang</dt><dd><?= nl2br(e($mahasiswa['tentang'] ?: '-')) ?></dd>
+        </dl>
       </div>
 
       <div class="panel"><h3>Pendidikan</h3>
         <dl class="dl"><dt>Kampus</dt><dd>Politeknik Negeri Malang</dd><dt>Program studi</dt><dd><?= e($mahasiswa['nama_prodi']) ?></dd><dt>Angkatan</dt><dd><?= e((string) $mahasiswa['angkatan']) ?></dd><dt>IPK</dt><dd><?= e((string) ($mahasiswa['ipk'] ?? '-')) ?></dd></dl>
-        <?php foreach ($pendidikan as $it): ?>
-          <div class="list-item"><span class="list-ic" data-ic="graduation"></span><div class="grow"><b><?= e($it['judul']) ?></b><div class="muted"><?= e($it['instansi']) ?></div></div></div>
-        <?php endforeach; ?>
+        <?php foreach ($pendidikan as $it): ?><?= kartuItemHtml($it, 'pendidikan') ?><?php endforeach; ?>
       </div>
 
       <div class="panel"><h3>Skills</h3><div class="chips">
@@ -50,28 +77,20 @@ $labelRiwayat = ['diajukan' => 'Lamaran diajukan', 'screening' => 'CV dibuka, st
 
       <?php if ($pengalaman): ?>
       <div class="panel"><h3>Pengalaman</h3>
-        <?php foreach ($pengalaman as $it): ?>
-          <div class="list-item"><span class="list-ic" data-ic="briefcase"></span><div class="grow"><b><?= e($it['judul']) ?></b><div class="muted"><?= e($it['instansi']) ?>, <?= tanggalIndo($it['mulai']) ?> sampai <?= $it['selesai'] ? tanggalIndo($it['selesai']) : 'sekarang' ?></div></div></div>
-        <?php endforeach; ?>
+        <?php foreach ($pengalaman as $it): ?><?= kartuItemHtml($it, 'pengalaman') ?><?php endforeach; ?>
       </div>
       <?php endif; ?>
 
       <?php if ($sertifikat): ?>
       <div class="panel"><h3>Sertifikat</h3>
-        <?php foreach ($sertifikat as $it): ?>
-          <div class="list-item"><span class="list-ic" data-ic="shield"></span><div class="grow"><b><?= e($it['judul']) ?></b><div class="muted"><?= tanggalIndo($it['mulai']) ?></div></div><?php if (berkasAda($it['file'] ?? null, 'portofolio')): ?>
-            <a class="btn btn-sm btn-outline" href="<?= url('unduh.php?tipe=portofolio&file=' . urlencode($it['file'])) ?>" target="_blank">Lihat file</a>
-          <?php elseif (!empty($it['file'])): ?>
-            <span class="muted fs-85">Berkas tidak ditemukan</span>
-          <?php endif; ?></div>
-        <?php endforeach; ?>
+        <?php foreach ($sertifikat as $it): ?><?= kartuItemHtml($it, 'sertifikat') ?><?php endforeach; ?>
       </div>
       <?php endif; ?>
 
       <?php if ($portofolio): ?>
       <div class="panel"><h3>Portofolio</h3>
         <?php foreach ($portofolio as $it): ?>
-          <div class="list-item"><span class="list-ic" data-ic="link"></span><div class="grow"><b><?= e($it['judul']) ?></b><div><a href="<?= e($it['tautan']) ?>" target="_blank" rel="noopener"><?= e($it['tautan']) ?></a></div></div></div>
+          <div class="list-item"><span class="list-ic" data-ic="link"></span><div class="grow"><b><?= e($it['judul']) ?></b><div><a href="<?= e(tautanAman($it['tautan'])) ?>" target="_blank" rel="noopener noreferrer"><?= e($it['tautan']) ?></a></div></div></div>
         <?php endforeach; ?>
       </div>
       <?php endif; ?>
@@ -102,7 +121,7 @@ $labelRiwayat = ['diajukan' => 'Lamaran diajukan', 'screening' => 'CV dibuka, st
       <div class="panel">
         <h3>Proses seleksi</h3>
         <?php if ($selesai): ?>
-          <div class="alert <?= $lamaran['status'] === 'diterima' ? 'alert-ok' : 'alert-bad' ?>">
+          <div class="alert status-final <?= $lamaran['status'] === 'diterima' ? 'alert-ok' : 'alert-bad' ?>">
             <span data-ic="<?= $lamaran['status'] === 'diterima' ? 'checkc' : 'x' ?>"></span>
             <span><?php
               if ($lamaran['status'] === 'diterima') {
@@ -116,18 +135,19 @@ $labelRiwayat = ['diajukan' => 'Lamaran diajukan', 'screening' => 'CV dibuka, st
             ?></span>
           </div>
         <?php else: ?>
-          <form method="post" action="<?= url('lamaran/ubah-status/' . $lamaran['id']) ?>" id="formInterview">
+          <form method="post" action="<?= url('lamaran/ubah-status/' . $lamaran['id']) ?>" id="interview" data-jaga>
             <?= csrfField() ?><input type="hidden" name="aksi" value="jadwal_interview">
-            <div class="field"><label>Jadwalkan interview</label></div>
+            <div class="field"><label><?= $interview ? 'Ubah jadwal interview' : 'Jadwalkan interview' ?></label>
+              <div class="hint"><?= $interview ? 'Jadwal tersimpan sudah terisi otomatis di bawah. Pelamar diberi tahu bila jadwal diubah.' : 'Sudah terisi otomatis dari profil perusahaan (alamat kantor, PIC, WhatsApp PIC) dan hari kerja terdekat. Tinggal periksa dan simpan.' ?></div></div>
             <div class="row2">
-              <div class="field"><label>Tanggal</label><input class="input" type="date" name="tanggal" value="<?= e($interview['tanggal'] ?? '') ?>"></div>
-              <div class="field"><label>Jam</label><input class="input" type="time" name="jam" value="<?= e(substr($interview['jam'] ?? '', 0, 5)) ?>"></div>
+              <div class="field"><label>Tanggal</label><input class="input" type="date" name="tanggal" min="<?= e(date('Y-m-d')) ?>" required value="<?= e((string) old('tanggal', $isianInterview['tanggal'])) ?>"></div>
+              <div class="field"><label>Jam (WIB)</label><input class="input" type="time" name="jam" required value="<?= e(substr((string) old('jam', $isianInterview['jam']), 0, 5)) ?>"></div>
             </div>
             <div class="field">
               <label for="modeInterview">Mode</label>
-              <select class="input" id="modeInterview" name="mode" onchange="gantiModeInterview(this.value)">
-                <option value="daring" <?= ($interview['mode'] ?? 'daring') === 'daring' ? 'selected' : '' ?>>Daring (online)</option>
-                <option value="luring" <?= ($interview['mode'] ?? '') === 'luring' ? 'selected' : '' ?>>Luring (datang langsung)</option>
+              <select class="input" id="modeInterview" name="mode">
+                <option value="daring" <?= old('mode', $isianInterview['mode']) === 'daring' ? 'selected' : '' ?>>Daring (online)</option>
+                <option value="luring" <?= old('mode', $isianInterview['mode']) === 'luring' ? 'selected' : '' ?>>Luring (datang langsung)</option>
               </select>
             </div>
 
@@ -135,7 +155,7 @@ $labelRiwayat = ['diajukan' => 'Lamaran diajukan', 'screening' => 'CV dibuka, st
               <div class="field">
                 <label>Tautan meeting <span class="wajib">*</span></label>
                 <input class="input" name="lokasi_tautan" type="url"
-                       value="<?= ($interview['mode'] ?? '') !== 'luring' ? e($interview['lokasi_tautan'] ?? '') : '' ?>"
+                       value="<?= e((string) old('lokasi_tautan', $isianInterview['lokasi_tautan'])) ?>"
                        placeholder="https://meet.google.com/abc-defg-hij">
                 <small class="muted">Zoom, Google Meet, Microsoft Teams, atau sejenisnya.</small>
               </div>
@@ -144,33 +164,33 @@ $labelRiwayat = ['diajukan' => 'Lamaran diajukan', 'screening' => 'CV dibuka, st
             <div data-mode="luring" hidden>
               <div class="field">
                 <label>Nama tempat atau alamat <span class="wajib">*</span></label>
-                <input class="input" name="tempat" value="<?= e($interview['tempat'] ?? '') ?>"
+                <input class="input" name="tempat" value="<?= e((string) old('tempat', $isianInterview['tempat'])) ?>"
                        placeholder="Kantor PT Nusantara Digital, Jl. Ijen No. 25, Malang">
               </div>
               <div class="field">
                 <label>Ruangan atau lantai</label>
-                <input class="input" name="ruangan" value="<?= e($interview['ruangan'] ?? '') ?>" placeholder="Lantai 3, Ruang Meeting B">
+                <input class="input" name="ruangan" value="<?= e((string) old('ruangan', $isianInterview['ruangan'])) ?>" placeholder="Lantai 3, Ruang Meeting B">
               </div>
               <div class="field">
                 <label>Pakaian</label>
-                <input class="input" name="dresscode" value="<?= e($interview['dresscode'] ?? '') ?>" placeholder="Kemeja putih, celana bahan hitam">
+                <input class="input" name="dresscode" value="<?= e((string) old('dresscode', $isianInterview['dresscode'])) ?>" placeholder="Kemeja putih, celana bahan hitam">
               </div>
               <div class="field">
                 <label>Berkas yang perlu dibawa</label>
-                <input class="input" name="yang_dibawa" value="<?= e($interview['yang_dibawa'] ?? '') ?>"
+                <input class="input" name="yang_dibawa" value="<?= e((string) old('yang_dibawa', $isianInterview['yang_dibawa'])) ?>"
                        placeholder="CV cetak, fotokopi KTM, portofolio">
               </div>
               <div class="field">
                 <label>Narahubung saat tiba</label>
-                <input class="input" name="narahubung" value="<?= e($interview['narahubung'] ?? '') ?>"
+                <input class="input" name="narahubung" value="<?= e((string) old('narahubung', $isianInterview['narahubung'])) ?>"
                        placeholder="Rina (HR), 0812 3456 7890">
               </div>
             </div>
-            <div class="field"><label>Catatan untuk pelamar <span class="muted">(opsional)</span></label><textarea class="input" name="catatan" rows="2"><?= e($interview['catatan'] ?? '') ?></textarea></div>
-            <button class="btn btn-primary w-100" type="submit">Simpan jadwal interview</button>
+            <div class="field"><label>Catatan untuk pelamar <span class="muted">(opsional)</span></label><textarea class="input" name="catatan" rows="2"><?= e((string) old('catatan', $isianInterview['catatan'])) ?></textarea></div>
+            <button class="btn btn-primary w-100" type="submit" data-proses="Menyimpan..."><?= $interview ? 'Simpan perubahan jadwal' : 'Simpan jadwal interview' ?></button>
           </form>
 
-          <script>
+          <script nonce="<?= cspNonce() ?>">
           function gantiModeInterview(mode) {
             document.querySelectorAll('[data-mode]').forEach(function (blok) {
               var aktif = blok.getAttribute('data-mode') === mode;
@@ -181,16 +201,23 @@ $labelRiwayat = ['diajukan' => 'Lamaran diajukan', 'screening' => 'CV dibuka, st
             });
           }
           gantiModeInterview(document.getElementById('modeInterview').value);
+          document.getElementById('modeInterview').addEventListener('change', function () { gantiModeInterview(this.value); });
           </script>
 
-          <form class="mt-10" method="post" action="<?= url('lamaran/ubah-status/' . $lamaran['id']) ?>" onsubmit="return confirm('Tolak pelamar ini? Catatan alasan akan dikirim ke pelamar.')">
+          <form class="mt-10" method="post" action="<?= url('lamaran/ubah-status/' . $lamaran['id']) ?>" data-konfirmasi="Tolak pelamar ini? Catatan alasan akan dikirim ke pelamar dan keputusan ini final.">
             <?= csrfField() ?><input type="hidden" name="aksi" value="tolak">
-            <div class="field"><label>Atau, tolak pelamar</label><textarea class="input" name="catatan_perusahaan" rows="2" placeholder="Alasan penolakan (wajib diisi)" required></textarea></div>
-            <button class="btn btn-outline w-100 btn-outline-bad" type="submit">Tolak pelamar</button>
+            <div class="field"><label for="alasanTolak">Atau, tolak pelamar</label>
+              <div class="chips-alasan" data-target="alasanTolak"><small class="muted">Isi cepat:</small><?php foreach ($templateTolak as $tt): ?><button type="button" data-alasan="<?= e($tt) ?>"><?= e(ringkas(preg_replace('/^Terima kasih[^.]*\.\s*/', '', $tt), 60)) ?></button><?php endforeach; ?></div>
+              <textarea class="input" id="alasanTolak" name="catatan_perusahaan" rows="3" maxlength="500" minlength="10" placeholder="Alasan penolakan (wajib, min. 10 karakter)" required><?= e((string) old('catatan_perusahaan', '')) ?></textarea></div>
+            <button class="btn btn-outline w-100 btn-outline-bad" type="submit" data-proses="Memproses...">Tolak pelamar</button>
           </form>
 
           <div class="garis-atas mt-16 pt-16">
+            <?php if ($kuotaPenuh): ?>
+              <div class="alert alert-warn"><span data-ic="alert"></span><span>Kuota lowongan sudah penuh (<?= (int) $lamaran['terisi'] ?>/<?= (int) $lamaran['kuota'] ?>). Naikkan kuota lewat <b>Perpanjang</b> di Lowongan Saya untuk menerima pelamar lagi.</span></div>
+            <?php else: ?>
             <button class="btn btn-ok w-100" type="button" data-open="mAccept"><span data-ic="check"></span>Terima pelamar</button>
+            <?php endif; ?>
           </div>
         <?php endif; ?>
 
@@ -205,7 +232,7 @@ $labelRiwayat = ['diajukan' => 'Lamaran diajukan', 'screening' => 'CV dibuka, st
   </div>
 </section>
 
-<?php if (!$selesai): ?>
+<?php if (!$selesai && !$kuotaPenuh): ?>
 <!-- ===== Modal terima pelamar ===== -->
 <div class="modal" id="mAccept" role="dialog" aria-modal="true" aria-labelledby="acT">
   <div class="modal-box">
@@ -219,8 +246,8 @@ $labelRiwayat = ['diajukan' => 'Lamaran diajukan', 'screening' => 'CV dibuka, st
       </ul>
     </div>
     <div class="modal-foot">
-      <button class="btn btn-outline" data-close>Batal</button>
-      <form method="post" action="<?= url('lamaran/terima/' . $lamaran['id']) ?>"><?= csrfField() ?><button class="btn btn-ok" type="submit">Terima pelamar</button></form>
+      <button class="btn btn-outline" type="button" data-close>Batal</button>
+      <form method="post" action="<?= url('lamaran/terima/' . $lamaran['id']) ?>"><?= csrfField() ?><button class="btn btn-ok" type="submit" data-proses="Memproses...">Terima pelamar</button></form>
     </div>
   </div>
 </div>

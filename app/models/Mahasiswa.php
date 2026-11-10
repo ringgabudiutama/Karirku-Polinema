@@ -64,6 +64,17 @@ class Mahasiswa extends Model
         ]);
     }
 
+    /** Revisi F: alamat lengkap; `domisili` = kota/kabupaten. */
+    public function perbaruiAlamat(int $id, array $d): void
+    {
+        $this->ubah($id, [
+            'alamat'   => $d['alamat'] ?: null,
+            'domisili' => $d['kota'] ?: null,
+            'provinsi' => $d['provinsi'] ?: null,
+            'kode_pos' => $d['kode_pos'] ?: null,
+        ]);
+    }
+
     public function perbaruiFoto(int $id, string $namaFile): void
     {
         $this->ubah($id, ['foto' => $namaFile]);
@@ -191,13 +202,13 @@ class Mahasiswa extends Model
     }
 
     // --- Admin: daftar mahasiswa -------------------------------------
-    public function semuaDenganFilter(array $filter = []): array
+    private function klausaFilterAdmin(array $filter): array
     {
         $where = ['1=1'];
         $params = [];
         if (!empty($filter['jurusan_id'])) {
             $where[] = 'j.id = ?';
-            $params[] = $filter['jurusan_id'];
+            $params[] = (int) $filter['jurusan_id'];
         }
         if (!empty($filter['status_akun'])) {
             $where[] = 'p.status_akun = ?';
@@ -207,23 +218,46 @@ class Mahasiswa extends Model
             $where[] = 'm.status_mahasiswa = ?';
             $params[] = $filter['status_mahasiswa'];
         }
+        if (!empty($filter['status_karier'])) {
+            $where[] = "COALESCE(m.status_karier, 'belum bekerja') = ?";
+            $params[] = $filter['status_karier'];
+        }
         if (!empty($filter['angkatan'])) {
             $where[] = 'm.angkatan = ?';
-            $params[] = $filter['angkatan'];
+            $params[] = (int) $filter['angkatan'];
         }
         if (!empty($filter['keyword'])) {
-            $where[] = '(m.nama ILIKE ? OR m.nim ILIKE ?)';
-            $params[] = '%' . $filter['keyword'] . '%';
-            $params[] = '%' . $filter['keyword'] . '%';
+            $where[] = '(m.nama ILIKE ? OR m.nim ILIKE ? OR p.email ILIKE ? OR m.tempat_kerja ILIKE ?)';
+            $cari = '%' . $filter['keyword'] . '%';
+            array_push($params, $cari, $cari, $cari, $cari);
         }
-        $sql = 'SELECT m.*, p.email, p.status_akun, ps.nama AS nama_prodi, j.nama AS nama_jurusan
-                FROM mahasiswa m
+        return [$where, $params];
+    }
+
+    private const FROM_ADMIN = ' FROM mahasiswa m
                 JOIN pengguna p ON p.id = m.pengguna_id
                 JOIN program_studi ps ON ps.id = m.program_studi_id
-                JOIN jurusan j ON j.id = ps.jurusan_id
-                WHERE ' . implode(' AND ', $where) . '
-                ORDER BY m.nama';
+                JOIN jurusan j ON j.id = ps.jurusan_id ';
+
+    /** Revisi H: dipaginasi di database. $limit 0 = semua (untuk PDF). */
+    public function semuaDenganFilter(array $filter = [], int $limit = 0, int $offset = 0): array
+    {
+        [$where, $params] = $this->klausaFilterAdmin($filter);
+        $sql = 'SELECT m.*, p.email, p.status_akun, ps.nama AS nama_prodi, ps.jenjang, j.nama AS nama_jurusan'
+             . self::FROM_ADMIN . 'WHERE ' . implode(' AND ', $where) . '
+                ORDER BY m.nama, m.id';
+        if ($limit > 0) {
+            $sql .= ' LIMIT ? OFFSET ?';
+            $params[] = $limit;
+            $params[] = $offset;
+        }
         return Database::fetchAll($sql, $params);
+    }
+
+    public function hitungDenganFilter(array $filter = []): int
+    {
+        [$where, $params] = $this->klausaFilterAdmin($filter);
+        return (int) Database::fetch('SELECT COUNT(*) AS n' . self::FROM_ADMIN . 'WHERE ' . implode(' AND ', $where), $params)['n'];
     }
 
     public function semuaAngkatan($jurusanId = null): array
@@ -302,6 +336,29 @@ class Mahasiswa extends Model
                 WHERE " . implode(' AND ', $where) . '
                 GROUP BY status_karier ORDER BY jumlah DESC';
         return Database::fetchAll($sql, $params);
+    }
+
+    /** Sebaran level jabatan dihitung di database (tidak terpengaruh pagination). */
+    public function sebaranLevelJabatan(array $filter = []): array
+    {
+        $where = array_filter([$this->syaratStatusMahasiswa($filter)]) ?: ['TRUE'];
+        $where[] = "COALESCE(m.level_jabatan, '') <> ''";
+        $params = [];
+        if (!empty($filter['jurusan_id'])) {
+            $where[] = 'ps.jurusan_id = ?';
+            $params[] = (int) $filter['jurusan_id'];
+        }
+        if (!empty($filter['angkatan'])) {
+            $where[] = 'm.angkatan = ?';
+            $params[] = (int) $filter['angkatan'];
+        }
+        $baris = Database::fetchAll(
+            'SELECT m.level_jabatan, COUNT(*) AS jumlah FROM mahasiswa m
+               JOIN program_studi ps ON ps.id = m.program_studi_id
+              WHERE ' . implode(' AND ', $where) . ' GROUP BY m.level_jabatan ORDER BY jumlah DESC',
+            $params
+        );
+        return array_column($baris, 'jumlah', 'level_jabatan');
     }
 
     public function sebaranBidangKerja(array $filter = []): array

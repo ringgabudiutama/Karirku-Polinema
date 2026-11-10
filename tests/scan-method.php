@@ -5,7 +5,7 @@
  * Menangkap kasus seperti Lowongan::perpanjang() yang dipanggil tapi
  * belum pernah dibuat.
  */
-$root = '/home/claude/rev/Karirku-Polinema';
+$root = dirname(__DIR__);
 foreach (['core', 'models', 'services', 'helpers', 'middleware', 'controllers'] as $dir) {
     foreach (glob("$root/app/$dir/*.php") as $f) {
         $isi = file_get_contents($f);
@@ -56,18 +56,24 @@ foreach ($files as $f) {
         }
     }
 
-    // pola 3: $variabelModel->method( ketika variabelnya jelas berasal dari new Kelas
-    preg_match_all('/\$(\w+)\s*=\s*new\s+(\w+)\s*\(/', $src, $vm, PREG_SET_ORDER);
-    $tipeVar = [];
-    foreach ($vm as $v) $tipeVar['$' . $v[1]] = $v[2];
-    preg_match_all('/(\$\w+)\s*->\s*(\w+)\s*\(/', $src, $pm, PREG_SET_ORDER);
+    // pola 3: $variabelModel->method( — tipe variabel diambil dari assignment
+    // "= new Kelas(" TERAKHIR sebelum pemanggilan (bukan satu tipe per file),
+    // karena $model bisa berisi kelas berbeda di fungsi yang berbeda.
+    preg_match_all('/\$(\w+)\s*=\s*new\s+(\w+)\s*\(/', $src, $vm, PREG_SET_ORDER | PREG_OFFSET_CAPTURE);
+    preg_match_all('/(\$\w+)\s*->\s*(\w+)\s*\(/', $src, $pm, PREG_SET_ORDER | PREG_OFFSET_CAPTURE);
     foreach ($pm as $p) {
-        if (!isset($tipeVar[$p[1]])) continue;
-        $nyata = $cariKelas($tipeVar[$p[1]]);
+        $var = $p[1][0]; $method = $p[2][0]; $pos = $p[0][1];
+        $tipe = null;
+        foreach ($vm as $v) {
+            if ($v[0][1] < $pos && '$' . $v[1][0] === $var) $tipe = $v[2][0];
+        }
+        // assignment harus berada di fungsi yang sama: tidak boleh ada "function" di antaranya
+        if ($tipe === null) continue;
+        $nyata = $cariKelas($tipe);
         if ($nyata === null) continue;
-        if (!in_array($p[2], $punya[$nyata], true)) {
-            $baris = substr_count(substr($src, 0, strpos($src, $p[0])), "\n") + 1;
-            echo "HILANG  $rel:$baris   $nyata::{$p[2]}()  dipanggil lewat {$p[1]} tapi tidak ada\n";
+        if (!in_array($method, $punya[$nyata], true)) {
+            $baris = substr_count(substr($src, 0, $pos), "\n") + 1;
+            echo "HILANG  $rel:$baris   $nyata::{$method}()  dipanggil lewat {$var} tapi tidak ada\n";
             $masalah++;
         }
     }

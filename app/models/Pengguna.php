@@ -16,11 +16,11 @@ class Pengguna extends Model
         return $this->cariByEmail($email) !== null;
     }
 
-    public function buat(string $email, string $passwordPlain, string $role): int
+    public function buat(string $email, string $passwordPlain, string $role, ?string $hashSiap = null): int
     {
         return $this->simpan([
             'email'         => $email,
-            'password_hash' => buatHashPassword($passwordPlain),
+            'password_hash' => $hashSiap ?? buatHashPassword($passwordPlain),
             'role'          => $role,
             'status_akun'   => 'menunggu',
         ]);
@@ -97,24 +97,52 @@ class Pengguna extends Model
         Database::execute('UPDATE reset_kata_sandi SET dipakai_pada = now() WHERE id = ?', [$resetId]);
     }
 
-    // --- Antrean verifikasi ------------------------------------------
-    public function antreanVerifikasi(?int $jurusanId = null): array
+    // --- Antrean verifikasi (revisi H: dipaginasi & dicari di database) ---
+    private function klausaAntrean(?int $jurusanId, string $q, string $peran): array
     {
-        $sql = "SELECT p.id AS pengguna_id, p.email, p.role, p.dibuat_pada,
-                       COALESCE(m.nama, pr.nama_perusahaan) AS nama,
-                       j.id AS jurusan_id, j.nama AS nama_jurusan
-                FROM pengguna p
+        $where = ["p.status_akun = 'menunggu'"];
+        $params = [];
+        if ($jurusanId) {
+            $where[] = 'j.id = ?';
+            $params[] = $jurusanId;
+        }
+        if ($peran !== '') {
+            $where[] = 'p.role = ?';
+            $params[] = $peran;
+        }
+        if ($q !== '') {
+            $where[] = '(m.nama ILIKE ? OR pr.nama_perusahaan ILIKE ? OR p.email ILIKE ? OR m.nim ILIKE ?)';
+            $cari = '%' . $q . '%';
+            array_push($params, $cari, $cari, $cari, $cari);
+        }
+        return [$where, $params];
+    }
+
+    private const FROM_ANTREAN = ' FROM pengguna p
                 LEFT JOIN mahasiswa m ON m.pengguna_id = p.id
                 LEFT JOIN perusahaan pr ON pr.pengguna_id = p.id
                 LEFT JOIN program_studi ps ON ps.id = m.program_studi_id
-                LEFT JOIN jurusan j ON j.id = ps.jurusan_id
-                WHERE p.status_akun = 'menunggu'";
-        $params = [];
-        if ($jurusanId) {
-            $sql .= ' AND j.id = ?';
-            $params[] = $jurusanId;
+                LEFT JOIN jurusan j ON j.id = ps.jurusan_id ';
+
+    public function antreanVerifikasi(?int $jurusanId = null, string $q = '', int $limit = 0, int $offset = 0, string $peran = ''): array
+    {
+        [$where, $params] = $this->klausaAntrean($jurusanId, $q, $peran);
+        $sql = 'SELECT p.id AS pengguna_id, p.email, p.role, p.dibuat_pada,
+                       COALESCE(m.nama, pr.nama_perusahaan) AS nama, m.nim,
+                       j.id AS jurusan_id, j.nama AS nama_jurusan,
+                       (SELECT COUNT(*) FROM verifikasi_akun va WHERE va.pengguna_id = p.id AND va.keputusan = \'perbaikan\') AS pernah_perbaikan'
+             . self::FROM_ANTREAN . 'WHERE ' . implode(' AND ', $where) . ' ORDER BY p.dibuat_pada ASC, p.id ASC';
+        if ($limit > 0) {
+            $sql .= ' LIMIT ? OFFSET ?';
+            $params[] = $limit;
+            $params[] = $offset;
         }
-        $sql .= ' ORDER BY p.dibuat_pada ASC';
         return Database::fetchAll($sql, $params);
+    }
+
+    public function hitungAntreanVerifikasi(?int $jurusanId = null, string $q = '', string $peran = ''): int
+    {
+        [$where, $params] = $this->klausaAntrean($jurusanId, $q, $peran);
+        return (int) Database::fetch('SELECT COUNT(*) AS n' . self::FROM_ANTREAN . 'WHERE ' . implode(' AND ', $where), $params)['n'];
     }
 }

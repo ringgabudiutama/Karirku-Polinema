@@ -1,6 +1,6 @@
 # Pemeriksaan otomatis
 
-Delapan skrip untuk memeriksa aplikasi sebelum dipakai atau didemokan.
+Sepuluh skrip untuk memeriksa aplikasi sebelum dipakai atau didemokan.
 Semuanya butuh server berjalan di `http://127.0.0.1:8000` dan database terisi.
 
 ```
@@ -19,6 +19,12 @@ Lalu di terminal lain, dari folder proyek:
 | `php tests/uji-berkas.php` | Setiap tombol berkas (unduh.php) dibuka dan diperiksa apakah berkasnya benar-benar keluar. |
 | `bash tests/uji-akses-berkas.sh` | Berkas pribadi tetap tertolak untuk yang tidak berhak, dan tetap terbuka untuk yang berhak. |
 | `bash tests/uji-alamat-cacat.sh` | Alamat salah ketik tidak boleh memunculkan halaman fatal error PHP. |
+| `python3 tests/uji-alur-revisi.py` | Revisi dosen A–M ujung ke ujung: persetujuan lowongan, alasan wajib, perpanjang, lamaran + snapshot, alamat, rekap, reset sandi admin, Ingat saya, CSRF, cookie, keluar POST. Butuh `pip install requests`. |
+| `node tests/uji-browser.js` | Perilaku di browser (Playwright): draft formulir, pratinjau pamflet, tombol kembali, alasan wajib, modal reset sandi, tanpa error JS. |
+
+Koneksi database skrip bisa diatur lewat `DB_HOST`, `DB_USER`, `DB_PASS`,
+`DB_NAME` (bawaan `127.0.0.1`, `postgres`, `postgres`, `karirku_polinema`).
+Beberapa skrip mengubah data; muat ulang database (01–04) sebelum demo.
 
 ## Empat jebakan yang pernah membuat pemeriksaan lolos padahal ada bug
 

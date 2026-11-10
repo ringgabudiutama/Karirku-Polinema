@@ -5,10 +5,10 @@
  * Inilah yang seharusnya menangkap Lowongan::perpanjang() sejak awal.
  */
 $B = 'http://127.0.0.1:8000';
-$S = '/tmp/claude-0/-home-claude/34c7d75d-6ec8-5e75-91f4-7f39653d6878/scratchpad';
-$root = '/home/claude/rev/Karirku-Polinema';
+$S = sys_get_temp_dir();
+$root = dirname(__DIR__);
 
-$pdo = new PDO('pgsql:host=/tmp;dbname=karirku_polinema', 'postgres', '', [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]);
+$pdo = new PDO('pgsql:host=' . (getenv('DB_HOST') ?: '127.0.0.1') . ';dbname=' . (getenv('DB_NAME') ?: 'karirku_polinema'), getenv('DB_USER') ?: 'postgres', getenv('DB_PASS') ?: 'postgres', [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]);
 $satu = fn(string $sql) => $pdo->query($sql)->fetchColumn();
 
 $id = [

@@ -13,6 +13,7 @@ class KirimLokerController extends Controller
         . "Untuk melamar, masuk ke KarirKu dengan akun mahasiswa atau alumni.";
 
     // --- Halaman kirim loker -----------------------------------------
+    // [URL] GET /kirim-loker/index  →  tampil: views/admin/kirim-loker.php · peran: admin
     public function index()
     {
         Auth::wajibAktif();
@@ -30,11 +31,11 @@ class KirimLokerController extends Controller
         }
 
         if ($lowonganDipilihId) {
-            $lowonganDipilih = (new Lowongan())->cariDetail($lowonganDipilihId);
+            $lowonganDipilih = (new Lowongan())->cariDetailTayang($lowonganDipilihId);
             if ($lowonganDipilih) {
                 $sudahDikirim = (new PengirimanLoker())->jurusanSudahDikirimUntuk($lowonganDipilihId);
                 $jurusanSasaran = array_column((new Lowongan())->jurusanSasaran($lowonganDipilihId), 'id');
-                $tautanPratinjau = url('info-loker/' . $lowonganDipilih['kode_pratinjau']);
+                $tautanPratinjau = urlAbsolut('info-loker/' . $lowonganDipilih['kode_pratinjau']);
             }
         }
 
@@ -54,12 +55,14 @@ class KirimLokerController extends Controller
     }
 
     // --- Kirim ke admin jurusan --------------------------------------
+    // [URL] GET /kirim-loker/kirim/{lowonganId}/{jurusanId}  →  simpan lalu kembali ke /kirim-loker?lowongan_id= · peran: admin
     public function kirim(int $lowonganId, int $jurusanId)
     {
         Auth::wajibAktif();
         Role::wajib('admin');
 
-        $lowongan = (new Lowongan())->cariDetail($lowonganId);
+        // Hanya lowongan yang sudah disetujui (revisi M) yang boleh diteruskan.
+        $lowongan = (new Lowongan())->cariDetailTayang($lowonganId);
         $jurusan = (new Jurusan())->cari($jurusanId);
         $kontak = (new AdminJurusanKontak())->untukJurusan($jurusanId);
 
@@ -80,7 +83,8 @@ class KirimLokerController extends Controller
             'template_wa_loker',
             self::TEMPLATE_WA_DEFAULT
         );
-        $tautanPratinjau = url('info-loker/' . $lowongan['kode_pratinjau']);
+        // Tautan lengkap (https://...) supaya bisa diklik dari WhatsApp.
+        $tautanPratinjau = urlAbsolut('info-loker/' . $lowongan['kode_pratinjau']);
         $pesan = WhatsappService::susunPesan($template, $lowongan, $jurusan['nama'], $tautanPratinjau);
         $tautanWa = WhatsappService::buatTautan($kontak['nomor_wa'], $pesan);
 
@@ -89,14 +93,15 @@ class KirimLokerController extends Controller
     }
 
     // --- Kontak admin jurusan ----------------------------------------
+    // [URL] POST /kirim-loker/simpan-kontak  →  simpan lalu kembali ke /admin/pengaturan · peran: admin
     public function simpanKontak()
     {
         $this->wajibPost();
         Auth::wajibAktif();
         Role::wajib('admin');
 
-        $namaKontak = $_POST['nama_kontak'] ?? [];
-        $nomorWa = $_POST['nomor_wa'] ?? [];
+        $namaKontak = is_array($_POST['nama_kontak'] ?? null) ? $_POST['nama_kontak'] : [];
+        $nomorWa = is_array($_POST['nomor_wa'] ?? null) ? $_POST['nomor_wa'] : [];
         $adminId = (new Admin())->idDariPenggunaId(Auth::penggunaSaatIni()['id']);
         $model = new AdminJurusanKontak();
 

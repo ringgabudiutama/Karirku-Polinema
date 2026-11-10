@@ -9,19 +9,24 @@ class Notifikasi extends Model
     {
         return $this->simpan([
             'pengguna_id' => $penggunaId,
-            'tipe'        => $tipe,
-            'judul'       => $judul,
-            'pesan'       => $pesan,
+            'tipe'        => mb_substr($tipe, 0, 30),
+            'judul'       => mb_substr($judul, 0, 255),
+            'pesan'       => mb_substr($pesan, 0, 500),
             'tautan'      => $tautan,
         ]);
     }
 
-    public function milikPengguna(int $penggunaId, int $limit = 50): array
+    public function milikPengguna(int $penggunaId, int $limit = 50, int $offset = 0): array
     {
         return Database::fetchAll(
-            'SELECT * FROM notifikasi WHERE pengguna_id = ? ORDER BY dibuat_pada DESC LIMIT ' . (int) $limit,
+            'SELECT * FROM notifikasi WHERE pengguna_id = ? ORDER BY dibuat_pada DESC, id DESC LIMIT ' . (int) $limit . ' OFFSET ' . (int) $offset,
             [$penggunaId]
         );
+    }
+
+    public function hitungMilik(int $penggunaId): int
+    {
+        return (int) Database::fetch('SELECT COUNT(*) AS n FROM notifikasi WHERE pengguna_id = ?', [$penggunaId])['n'];
     }
 
     public function jumlahBelumDibaca(int $penggunaId): int

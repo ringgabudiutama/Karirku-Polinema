@@ -67,12 +67,67 @@ class Perusahaan extends Model
     }
 
     // --- Admin & publik ----------------------------------------------
-    public function semuaDenganStatus(): array
+    private function klausaStatus(string $keyword, string $status): array
     {
-        return Database::fetchAll(
-            'SELECT pr.*, p.email, p.status_akun
-             FROM perusahaan pr JOIN pengguna p ON p.id = pr.pengguna_id
-             ORDER BY pr.nama_perusahaan'
+        $where = ['1=1'];
+        $params = [];
+        if ($keyword !== '') {
+            $where[] = '(pr.nama_perusahaan ILIKE ? OR p.email ILIKE ? OR pr.kota ILIKE ? OR pr.bidang_usaha ILIKE ?)';
+            $cari = '%' . $keyword . '%';
+            array_push($params, $cari, $cari, $cari, $cari);
+        }
+        if ($status !== '') {
+            $where[] = 'p.status_akun = ?';
+            $params[] = $status;
+        }
+        return [$where, $params];
+    }
+
+    /** Revisi H: dipaginasi di database. */
+    public function semuaDenganStatus(string $keyword = '', string $status = '', int $limit = 0, int $offset = 0): array
+    {
+        [$where, $params] = $this->klausaStatus($keyword, $status);
+        $sql = 'SELECT pr.*, p.email, p.status_akun,
+                       (SELECT COUNT(*) FROM lowongan l WHERE l.perusahaan_id = pr.id) AS jumlah_lowongan
+                FROM perusahaan pr JOIN pengguna p ON p.id = pr.pengguna_id
+                WHERE ' . implode(' AND ', $where) . ' ORDER BY pr.nama_perusahaan, pr.id';
+        if ($limit > 0) {
+            $sql .= ' LIMIT ? OFFSET ?';
+            $params[] = $limit;
+            $params[] = $offset;
+        }
+        return Database::fetchAll($sql, $params);
+    }
+
+    public function hitungDenganStatus(string $keyword = '', string $status = ''): int
+    {
+        [$where, $params] = $this->klausaStatus($keyword, $status);
+        return (int) Database::fetch(
+            'SELECT COUNT(*) AS n FROM perusahaan pr JOIN pengguna p ON p.id = pr.pengguna_id WHERE ' . implode(' AND ', $where),
+            $params
+        )['n'];
+    }
+
+    /** Revisi F: alamat lengkap (alamat jalan, kota, provinsi, kode pos). */
+    public function perbaruiAlamat(int $id, array $d): void
+    {
+        $this->ubah($id, [
+            'alamat'   => $d['alamat'],
+            'kota'     => $d['kota'],
+            'provinsi' => $d['provinsi'] ?: null,
+            'kode_pos' => $d['kode_pos'] ?: null,
+        ]);
+    }
+
+    /** Halaman detail mitra publik (revisi A): hanya perusahaan aktif. */
+    public function mitraPublik(int $id): ?array
+    {
+        return Database::fetch(
+            "SELECT pr.id, pr.nama_perusahaan, pr.bidang_usaha, pr.jenis_perusahaan, pr.alamat, pr.kota, pr.provinsi,
+                    pr.website, pr.logo, pr.deskripsi
+               FROM perusahaan pr JOIN pengguna p ON p.id = pr.pengguna_id
+              WHERE pr.id = ? AND p.status_akun = 'aktif'",
+            [$id]
         );
     }
 
@@ -90,7 +145,7 @@ class Perusahaan extends Model
     {
         return Database::fetchAll(
             "SELECT pr.id, pr.nama_perusahaan, pr.bidang_usaha, pr.kota, pr.logo,
-                    count(l.id) FILTER (WHERE l.status = 'aktif'
+                    count(l.id) FILTER (WHERE l.status = 'aktif' AND l.terisi < l.kuota
                                           AND l.batas_lamaran >= CURRENT_DATE) AS lowongan_aktif
                FROM perusahaan pr
                JOIN pengguna p ON p.id = pr.pengguna_id

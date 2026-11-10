@@ -8,7 +8,7 @@
  * memang disengaja dan bukan kebocoran.
  */
 $B = 'http://127.0.0.1:8000';
-$S = '/tmp/claude-0/-home-claude/34c7d75d-6ec8-5e75-91f4-7f39653d6878/scratchpad';
+$S = sys_get_temp_dir();
 
 function ambilB(string $url, string $jar): array {
     $ch = curl_init($url);

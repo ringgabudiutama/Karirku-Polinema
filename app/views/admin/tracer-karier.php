@@ -8,17 +8,7 @@ $totalAlumni = array_sum(array_column($ringkasanStatus, 'jumlah'));
 $warnaStatus = ['bekerja' => 'var(--navy)', 'wirausaha' => 'var(--blue)', 'studi lanjut' => '#7FA6E8', 'mencari kerja' => '#C3D5F3', 'belum bekerja' => '#E1E8F3'];
 $labelStatus = ['bekerja' => 'Bekerja', 'wirausaha' => 'Wirausaha', 'studi lanjut' => 'Studi lanjut', 'mencari kerja' => 'Mencari kerja', 'belum bekerja' => 'Belum bekerja'];
 
-$bidangCount = [];
-$levelCount = [];
-foreach ($alumni as $a) {
-    if (!empty($a['tempat_kerja'])) {
-        $bidangCount['Bekerja: ' . $a['tempat_kerja']] = ($bidangCount['Bekerja: ' . $a['tempat_kerja']] ?? 0) + 1;
-    }
-    if (!empty($a['level_jabatan'])) {
-        $levelCount[$a['level_jabatan']] = ($levelCount[$a['level_jabatan']] ?? 0) + 1;
-    }
-}
-arsort($levelCount);
+$levelCount = array_map('intval', $levelJabatan);   // dihitung di database untuk seluruh data terfilter
 $angkatanTerpakai = $angkatan ?? array_unique(array_column($alumni, 'angkatan'));
 ?>
 <section class="view active">
@@ -27,16 +17,18 @@ $statusDipilih = $filter['status_mahasiswa'] ?? 'alumni';
 $labelKelompok = ['alumni' => 'alumni', 'aktif' => 'mahasiswa aktif',
                   'semua'  => 'mahasiswa dan alumni'][$statusDipilih] ?? 'alumni';
 ?>
+  <?= kepalaKembali('admin/dashboard', [['Dashboard', 'admin/dashboard'], ['Tracer karier']]) ?>
 <div class="page-head"><div><h1>Tracer karier</h1><p>Data diperbarui otomatis dari lamaran diterima dan status karier yang diisi sendiri.</p></div>
-    <a class="btn btn-primary" href="<?= url('admin/unduh-tracer-karier?' . http_build_query($filter)) ?>" target="_blank"><span data-ic="download"></span>Unduh laporan PDF</a>
+    <a class="btn btn-primary" href="<?= url('admin/unduh-tracer-karier?' . http_build_query(array_filter(['jurusan_id' => $filter['jurusan_id'], 'angkatan' => $filter['angkatan'], 'status_mahasiswa' => $filter['status_mahasiswa'], 'status_karier' => $filter['status_karier'], 'q' => $filter['keyword']]))) ?>" target="_blank" rel="noopener"><span data-ic="download"></span>Unduh laporan PDF</a>
   </div>
   <!-- ===== Filter ===== -->
   <form class="filters" method="get" action="<?= url('admin/tracer-karier') ?>">
-    <select class="input jur-filter" name="jurusan_id" onchange="this.form.submit()">
+    <input class="input grow" type="search" name="q" value="<?= e($filter['keyword']) ?>" placeholder="Cari nama, NIM, atau tempat kerja" aria-label="Cari">
+    <select class="input jur-filter" name="jurusan_id" data-auto-submit>
       <option value="">Semua jurusan</option>
       <?php foreach ($jurusan as $j): ?><option value="<?= (int) $j['id'] ?>" <?= (string) $filter['jurusan_id'] === (string) $j['id'] ? 'selected' : '' ?>><?= e($j['nama']) ?></option><?php endforeach; ?>
     </select>
-    <select class="input" name="angkatan" onchange="this.form.submit()">
+    <select class="input" name="angkatan" data-auto-submit>
       <option value=""><?= !empty($filter['jurusan_id']) ? 'Semua angkatan di jurusan ini' : 'Semua angkatan' ?></option>
       <?php foreach ($angkatanTerpakai as $ang): ?><option value="<?= (int) $ang ?>" <?= (string) $filter['angkatan'] === (string) $ang ? 'selected' : '' ?>>Angkatan <?= (int) $ang ?></option><?php endforeach; ?>
     </select>
@@ -44,11 +36,17 @@ $labelKelompok = ['alumni' => 'alumni', 'aktif' => 'mahasiswa aktif',
       $opsiStatus = ['alumni' => 'Alumni saja', 'aktif' => 'Mahasiswa aktif saja',
                      'semua'  => 'Mahasiswa dan alumni'];
     ?>
-    <select class="input" name="status_mahasiswa" onchange="this.form.submit()">
+    <select class="input" name="status_mahasiswa" data-auto-submit>
       <?php foreach ($opsiStatus as $nilai => $label): ?>
         <option value="<?= e($nilai) ?>" <?= $statusDipilih === $nilai ? 'selected' : '' ?>><?= e($label) ?></option>
       <?php endforeach; ?>
     </select>
+    <select class="input" name="status_karier" aria-label="Status karier">
+      <option value="">Semua status karier</option>
+      <?php foreach ($labelStatus as $k => $v): ?><option value="<?= e($k) ?>" <?= $filter['status_karier'] === $k ? 'selected' : '' ?>><?= e($v) ?></option><?php endforeach; ?>
+    </select>
+    <button class="btn btn-primary" type="submit"><span data-ic="search"></span>Terapkan</button>
+    <?php if ($filter['keyword'] !== '' || $filter['status_karier'] !== '' || $filter['jurusan_id'] !== '' || $filter['angkatan'] !== ''): ?><a class="btn btn-link" href="<?= url('admin/tracer-karier?status_mahasiswa=' . urlencode($statusDipilih)) ?>">Hapus filter</a><?php endif; ?>
   </form>
 
   <?php if ($statusDipilih !== 'alumni'): ?>
@@ -112,9 +110,9 @@ $labelKelompok = ['alumni' => 'alumni', 'aktif' => 'mahasiswa aktif',
     <div class="table-wrap"><table class="t">
       <tr><th>Nama</th><th>Jurusan</th><th>Angkatan</th><th>Status karier</th><th>Tempat kerja</th><th>Diperbarui</th></tr>
       <?php if (empty($alumni)): ?><tr><td colspan="6" class="muted kosong">Tidak ada data.</td></tr><?php endif; ?>
-      <?php foreach (array_slice($alumni, 0, 200) as $a): ?>
+      <?php foreach ($alumni as $a): ?>
         <tr>
-          <td><?= e($a['nama']) ?></td>
+          <td><a href="<?= url('admin/profil-mahasiswa/' . $a['id']) ?>"><b><?= e($a['nama']) ?></b></a><br><small class="muted"><?= e($a['nim']) ?><?= $a['tahun_lulus'] ? ' &middot; lulus ' . (int) $a['tahun_lulus'] : '' ?></small></td>
           <td><?= e($a['nama_jurusan']) ?></td>
           <td><?= (int) $a['angkatan'] ?></td>
           <td><?= e($labelStatus[$a['status_karier'] ?? 'belum bekerja'] ?? '-') ?></td>
@@ -123,6 +121,7 @@ $labelKelompok = ['alumni' => 'alumni', 'aktif' => 'mahasiswa aktif',
         </tr>
       <?php endforeach; ?>
     </table></div>
+    <?= paginasiHtml($paginasi, e($labelKelompok)) ?>
   </div>
 </section>
 <?php require __DIR__ . '/../layouts/app-footer.php'; ?>
