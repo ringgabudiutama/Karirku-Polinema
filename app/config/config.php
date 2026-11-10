@@ -27,8 +27,8 @@ return [
     'upload_dir'    => (getenv('VERCEL') ?: getenv('KARIRKU_SERVERLESS'))
         ? rtrim(sys_get_temp_dir(), '/') . '/karirku/uploads'
         : __DIR__ . '/../../storage/uploads',
-    // Berkas bawaan proyek (logo & pamflet data demo) yang ikut di-deploy, hanya dibaca.
-    'upload_dir_bawaan' => __DIR__ . '/../../storage/uploads',
+    // Berkas data demo (logo, pamflet, foto, dokumen) yang ikut ke GitHub & di-deploy, hanya dibaca.
+    'upload_dir_bawaan' => __DIR__ . '/../../storage/demo-uploads',
     'log_dir'       => (getenv('VERCEL') ?: getenv('KARIRKU_SERVERLESS'))
         ? rtrim(sys_get_temp_dir(), '/') . '/karirku/logs'
         : __DIR__ . '/../../storage/logs',

@@ -11,6 +11,11 @@ class Database
         if (self::$pdo === null) {
             $cfg = require __DIR__ . '/../config/database.php';
             $dsn = sprintf('pgsql:host=%s;port=%s;dbname=%s;sslmode=%s', $cfg['host'], $cfg['port'], $cfg['nama'], $cfg['sslmode'] ?? 'prefer');
+            // Neon: sertakan ID endpoint agar tetap tersambung walau pustaka libpq server tidak mengirim SNI
+            // (tanpa ini muncul "Endpoint ID is not specified").
+            if (preg_match('/^(ep-[a-z0-9-]+?)(-pooler)?\.[a-z0-9.-]+\.neon\.tech$/i', (string) $cfg['host'], $mNeon)) {
+                $dsn .= ";options='endpoint=" . $mNeon[1] . "'";
+            }
 
             try {
                 self::$pdo = new \PDO($dsn, $cfg['user'], $cfg['pass'], [
@@ -40,11 +45,53 @@ class Database
                 if ($appCfg['debug']) {
                     die('Koneksi database gagal: ' . $e->getMessage());
                 }
-                die('Terjadi gangguan pada server. Silakan coba lagi nanti.');
+                // Petunjuk penyebab (tanpa membuka kata sandi/host) agar pemilik situs bisa memperbaikinya.
+                die(self::halamanGangguan(self::penyebabGagal($e->getMessage(), $cfg)));
             }
         }
 
         return self::$pdo;
+    }
+
+    /** Menggolongkan pesan galat koneksi menjadi petunjuk yang aman ditampilkan. */
+    private static function penyebabGagal(string $pesan, array $cfg): array
+    {
+        $adaUrl = (bool) (getenv('DATABASE_URL') ?: getenv('DATABASE_URL_UNPOOLED') ?: getenv('POSTGRES_URL') ?: getenv('POSTGRES_URL_NON_POOLING') ?: getenv('DB_HOST'));
+        $p = strtolower($pesan);
+        if (!$adaUrl && in_array($cfg['host'] ?? '', ['127.0.0.1', 'localhost'], true) && (getenv('VERCEL') || getenv('KARIRKU_SERVERLESS'))) {
+            return ['DB-01', 'Alamat database belum diatur.', 'Di Vercel: Settings → Environment Variables, tambahkan DATABASE_URL (connection string Neon), lalu Deployments → Redeploy.'];
+        }
+        if (str_contains($p, 'migrasi otomatis')) {
+            return ['DB-07', 'Database tersambung, tetapi pemasangan tabel otomatis gagal.', 'Buka Logs di Vercel dan cari "[KarirKu]" untuk melihat file SQL yang gagal, atau jalankan database/00-INSTAL-ULANG.sql di SQL Editor Neon.'];
+        }
+        if (str_contains($p, 'password authentication failed') || str_contains($p, 'authentication')) {
+            return ['DB-02', 'Nama pengguna atau kata sandi database ditolak.', 'Salin ulang connection string dari Neon (tombol Copy), tempel ke DATABASE_URL, lalu Redeploy.'];
+        }
+        if (str_contains($p, 'endpoint id') || str_contains($p, 'sni')) {
+            return ['DB-03', 'Server database meminta ID endpoint.', 'Pastikan DATABASE_URL memakai alamat host asli dari Neon (ep-....neon.tech), lalu Redeploy.'];
+        }
+        if (str_contains($p, 'could not translate host name') || str_contains($p, 'name or service not known') || str_contains($p, 'nodename nor servname')) {
+            return ['DB-04', 'Alamat host database tidak ditemukan.', 'Periksa ejaan host di DATABASE_URL. Bila memakai Supabase, gunakan alamat "Session pooler" (bukan "Direct connection" yang hanya IPv6).'];
+        }
+        if (str_contains($p, 'does not exist')) {
+            return ['DB-05', 'Nama database di alamat koneksi tidak ada.', 'Periksa bagian nama database di akhir DATABASE_URL (Neon: biasanya neondb).'];
+        }
+        if (str_contains($p, 'ssl')) {
+            return ['DB-06', 'Koneksi aman (SSL) ke database gagal.', 'Pastikan DATABASE_URL diakhiri ?sslmode=require, lalu Redeploy.'];
+        }
+        return ['DB-08', 'Server database tidak bisa dihubungi.', 'Periksa DATABASE_URL dan pastikan database Neon aktif (tidak dihapus). Bila memakai Supabase, gunakan alamat "Session pooler".'];
+    }
+
+    private static function halamanGangguan(array $p): string
+    {
+        [$kode, $judul, $saran] = $p;
+        $h = static fn(string $t): string => htmlspecialchars($t, ENT_QUOTES, 'UTF-8');
+        return '<!DOCTYPE html><html lang="id"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">'
+            . '<title>Gangguan server | KarirKu Polinema</title><style>body{font-family:system-ui,Segoe UI,Roboto,sans-serif;background:#f3f6fb;color:#16233a;margin:0;display:grid;place-items:center;min-height:100vh;padding:20px;box-sizing:border-box}'
+            . '.k{background:#fff;border-radius:18px;box-shadow:0 0 0 1px #e1e8f2,0 12px 30px rgba(10,38,86,.08);padding:28px;max-width:460px}h1{font-size:20px;margin:0 0 8px}p{margin:0 0 12px;line-height:1.55;color:#5a6a82}'
+            . '.s{background:#f4f7fc;border-radius:12px;padding:12px 14px;color:#16233a;font-size:14px}code{font-size:12px;color:#5a6a82}</style></head><body><div class="k">'
+            . '<h1>Terjadi gangguan pada server</h1><p>Silakan coba lagi nanti. Bila Anda pengelola situs:</p>'
+            . '<div class="s"><b>' . $h($judul) . '</b><br>' . $h($saran) . '</div><p style="margin-top:12px"><code>Kode: ' . $h($kode) . '</code></p></div></body></html>';
     }
 
     /**

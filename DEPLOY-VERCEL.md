@@ -78,3 +78,10 @@ vercel --prod
 - Paket gratis Neon: 0,5 GB. Berkas unggahan ikut memakai kuota ini.
 - Permintaan pertama setelah lama tidak dipakai bisa 1–3 detik lebih lambat (*cold start*).
 - Halaman `cek-sistem.php` dan `cek-berkas.php` sengaja mati di produksi (404).
+
+## Gambar & berkas data demo
+
+Folder `storage/uploads/` sengaja diabaikan Git (`.gitignore`), jadi isinya tidak ikut ke GitHub/Vercel.
+Karena itu semua berkas data demo (logo, pamflet, foto, CV, KTM, dokumen perusahaan) disalin ke
+**`storage/demo-uploads/`** — folder ini *ikut* ke GitHub dan di-deploy. Aplikasi otomatis mencari berkas
+di sana bila tidak ditemukan di folder unggahan. Pastikan folder ini ikut ter-commit/ter-upload.

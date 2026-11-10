@@ -15,7 +15,7 @@ $dasar = [
     'port' => getenv('DB_PORT') ?: 5432,
     'nama' => getenv('DB_NAME') ?: 'karirku_polinema',
     'user' => getenv('DB_USER') ?: 'postgres',
-    'pass' => getenv('DB_PASS') ?: 'Ringga27',
+    'pass' => getenv('DB_PASS') ?: '',
 
     // Pemutakhiran skema otomatis saat aplikasi pertama dibuka (nyaman untuk lokal).
     // Di produksi isi DB_MIGRASI_OTOMATIS=0: migrasi dijalankan manual oleh pemilik
