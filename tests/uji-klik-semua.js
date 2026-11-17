@@ -18,7 +18,7 @@ const path = require('path');
 
 const B = (process.env.APP_URL || 'http://127.0.0.1:8000').replace(/\/$/, '');
 const ROOT = path.join(__dirname, '..');
-const JPG = path.join(ROOT, 'public/assets/img/dok-ktm.jpg');
+const JPG = path.join(ROOT, 'frontend/assets/img/dok-ktm.jpg');
 const PDF = path.join(__dirname, 'contoh.pdf');
 const PGENV = { ...process.env, PGPASSWORD: process.env.DB_PASS || 'postgres' };
 const sql = (q) => execFileSync('psql', ['-h', process.env.DB_HOST || '127.0.0.1', '-U', process.env.DB_USER || 'postgres', '-d', process.env.DB_NAME || 'karirku_polinema', '-tAc', q], { env: PGENV }).toString().trim();

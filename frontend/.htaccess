@@ -1,0 +1,9 @@
+# Folder ini tidak boleh dibuka lewat URL (lapisan kedua, selain .htaccess di root).
+Options -Indexes
+<IfModule mod_authz_core.c>
+  Require all denied
+</IfModule>
+<IfModule !mod_authz_core.c>
+  Order deny,allow
+  Deny from all
+</IfModule>

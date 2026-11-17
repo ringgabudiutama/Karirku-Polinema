@@ -3,7 +3,7 @@
 
 // Halaman ini membuka informasi sistem; hanya tersedia saat APP_DEBUG aktif (lokal).
 // Di server produksi tampil 404 seolah halamannya tidak ada.
-if (!(require __DIR__ . '/../app/config/config.php')['debug']) {
+if (!(require __DIR__ . '/../backend/config/config.php')['debug']) {
     http_response_code(404);
     exit('Halaman tidak ditemukan.');
 }
@@ -66,10 +66,10 @@ $hasil[] = cek(
     'Aktifkan extension=exif di php.ini lalu restart web server.'
 );
 
-$cfgPath = __DIR__ . '/../app/config/config.php';
-$dbPath  = __DIR__ . '/../app/config/database.php';
+$cfgPath = __DIR__ . '/../backend/config/config.php';
+$dbPath  = __DIR__ . '/../backend/config/database.php';
 $adaCfg  = is_file($cfgPath) && is_file($dbPath);
-$hasil[] = cek('File konfigurasi', $adaCfg, 'Ditemukan', 'Tidak ditemukan', 'Pastikan folder app/config/ ikut ter-ekstrak.');
+$hasil[] = cek('File konfigurasi', $adaCfg, 'Ditemukan', 'Tidak ditemukan', 'Pastikan folder backend/config/ ikut ter-ekstrak.');
 
 $cfg = $adaCfg ? require $cfgPath : [];
 $db  = $adaCfg ? require $dbPath : [];
@@ -89,7 +89,7 @@ $hasil[] = cek(
     $pdo !== null,
     'Tersambung ke database "' . ($db['nama'] ?? '?') . '" di ' . ($db['host'] ?? '?') . ':' . ($db['port'] ?? '?'),
     'Gagal: ' . $errDb,
-    'Periksa app/config/database.php: nama database, user, dan password. Pastikan juga service PostgreSQL sudah berjalan.'
+    'Periksa backend/config/database.php: nama database, user, dan password. Pastikan juga service PostgreSQL sudah berjalan.'
 );
 
 $jumlahTabel = 0;
@@ -153,6 +153,24 @@ $hasil[] = cek(
     'Klik kanan folder storage, Properties, hilangkan centang Read-only. Di Linux/Mac: chmod -R 775 storage'
 );
 
+$adaVendor = is_file(__DIR__ . '/../vendor/autoload.php');
+$hasil[] = cek(
+    'Pembuat PDF (Dompdf)',
+    $adaVendor && extension_loaded('dom'),
+    'Siap: laporan dan CV diunduh sebagai berkas PDF',
+    'Belum siap: laporan tampil sebagai halaman siap cetak',
+    $adaVendor ? 'Aktifkan extension=dom di php.ini lalu restart web server.' : 'Folder vendor/ tidak ikut ter-ekstrak. Ekstrak ulang zip proyek.'
+);
+
+$cfgEmail = (require __DIR__ . '/../backend/config/config.php')['email'];
+$hasil[] = cek(
+    'Akun pengirim email (SMTP)',
+    trim((string) $cfgEmail['host']) !== '',
+    'Terisi (' . $cfgEmail['host'] . '). Uji di Admin > Pengaturan > Email',
+    'Belum diisi: email hanya dicatat, tidak dikirim',
+    'Salin backend/config/email.lokal.contoh.php menjadi email.lokal.php, lalu isi alamat Gmail dan App Password.'
+);
+
 $basePerkiraan = rtrim(str_replace('\\', '/', dirname($_SERVER['SCRIPT_NAME'])), '/');
 $baseTersimpan = rtrim($cfg['base_url'] ?? '', '/');
 $hasil[] = cek(
@@ -160,7 +178,7 @@ $hasil[] = cek(
     $baseTersimpan === $basePerkiraan || $baseTersimpan === '',
     $baseTersimpan === '' ? "Otomatis ('" . ($basePerkiraan ?: '/') . "')" : "Sudah cocok ('" . $baseTersimpan . "')",
     "Tersimpan '" . ($baseTersimpan ?: '(kosong)') . "' tapi seharusnya '" . ($basePerkiraan ?: '(kosong)') . "'",
-    "Buka app/config/config.php, ubah baris 'base_url' menjadi '" . $basePerkiraan . "' atau kosongkan ('') supaya terdeteksi otomatis"
+    "Buka backend/config/config.php, ubah baris 'base_url' menjadi '" . $basePerkiraan . "' atau kosongkan ('') supaya terdeteksi otomatis"
 );
 
 $pakaiApache = stripos($_SERVER['SERVER_SOFTWARE'] ?? '', 'apache') !== false;

@@ -2,10 +2,10 @@
 // ===== DEPLOY · Vercel · Pintu masuk tunggal =========================
 // Runtime vercel-php menjalankan PHP built-in server dengan berkas ini sebagai
 // router (sama seperti server-dev.php untuk lokal). Semua permintaan masuk ke sini:
-//   1. Berkas statis di public/ (CSS, JS, gambar, ikon) dikirim langsung.
-//   2. public/*.php (unduh.php, dll.) dijalankan.
-//   3. Selain itu diteruskan ke public/index.php (Router aplikasi).
-// Berkas di luar public/ (app/, database/, storage/) TIDAK PERNAH dikirim mentah.
+//   1. Berkas di public/ (manifest) dikirim langsung, public/*.php (unduh.php) dijalankan.
+//   2. Selain itu diteruskan ke public/index.php: /assets/ dari frontend/assets,
+//      halaman lain lewat Router backend.
+// Berkas di luar public/ dan frontend/assets TIDAK PERNAH dikirim mentah.
 
 $publik = realpath(__DIR__ . '/../public');
 $jalur = rawurldecode(parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?: '/');

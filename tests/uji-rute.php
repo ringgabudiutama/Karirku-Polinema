@@ -110,7 +110,7 @@ function keUrl(string $kelas, string $method): string {
 
 $pola = '/Fatal error|Parse error|Uncaught|Call to undefined|SQLSTATE|Warning:|Notice:|Deprecated:/i';
 $gagal = 0; $jumlah = 0;
-foreach (glob("$root/app/controllers/*.php") as $f) {
+foreach (glob("$root/backend/controllers/*.php") as $f) {
     $kelas = basename($f, '.php');
     $src = file_get_contents($f);
     preg_match_all('/public function (\w+)\s*\(/', $src, $mm);

@@ -1,18 +1,10 @@
-# =====================================================================
-# KarirKu Polinema · pagar di folder PROYEK (root)
-# Hanya folder public/ yang boleh dibuka lewat URL. app/, storage/ (KTM,
-# ijazah, log email), database/, tests/, docs/, scripts/ dan semua berkas di
-# root (README, composer.json, ...) TIDAK boleh diunduh atau dijalankan lewat
-# browser. Penting untuk XAMPP dan hosting bersama, tempat seluruh folder
-# proyek berada di dalam folder web.
-# Cara terbaik tetap: arahkan document root web server ke folder public/
-# (lihat docs/05-panduan-hosting-aman.md). Berkas ini lapisan cadangan.
-# =====================================================================
+# Bila seluruh folder proyek ada di htdocs XAMPP, hanya public/ yang boleh dibuka lewat URL.
+# backend/, frontend/views/, storage/ (KTM, ijazah), database/, tests/, dan berkas di root ditolak.
 Options -Indexes
 
 <IfModule mod_rewrite.c>
   RewriteEngine On
-  # Buka http://localhost/karirku-polinema/ -> langsung ke aplikasi
+  # http://localhost/karirku-polinema/ -> langsung ke aplikasi
   RewriteRule ^$ public/ [R=302,L]
   # Apa pun di luar public/ ditolak (403)
   RewriteRule !^public(/|$) - [F,L]

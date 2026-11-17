@@ -1,5 +1,6 @@
 # Rahasia: JANGAN ikut di-deploy (di Vercel isi lewat Environment Variables)
-app/config/database.lokal.php
+backend/config/database.lokal.php
+backend/config/email.lokal.php
 
 # Tidak dibutuhkan di server
 tests/

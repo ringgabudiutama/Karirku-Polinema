@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """
 Uji alur revisi dosen (A-M) dari ujung ke ujung lewat HTTP sungguhan.
-Butuh: server di http://127.0.0.1:8000, database baru dimuat (01-04), pip requests.
+Butuh: server di http://127.0.0.1:8000, database dari 00-INSTAL-ULANG.sql, pip requests.
+Bagian N memeriksa BUG-03 dengan server SMTP sungguhan (atau server uji lokal) di email.lokal.php.
 Jalankan: python3 tests/uji-alur-revisi.py
 Catatan: skrip ini MENGUBAH data (membuat lowongan, lamaran, reset sandi). Muat ulang
 database sesudahnya bila ingin kembali ke data demo awal.
@@ -43,11 +44,13 @@ def post(s, halaman, url, data, files=None):
     return s.post(B + '/' + url, data=data, files=files)
 
 def flash(r):
-    m = re.search(r'class="alert alert-(ok|bad|warn|info)[^"]*"[^>]*>(.*?)</div>', r.text, re.S)
+    m = re.search(r'class="alert (?:flash )?alert-(ok|bad|warn|info)[^"]*"[^>]*>(.*?)</div>', r.text, re.S)
     return (m.group(1), re.sub(r'<[^>]+>', ' ', m.group(2)).strip()) if m else (None, '')
 
+SANDI_MHS_BARU = 'KarirKu#Uji2026'
+hash_mhs_awal = sql("select password_hash from pengguna where email='mahasiswa@polinema.ac.id'")
 besok = (datetime.date.today() + datetime.timedelta(days=20)).isoformat()
-pamflet = os.path.join(ROOT, 'public/assets/img/hero-1.jpg')
+pamflet = os.path.join(ROOT, 'frontend/assets/img/hero-1.jpg')
 
 print('=== J. Cookie & header keamanan ===')
 r = requests.get(B + '/masuk')
@@ -81,7 +84,7 @@ cek('token salah -> kembali ke formulir dengan pesan', r.status_code == 200 and 
 
 print('=== H. Paginasi ===')
 r = admin.get(B + '/admin/monitoring-lowongan')
-cek('monitoring menampilkan maksimal 10 baris', r.text.count('admin/detail-lowongan/') <= 20 and 'paginasi-info' in r.text)
+cek('monitoring menampilkan maksimal 10 baris', len(set(re.findall(r'admin/detail-lowongan/(\d+)', r.text))) <= 10 and 'paginasi-info' in r.text)
 r = admin.get(B + '/admin/monitoring-lowongan?halaman=999')
 cek('halaman di luar jangkauan dialihkan', 'halaman=999' not in r.url, r.url)
 
@@ -170,9 +173,30 @@ r = s2.get(B + '/mahasiswa/dashboard')
 cek('token Ingat saya ikut dicabut', '/masuk' in r.url, r.url)
 m3, r = masuk('mahasiswa@polinema.ac.id', 'Sementara123')
 cek('masuk dengan sandi sementara -> diarahkan ganti sandi', 'ganti-sandi-wajib' in r.url, r.url)
-r = post(m3, 'akun/ganti-sandi-wajib', 'akun/simpan-sandi-wajib', {'password_lama': 'Sementara123', 'password_baru': 'mahasiswa123', 'konfirmasi_password': 'mahasiswa123'})
+r = post(m3, 'akun/ganti-sandi-wajib', 'akun/simpan-sandi-wajib', {'password_lama': 'Sementara123', 'password_baru': SANDI_MHS_BARU, 'konfirmasi_password': SANDI_MHS_BARU})
 cek('setelah ganti sandi bisa ke dashboard', sql(f"select wajib_ganti_sandi from pengguna where id={uid}") == 'f' and 'ganti-sandi' not in r.url, (r.url, flash(r)))
 cek('aktivitas admin tercatat', int(sql(f"select count(*) from log_aktivitas_admin where target_pengguna_id={uid}")) >= 1)
+
+print('=== N. Perbaikan BUG-01 sampai BUG-03 ===')
+lam = sql(f"select l.id from lamaran l join lowongan w on w.id=l.lowongan_id join perusahaan p on p.id=w.perusahaan_id "
+          f"join pengguna u on u.id=p.pengguna_id where u.email='perusahaan@polinema.ac.id' and l.status in ('diajukan','screening') order by l.id limit 1")
+if lam:
+    jadwal = {'aksi': 'jadwal_interview', 'tanggal': besok, 'jam': '10:00', 'mode': 'daring', 'lokasi_tautan': 'http://contoh.id/rapat'}
+    pt.get(B + f'/lamaran/detail-pelamar/{lam}')   # membuka detail otomatis mengubah diajukan -> screening
+    st_awal = sql(f"select status from lamaran where id={lam}")
+    r = post(pt, f'lamaran/detail-pelamar/{lam}', f'lamaran/ubah-status/{lam}', jadwal)
+    cek('BUG-01: tautan interview http:// ditolak, status tetap', sql(f"select status from lamaran where id={lam}") == st_awal and flash(r)[0] == 'bad', flash(r))
+    r = post(pt, f'lamaran/detail-pelamar/{lam}', f'lamaran/ubah-status/{lam}', dict(jadwal, lokasi_tautan='https://meet.google.com/abc-defg-hij'))
+    cek('BUG-01: tautan https:// diterima, status interview', sql(f"select status from lamaran where id={lam}") == 'interview', flash(r))
+else:
+    cek('BUG-01: ada lamaran untuk diuji', False, 'tidak ada lamaran diajukan/screening milik perusahaan uji')
+for alamat in ['admin/unduh-rekap-lamaran', 'admin/unduh-rekap-lowongan', 'admin/unduh-tracer-karier']:
+    r = admin.get(B + '/' + alamat)
+    cek(f'BUG-02: {alamat} berupa berkas PDF', r.status_code == 200 and r.headers.get('Content-Type', '').startswith('application/pdf') and r.content[:5] == b'%PDF-',
+        (r.status_code, r.headers.get('Content-Type')))
+r = post(admin, 'admin/pengaturan', 'admin/kirim-email-uji', {'email_uji': 'uji.penerima@contoh.id'})
+st_email = sql("select status from log_email where jenis='uji' order by id desc limit 1")
+cek('BUG-03: email uji diterima server SMTP (status terkirim)', st_email == 'terkirim', (st_email, flash(r)))
 
 print('=== B. Status email jujur ===')
 r = admin.get(B + '/admin/pengaturan#email')
@@ -184,6 +208,9 @@ r = admin.get(B + '/auth/keluar')
 cek('GET keluar tidak langsung mengeluarkan', admin.get(B + '/admin/dashboard').url.endswith('/admin/dashboard'))
 r = post(admin, 'admin/dashboard', 'auth/keluar', {})
 cek('POST keluar mengeluarkan', '/masuk' in admin.get(B + '/admin/dashboard').url)
+
+# Kembalikan sandi akun demo mahasiswa supaya skrip bisa dijalankan ulang.
+sql(f"update pengguna set password_hash='{hash_mhs_awal}', wajib_ganti_sandi=false where email='mahasiswa@polinema.ac.id'")
 
 print()
 print('TOTAL GAGAL:', len(GAGAL))

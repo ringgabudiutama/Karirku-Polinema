@@ -1,5 +1,6 @@
-# Rahasia dan data pribadi: jangan masuk repositori
-app/config/database.lokal.php
+# Kata sandi lokal (database dan email): jangan masuk repositori
+backend/config/database.lokal.php
+backend/config/email.lokal.php
 storage/uploads/*
 !storage/uploads/.gitkeep
 storage/logs/*

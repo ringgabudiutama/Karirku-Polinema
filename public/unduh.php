@@ -1,7 +1,7 @@
 <?php
-// ===== BACKEND · Pelayan berkas unggahan (dengan cek hak akses) ======
+// ===== PINTU MASUK · Unduh berkas unggahan (dengan cek hak akses) ====
 
-require __DIR__ . '/../app/core/bootstrap.php';
+require __DIR__ . '/../backend/core/bootstrap.php';
 
 function galatBerkas(int $kode, string $judul, string $pesan, string $saran = ''): void
 {

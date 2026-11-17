@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 import re, glob, os, requests, collections
-BASE=os.environ.get('BASE','http://127.0.0.1:8000'); D=os.path.join(os.path.dirname(os.path.abspath(__file__)),'..','..','app','controllers')
+BASE=os.environ.get('BASE','http://127.0.0.1:8000'); D=os.path.join(os.path.dirname(os.path.abspath(__file__)),'..','..','backend','controllers')
 AKUN={'tamu':None,'mahasiswa':('mahasiswa@polinema.ac.id','mahasiswa123'),'perusahaan':('perusahaan@polinema.ac.id','perusahaan123'),'admin':('admin@polinema.ac.id','admin123')}
 def kebab(n): return re.sub(r'(?<!^)(?=[A-Z])','-',n).lower()
 rute=[]

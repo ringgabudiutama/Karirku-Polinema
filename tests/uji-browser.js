@@ -11,7 +11,7 @@ async function masuk(p,e,pw){await p.goto(B+'/masuk');await p.fill('input[name=e
  await p.fill('input[name=posisi]','Draft Uji Browser'); await p.fill('textarea[name=deskripsi]','isi deskripsi');
  await p.waitForTimeout(900);
  ok('status draft tampil', /Draft tersimpan/.test(await p.textContent('[data-draft-status]')||''));
- await p.setInputFiles('input[name=pamflet]',require('path').join(__dirname,'..','public/assets/img/hero-1.jpg'));
+ await p.setInputFiles('input[name=pamflet]',require('path').join(__dirname,'..','frontend/assets/img/hero-1.jpg'));
  ok('pratinjau gambar muncul', await p.locator('.pratinjau-gambar').count()===1);
  ok('nama & ukuran berkas tampil', /hero-1\.jpg/.test(await p.textContent('.pratinjau-info')));
  await p.click('.pratinjau-aksi [data-aksi=hapus]');

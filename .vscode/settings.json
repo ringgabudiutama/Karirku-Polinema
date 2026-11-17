@@ -1,7 +1,0 @@
-{
-  "files.eol": "\n",
-  "editor.tabSize": 2,
-  "editor.formatOnSave": false,
-  "liveServer.settings.root": "/public",
-  "files.exclude": { "**/.gitkeep": true }
-}

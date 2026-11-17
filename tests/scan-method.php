@@ -7,7 +7,7 @@
  */
 $root = dirname(__DIR__);
 foreach (['core', 'models', 'services', 'helpers', 'middleware', 'controllers'] as $dir) {
-    foreach (glob("$root/app/$dir/*.php") as $f) {
+    foreach (glob("$root/backend/$dir/*.php") as $f) {
         $isi = file_get_contents($f);
         if (preg_match('/^\s*(abstract\s+)?(class|interface|trait)\s/m', $isi)) {
             require_once $f;
@@ -29,9 +29,9 @@ $cariKelas = function (string $nama) use ($punya) {
 };
 
 $files = array_merge(
-    glob("$root/app/controllers/*.php"), glob("$root/app/models/*.php"),
-    glob("$root/app/services/*.php"), glob("$root/app/core/*.php"),
-    glob("$root/app/views/*/*.php"), glob("$root/public/*.php")
+    glob("$root/backend/controllers/*.php"), glob("$root/backend/models/*.php"),
+    glob("$root/backend/services/*.php"), glob("$root/backend/core/*.php"),
+    glob("$root/frontend/views/*/*.php"), glob("$root/public/*.php")
 );
 
 $masalah = 0;
