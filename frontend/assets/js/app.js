@@ -1377,6 +1377,7 @@ window.KarirKu.salahIsian = tampilkanSalahIsian;
     const el = e.target;
     e.preventDefault();                       // matikan gelembung bawaan browser
     if (!el || el.disabled) return;
+    if (document.documentElement.classList.contains('dlg-terbuka')) return;   // jangan menumpuk dialog
     if (el.type === 'radio' && antre.some((x) => x.type === 'radio' && x.name === el.name)) return;
     antre.push(el);
     clearTimeout(jadwal);
@@ -1392,7 +1393,7 @@ window.KarirKu.salahIsian = tampilkanSalahIsian;
     if (!el || !el.closest || !el.checkValidity) return;
     const f = el.closest('.field');
     if ((f && f.classList.contains('has-err')) || el.getAttribute('aria-invalid') === 'true') {
-      if (el.checkValidity() && !el.dataset.pesanSalah) {
+      if (el.validity.valid && !el.dataset.pesanSalah) {  // validity.valid: TIDAK memicu event 'invalid' (checkValidity() memicunya -> popup tiap huruf)
         tandaiIsian(el, '');
         const err = f && f.querySelector('.err[data-otomatis]');
         if (err) err.textContent = '';
