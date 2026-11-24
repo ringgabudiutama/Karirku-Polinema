@@ -8,6 +8,7 @@ return [
     'host'     => 'smtp.gmail.com',
     'port'     => 587,
     'enkripsi' => 'tls',
-    'user'     => 'alamat.gmail.kamu@gmail.com',
-    'pass'     => 'xxxxxxxxxxxxxxxx',
+    'user'     => 'ringgabudiutama819@gmail.com',
+    'dari_email' => 'ringgabudiutama819@gmail.com',
+    'pass'     => 'yhmkzuxdtgfppgnr',
 ];
