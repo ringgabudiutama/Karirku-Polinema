@@ -10,5 +10,5 @@ return [
     'enkripsi' => 'tls',
     'user'     => 'ringgabudiutama819@gmail.com',
     'dari_email' => 'ringgabudiutama819@gmail.com',
-    'pass'     => 'yhmkzuxdtgfppgnr',
+    'pass'     => 'wsbimtdmlmtymlnc',
 ];
