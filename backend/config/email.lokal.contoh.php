@@ -8,7 +8,7 @@ return [
     'host'     => 'smtp.gmail.com',
     'port'     => 587,
     'enkripsi' => 'tls',
-    'user'     => 'ringgabudiutama819@gmail.com',
-    'dari_email' => 'ringgabudiutama819@gmail.com',
-    'pass'     => 'wsbimtdmlmtymlnc',
+   'user'       => 'emailkamu@gmail.com',
+'dari_email' => 'emailkamu@gmail.com',
+'pass'       => 'ISI_APP_PASSWORD_DI_SINI',
 ];
