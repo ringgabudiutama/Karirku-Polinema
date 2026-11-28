@@ -7,7 +7,7 @@ $nama = $role === 'mahasiswa' ? ($profil['nama'] ?? $pengguna['email']) : ($role
 
 // --- Data banner & menu terkunci ---
 $petaBanner = [
-    'menunggu'  => ['alert-warn', 'hourglass', 'Akunmu sedang diverifikasi', 'Nomor pendaftaran ' . e($pengguna['no_pendaftaran'] ?? '-') . '. Career Center memeriksa datamu paling lama 2 hari kerja. Kami kirim email saat ada hasil.'],
+    'menunggu'  => ['alert-warn', 'hourglass', 'Akunmu sedang diverifikasi', 'Nomor pendaftaran ' . e($pengguna['no_pendaftaran'] ?? ('PENG-' . $pengguna['id'])) . '. Career Center memeriksa datamu paling lama 2 hari kerja. Kami kirim email saat ada hasil.'],
     'perbaikan' => ['alert-warn', 'alert', 'Datamu perlu diperbaiki', 'Lihat catatan Admin di bawah, lalu kirim ulang dokumen yang diminta.'],
     'ditolak'   => ['alert-bad', 'ban', 'Pendaftaran tidak disetujui', 'Lihat alasan penolakan di bawah. Kalau menurutmu ini keliru, hubungi Career Center.'],
     'aktif'     => ['alert-ok', 'checkc', 'Selamat, akunmu sudah aktif', 'Akunmu disetujui Career Center. Semua menu sekarang terbuka.'],
@@ -100,9 +100,9 @@ $jumlahNotif = jumlahNotifBelumDibaca($pengguna['id']);
   </div>
 
   <!-- ===== Linimasa & data yang dikirim ===== -->
-  <div class="grid g2 items-start">
+  <div class="grid g2 status-grid">
     <div class="panel">
-      <h3>Progres verifikasi</h3>
+      <div class="panel-head"><h3>Progres verifikasi</h3></div>
       <ol class="vtl">
         <li class="done"><span class="b"><span data-ic="check"></span></span><span><b>Pendaftaran dikirim</b><small><?= tanggalWaktuIndo($pengguna['dibuat_pada']) ?></small></span></li>
         <?php foreach ($riwayat as $r):

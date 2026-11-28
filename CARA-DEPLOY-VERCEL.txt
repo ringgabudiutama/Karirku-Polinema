@@ -1,0 +1,35 @@
+CARA DEPLOY KARIRKU POLINEMA KE VERCEL
+======================================
+
+1. APP PASSWORD SUDAH TERISI di backend/config/email.produksi.php
+   Kalau App Password diganti di akun Google, ubah nilai 'pass' di file itu
+   (16 huruf, TANPA spasi) lalu deploy ulang.
+   -> Repositori GitHub WAJIB Private, karena file ini berisi kata sandi.
+   (Alternatif tanpa menulis sandi di kode: isi Environment Variables SMTP_HOST,
+    SMTP_PORT, SMTP_ENKRIPSI, SMTP_USER, SMTP_PASS, SMTP_DARI di Vercel. Kalau diisi,
+    Environment Variables yang dipakai.)
+
+2. UPLOAD KE GITHUB (repo Private)
+   Upload seluruh isi folder ini. database.lokal.php dan email.lokal.php memang tidak ada
+   di zip ini; itu hanya untuk laptop.
+
+3. IMPORT DI VERCEL
+   Add New -> Project -> pilih repo -> Framework Preset: Other -> Build Command kosong.
+   vercel.json dan api/index.php sudah mengatur semuanya (PHP 8.3, region Singapura).
+
+4. DATABASE
+   - Kalau project Vercel lama sudah tersambung ke database (DATABASE_URL atau DB_HOST
+     dkk sudah ada di Environment Variables): tidak perlu apa-apa.
+   - Kalau belum: Vercel -> project -> Storage -> Create Database -> Neon (Postgres)
+     -> Connect. DATABASE_URL terisi otomatis. Tabel dan data demo dibuat otomatis
+     saat website pertama kali dibuka (tunggu sebentar di pembukaan pertama).
+
+5. DEPLOY / REDEPLOY
+   Klik Deploy. Kalau mengubah Environment Variables, wajib Redeploy.
+
+6. CEK EMAIL
+   Masuk admin@polinema.ac.id / admin123 -> Pengaturan -> tab Email.
+   Harus tertulis "SMTP terkonfigurasi" dan server smtp.gmail.com:587.
+   Klik "Kirim email uji". Kalau gagal, lihat kolom keterangan di Log email:
+   - autentikasi gagal  -> App Password salah / ada spasi / sudah dihapus di Google
+   - timeout            -> ganti port 465 dan enkripsi 'ssl', deploy ulang

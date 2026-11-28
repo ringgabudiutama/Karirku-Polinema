@@ -37,7 +37,7 @@ $tautanTab = fn($peran) => url('admin/persetujuan?' . http_build_query(array_fil
           $jenisBaru = empty($q['pernah_perbaikan']);
       ?>
         <tr>
-          <td><b><?= e($q['nama']) ?></b><br><small class="muted"><?= $q['role'] === 'mahasiswa' ? 'Mahasiswa/Alumni' : 'Perusahaan' ?><?= $q['nim'] ? ' &middot; ' . e($q['nim']) : '' ?><?= $q['nama_jurusan'] ? ' &middot; ' . e($q['nama_jurusan']) : '' ?></small></td>
+          <td><b><?= e($q['nama']) ?></b><br><small class="muted"><?= !empty($q['no_pendaftaran']) ? e($q['no_pendaftaran']) . ' &middot; ' : '' ?><?= $q['role'] === 'mahasiswa' ? 'Mahasiswa/Alumni' : 'Perusahaan' ?><?= $q['nim'] ? ' &middot; ' . e($q['nim']) : '' ?><?= $q['nama_jurusan'] ? ' &middot; ' . e($q['nama_jurusan']) : '' ?></small></td>
           <td><?= tanggalWaktuIndo($q['dibuat_pada']) ?></td>
           <td class="<?= $hari <= 0 ? 'wait-g' : ($hari > 2 ? 'wait-r' : 'wait-y') ?>"><?= $hari <= 0 ? 'Hari ini' : $hari . ' hari' ?></td>
           <td><span class="pill <?= $jenisBaru ? 'p-diajukan' : 'p-perbaikan' ?>"><?= $jenisBaru ? 'Baru' : 'Kiriman ulang' ?></span></td>

@@ -127,7 +127,7 @@ class Pengguna extends Model
     public function antreanVerifikasi(?int $jurusanId = null, string $q = '', int $limit = 0, int $offset = 0, string $peran = ''): array
     {
         [$where, $params] = $this->klausaAntrean($jurusanId, $q, $peran);
-        $sql = 'SELECT p.id AS pengguna_id, p.email, p.role, p.dibuat_pada,
+        $sql = 'SELECT p.id AS pengguna_id, p.email, p.role, p.dibuat_pada, p.no_pendaftaran,
                        COALESCE(m.nama, pr.nama_perusahaan) AS nama, m.nim,
                        j.id AS jurusan_id, j.nama AS nama_jurusan,
                        (SELECT COUNT(*) FROM verifikasi_akun va WHERE va.pengguna_id = p.id AND va.keputusan = \'perbaikan\') AS pernah_perbaikan'

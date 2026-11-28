@@ -95,7 +95,7 @@ class Database
     }
 
     /**
-     * Migrasi otomatis: kalau database masih versi lama (file 03/04/06/07 belum
+     * Migrasi otomatis: kalau database masih versi lama (file 03/04/06/07/09 belum
      * dijalankan), file SQL di folder database/ dijalankan sendiri satu kali,
      * jadi aplikasi tidak error "column ... does not exist".
      * Semua file migrasi aman dijalankan ulang.
@@ -116,14 +116,16 @@ class Database
                             WHERE table_schema = 'public' AND table_name = 'lowongan' AND column_name = 'search_vector')
                 AND to_regclass('public.v_rekap_lamaran') IS NOT NULL
                 AND to_regclass('public.percobaan_login') IS NOT NULL
-                AND to_regclass('public.idx_lamaran_tanggal') IS NOT NULL"
+                AND to_regclass('public.idx_lamaran_tanggal') IS NOT NULL
+                AND EXISTS (SELECT 1 FROM information_schema.columns
+                            WHERE table_schema = 'public' AND table_name = 'pengguna' AND column_name = 'no_pendaftaran')"
         )->fetchColumn();
         if ($sudahTerbaru()) {
             return;
         }
         if (array_key_exists('migrasi_otomatis', $cfg) && !$cfg['migrasi_otomatis']) {
             throw new \PDOException('Skema database belum terbaru dan migrasi otomatis dimatikan (DB_MIGRASI_OTOMATIS=0). '
-                . 'Jalankan file database/03, 04, 06, dan 07 sebagai pemilik database, lalu muat ulang halaman.');
+                . 'Jalankan file database/03, 04, 06, 07, dan 09 sebagai pemilik database, lalu muat ulang halaman.');
         }
 
         $folder = __DIR__ . '/../../database/';
@@ -134,8 +136,8 @@ class Database
             }
             $kosong = !(bool) $pdo->query("SELECT to_regclass('public.pengguna') IS NOT NULL")->fetchColumn();
             $daftar = $kosong
-                ? ['01-schema.sql', '02-seed.sql', '03-migrasi-revisi.sql', '04-revisi-dosen.sql', '06-revisi-profil.sql', '05-data-dummy.sql', '07-peningkatan-materi-dosen.sql']
-                : ['03-migrasi-revisi.sql', '04-revisi-dosen.sql', '06-revisi-profil.sql', '07-peningkatan-materi-dosen.sql'];
+                ? ['01-schema.sql', '02-seed.sql', '03-migrasi-revisi.sql', '04-revisi-dosen.sql', '06-revisi-profil.sql', '05-data-dummy.sql', '07-peningkatan-materi-dosen.sql', '09-nomor-pendaftaran.sql', '10-data-dummy-pendaftar.sql']
+                : ['03-migrasi-revisi.sql', '04-revisi-dosen.sql', '06-revisi-profil.sql', '07-peningkatan-materi-dosen.sql', '09-nomor-pendaftaran.sql'];
             foreach ($daftar as $f) {
                 $sql = @file_get_contents($folder . $f);
                 if ($sql === false) {

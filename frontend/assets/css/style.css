@@ -2331,7 +2331,7 @@ section {
   flex-wrap: wrap;
   gap: 8px;
 }
-.lock-list span {
+.lock-list > span {
   display: inline-flex;
   gap: 6px;
   align-items: center;
@@ -2341,7 +2341,7 @@ section {
   padding: 4px 12px;
   font-size: 0.85rem;
 }
-.lock-list span.terbuka {
+.lock-list > span.terbuka {
   background: var(--ok-bg);
   color: var(--ok);
 }
@@ -5054,3 +5054,16 @@ body:not(:has(.app)) {
   /* Detail pelamar: status lamaran + keterangan di tengah */
   .peran-perusahaan .profile-head .d-flex { justify-content: center; text-align: center; row-gap: 6px; }
 }
+
+/* --- Revisi: panel berdampingan di dalam grid harus sejajar ---
+   ".panel + .panel" memberi jarak atas untuk panel yang bertumpuk; di dalam grid
+   jarak itu membuat panel kedua turun dari panel pertama. Jarak antarpanel di grid
+   cukup diatur oleh gap. Pada halaman status akun kedua panel juga dibuat sama tinggi. */
+.grid > .panel + .panel { margin-top: 0; }
+@media (min-width: 769px) {
+  .status-grid { align-items: stretch; }
+  .status-grid > .panel { height: 100%; }
+}
+/* Baris terakhir linimasa tidak perlu ruang kosong di bawahnya. */
+.vtl:last-child { margin-bottom: 0; }
+.vtl li:last-child { padding-bottom: 0; }

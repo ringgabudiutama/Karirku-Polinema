@@ -40,7 +40,7 @@ $labelKeputusan = ['disetujui' => 'Disetujui', 'perbaikan' => 'Minta perbaikan',
           <div><b class="fs-115"><?= e($nama) ?></b><small><?= e($sub) ?></small></div>
         </div>
         <?= badgeHtml(labelStatusAkun($pengguna['status_akun'])) ?>
-        <span class="muted fs-88 ml-8">Mendaftar <?= tanggalIndo($pengguna['dibuat_pada']) ?>, no. <?= e($pengguna['no_pendaftaran'] ?? '-') ?></span>
+        <span class="muted fs-88 ml-8">Mendaftar <?= tanggalIndo($pengguna['dibuat_pada']) ?>, no. <?= e($pengguna['no_pendaftaran'] ?? ('PENG-' . $pengguna['id'])) ?></span>
       </div>
 
       <div class="panel"><h3>Data pendaftaran</h3>
