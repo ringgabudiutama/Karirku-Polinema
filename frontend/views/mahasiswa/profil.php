@@ -47,7 +47,7 @@ function tombolHapusItem(int $id): string
         <img class="avatar-lg" id="avatarImg" src="<?= e($fotoUrl) ?>" alt="Foto profil <?= e($mahasiswa['nama']) ?>">
         <form method="post" action="<?= url('mahasiswa/simpan-profil') ?>" enctype="multipart/form-data" id="fotoForm">
           <?= csrfField() ?><input type="hidden" name="aksi" value="foto">
-          <label title="Ganti foto"><input type="file" name="foto" accept=".jpg,.jpeg,.png" data-kirim-otomatis data-label="Foto profil" data-maks-kb="2048" data-sekarang="<?= e($fotoUrl) ?>"><span data-ic="image"></span></label>
+          <label title="Ganti foto" aria-label="Ganti foto"><input type="file" name="foto" accept=".jpg,.jpeg,.png" data-kirim-otomatis data-label="Foto profil" data-maks-kb="2048" data-sekarang="<?= e($fotoUrl) ?>"><span data-ic="camera"></span></label>
         </form>
       </div>
       <div class="grow">

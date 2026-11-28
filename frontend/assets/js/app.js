@@ -47,6 +47,8 @@ const ICONS = {
   calendar: '<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/>',
   clock: '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
   link: '<path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1"/><path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/>',
+  camera:
+    '<path d="M4 8h3l2-3h6l2 3h3a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z"/><circle cx="12" cy="13.5" r="3.5"/>',
   image:
     '<rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="2"/><path d="m21 16-5-5-9 9"/>',
   copy: '<rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V5a1 1 0 0 0-1-1H5a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h3"/>',
@@ -1377,7 +1379,6 @@ window.KarirKu.salahIsian = tampilkanSalahIsian;
     const el = e.target;
     e.preventDefault();                       // matikan gelembung bawaan browser
     if (!el || el.disabled) return;
-    if (document.documentElement.classList.contains('dlg-terbuka')) return;   // jangan menumpuk dialog
     if (el.type === 'radio' && antre.some((x) => x.type === 'radio' && x.name === el.name)) return;
     antre.push(el);
     clearTimeout(jadwal);
@@ -1393,7 +1394,7 @@ window.KarirKu.salahIsian = tampilkanSalahIsian;
     if (!el || !el.closest || !el.checkValidity) return;
     const f = el.closest('.field');
     if ((f && f.classList.contains('has-err')) || el.getAttribute('aria-invalid') === 'true') {
-      if (el.validity.valid && !el.dataset.pesanSalah) {  // validity.valid: TIDAK memicu event 'invalid' (checkValidity() memicunya -> popup tiap huruf)
+      if (el.checkValidity() && !el.dataset.pesanSalah) {
         tandaiIsian(el, '');
         const err = f && f.querySelector('.err[data-otomatis]');
         if (err) err.textContent = '';

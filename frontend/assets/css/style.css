@@ -5067,3 +5067,16 @@ body:not(:has(.app)) {
 /* Baris terakhir linimasa tidak perlu ruang kosong di bawahnya. */
 .vtl:last-child { margin-bottom: 0; }
 .vtl li:last-child { padding-bottom: 0; }
+
+/* ===== Revisi 28 Nov · angka notifikasi jelas & tombol ganti foto (kamera) ===== */
+.icon-btn > svg { width: 22px; height: 22px; }
+.icon-btn .dot { top: -2px; right: -6px; min-width: 20px; height: 20px; padding: 0 5px; font-size: .72rem; line-height: 1; z-index: 2; box-shadow: 0 2px 6px rgba(201, 42, 42, .35); }
+.nav-bawah a { position: relative; }
+.nav-bawah .nb-angka { top: -2px; left: calc(50% + 9px); min-width: 20px; height: 20px; font-size: 10.5px; line-height: 1; z-index: 2; box-shadow: 0 2px 6px rgba(201, 42, 42, .35); }
+.avatar-edit { display: inline-block; }
+.avatar-edit label { right: -2px; bottom: 2px; width: 36px; height: 36px; box-shadow: 0 3px 10px rgba(15, 27, 45, .25); transition: transform .15s, background .15s; }
+.avatar-edit label:hover { transform: scale(1.07); background: var(--navy); }
+.avatar-edit label svg { width: 18px; height: 18px; }
+/* Logo perusahaan: tampil utuh (tidak terpotong) di atas latar putih */
+img[src*="tipe=logo"] { object-fit: contain !important; background: #fff; }
+.partner .ikon { width: 44px; height: 44px; }

@@ -21,7 +21,7 @@ $waTampil = $admin['no_whatsapp'] ?? '';
         <img class="avatar-lg" src="<?= e($fotoAdmin) ?>" alt="Foto profil <?= e($admin['nama']) ?>">
         <form method="post" action="<?= url('admin/simpan-profil') ?>" enctype="multipart/form-data">
           <?= csrfField() ?><input type="hidden" name="aksi" value="foto">
-          <label title="Ganti foto"><input type="file" name="foto" accept=".jpg,.jpeg,.png" data-kirim-otomatis data-label="Foto profil admin" data-maks-kb="2048" data-sekarang="<?= e($fotoAdmin) ?>"><span data-ic="image"></span></label>
+          <label title="Ganti foto" aria-label="Ganti foto"><input type="file" name="foto" accept=".jpg,.jpeg,.png" data-kirim-otomatis data-label="Foto profil admin" data-maks-kb="2048" data-sekarang="<?= e($fotoAdmin) ?>"><span data-ic="camera"></span></label>
         </form>
       </div>
       <h2 class="m-0"><?= e($admin['nama']) ?></h2>

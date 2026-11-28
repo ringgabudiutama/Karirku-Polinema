@@ -36,8 +36,15 @@ class Database
                 // now(), CURRENT_DATE, batas lamaran, dan filter tanggal tidak meleset 7 jam.
                 $zona = (require __DIR__ . '/../config/config.php')['zona_waktu'] ?? 'Asia/Jakarta';
                 self::$pdo->exec("SET TIME ZONE '" . str_replace("'", '', $zona) . "'");
-                self::pastikanSkemaTerbaru(self::$pdo, $cfg);
-                self::pastikanDataDemo(self::$pdo, $cfg);
+                // Pemeriksaan skema & data demo cukup sekali per 10 menit per server (bukan tiap
+                // halaman): di Vercel setiap query ke database jauh lebih mahal daripada di laptop.
+                $tandaCek = rtrim(sys_get_temp_dir(), '/') . '/karirku-cek-skema-v3.ok';
+                if (!is_file($tandaCek) || (time() - (int) @filemtime($tandaCek)) > 600) {
+                    self::pastikanSkemaTerbaru(self::$pdo, $cfg);
+                    self::pastikanDataDemo(self::$pdo, $cfg);
+                    self::jalankanSekali(self::$pdo, '11-logo-mitra.sql', 'data_demo_11');
+                    @touch($tandaCek);
+                }
             } catch (\PDOException $e) {
                 $appCfg = require __DIR__ . '/../config/config.php';
                 // Alasan sebenarnya hanya masuk log server (untuk pengelola), tidak ke layar pengunjung.
@@ -201,6 +208,49 @@ class Database
             }
         } catch (\Throwable $e) {
             error_log('[KarirKu] Pemeriksaan data demo dilewati: ' . $e->getMessage());
+        }
+    }
+
+    /** Jalankan satu berkas SQL data demo satu kali saja (ditandai di tabel pengaturan). */
+    private static function jalankanSekali(\PDO $pdo, string $berkas, string $kunci): void
+    {
+        try {
+            $sudah = static function () use ($pdo, $kunci): bool {
+                $st = $pdo->prepare('SELECT 1 FROM pengaturan WHERE kunci = ?');
+                $st->execute([$kunci]);
+                return (bool) $st->fetchColumn();
+            };
+            if ($sudah()) {
+                return;
+            }
+            $pdo->exec('SELECT pg_advisory_lock(271029)');
+            try {
+                if ($sudah()) {
+                    return;
+                }
+                $hasil = 'ok';
+                try {
+                    $sql = @file_get_contents(__DIR__ . '/../../database/' . $berkas);
+                    if ($sql === false) {
+                        throw new \RuntimeException('file ' . $berkas . ' tidak ada');
+                    }
+                    $pdo->exec($sql);
+                } catch (\Throwable $e) {
+                    try {
+                        $pdo->exec('ROLLBACK');
+                    } catch (\Throwable) {
+                    }
+                    $hasil = 'gagal';
+                    error_log('[KarirKu] ' . $berkas . ' gagal dijalankan otomatis: ' . $e->getMessage());
+                }
+                $st = $pdo->prepare("INSERT INTO pengaturan (kunci, nilai) VALUES (?, ?)
+                                     ON CONFLICT (kunci) DO UPDATE SET nilai = EXCLUDED.nilai, diperbarui_pada = now()");
+                $st->execute([$kunci, $hasil . ' ' . date('Y-m-d H:i:s')]);
+            } finally {
+                $pdo->exec('SELECT pg_advisory_unlock(271029)');
+            }
+        } catch (\Throwable $e) {
+            error_log('[KarirKu] ' . $berkas . ' dilewati: ' . $e->getMessage());
         }
     }
 
