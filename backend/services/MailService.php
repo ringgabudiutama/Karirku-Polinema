@@ -116,7 +116,22 @@ class MailService
             $mail->Subject = $subjek;
             $mail->Body = $isiHtml;
             $mail->AltBody = trim(html_entity_decode(strip_tags(str_replace(['<br>', '</p>', '</h2>'], "\n", $isiHtml))));
-            $mail->send();
+            // Simpan jawaban server (hanya baris SERVER -> CLIENT, tidak pernah perintah kita yang
+            // berisi kata sandi) supaya alasan penolakan Gmail (535/534) terlihat di log email.
+            $jawabanServer = [];
+            $mail->SMTPDebug = 2;
+            $mail->Debugoutput = static function (string $baris) use (&$jawabanServer): void {
+                if (str_contains($baris, 'SERVER -> CLIENT:')) {
+                    $jawabanServer[] = trim(substr($baris, strpos($baris, 'SERVER -> CLIENT:') + 17));
+                }
+            };
+            try {
+                $mail->send();
+            } catch (\Throwable $e) {
+                $penolakan = array_values(array_filter($jawabanServer, static fn($b) => preg_match('/^[45]\d\d/', $b)));
+                $alasan = $penolakan ? ' | Jawaban server: ' . mb_substr(implode(' ', array_slice($penolakan, -2)), 0, 300) : '';
+                throw new \RuntimeException($e->getMessage() . $alasan, 0, $e);
+            }
             return;
         }
 

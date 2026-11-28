@@ -37,6 +37,7 @@ class Database
                 $zona = (require __DIR__ . '/../config/config.php')['zona_waktu'] ?? 'Asia/Jakarta';
                 self::$pdo->exec("SET TIME ZONE '" . str_replace("'", '', $zona) . "'");
                 self::pastikanSkemaTerbaru(self::$pdo, $cfg);
+                self::pastikanDataDemo(self::$pdo, $cfg);
             } catch (\PDOException $e) {
                 $appCfg = require __DIR__ . '/../config/config.php';
                 // Alasan sebenarnya hanya masuk log server (untuk pengelola), tidak ke layar pengunjung.
@@ -152,6 +153,54 @@ class Database
             }
         } finally {
             $pdo->exec('SELECT pg_advisory_unlock(271027)');
+        }
+    }
+
+    /**
+     * Database online yang dibuat dari file 01-04 saja (tanpa 05-data-dummy.sql) masih memakai
+     * gambar contoh: semua pamflet tampil "PAMFLET CONTOH", logo dan foto kosong.
+     * Bila begitu, 05-data-dummy.sql (aman dijalankan ulang) dijalankan SATU KALI, lalu ditandai
+     * di tabel pengaturan supaya tidak diulang. Gagal pun tidak membuat situs berhenti.
+     */
+    private static function pastikanDataDemo(\PDO $pdo, array $cfg = []): void
+    {
+        // Sengaja tidak bergantung pada DB_MIGRASI_OTOMATIS: ini hanya mengisi data demo.
+        $perlu = static fn(): bool => (bool) $pdo->query(
+            "SELECT EXISTS (SELECT 1 FROM lowongan WHERE pamflet LIKE 'contoh-%')
+                AND NOT EXISTS (SELECT 1 FROM pengaturan WHERE kunci = 'data_demo_05')"
+        )->fetchColumn();
+        try {
+            if (!$perlu()) {
+                return;
+            }
+            $pdo->exec('SELECT pg_advisory_lock(271028)');
+            try {
+                if (!$perlu()) {
+                    return;
+                }
+                $hasil = 'ok';
+                $sql = @file_get_contents(__DIR__ . '/../../database/05-data-dummy.sql');
+                try {
+                    if ($sql === false) {
+                        throw new \RuntimeException('file 05-data-dummy.sql tidak ada');
+                    }
+                    $pdo->exec($sql);
+                } catch (\Throwable $e) {
+                    try {
+                        $pdo->exec('ROLLBACK');   // 05 membuka BEGIN sendiri
+                    } catch (\Throwable) {
+                    }
+                    $hasil = 'gagal';
+                    error_log('[KarirKu] Data demo 05 gagal dijalankan otomatis: ' . $e->getMessage());
+                }
+                $st = $pdo->prepare("INSERT INTO pengaturan (kunci, nilai) VALUES ('data_demo_05', ?)
+                                     ON CONFLICT (kunci) DO UPDATE SET nilai = EXCLUDED.nilai, diperbarui_pada = now()");
+                $st->execute([$hasil . ' ' . date('Y-m-d H:i:s')]);
+            } finally {
+                $pdo->exec('SELECT pg_advisory_unlock(271028)');
+            }
+        } catch (\Throwable $e) {
+            error_log('[KarirKu] Pemeriksaan data demo dilewati: ' . $e->getMessage());
         }
     }
 

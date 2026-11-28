@@ -63,6 +63,16 @@ $konfigurasi = [
     ],
 ];
 
+// Server online: bila SMTP belum diisi lewat Environment Variables, pakai email.produksi.php
+// (hanya kalau kata sandinya sudah diisi).
+$emailProduksi = __DIR__ . '/email.produksi.php';
+if (trim((string) $konfigurasi['email']['host']) === '' && is_file($emailProduksi)) {
+    $produksi = (array) require $emailProduksi;
+    if (trim((string) ($produksi['pass'] ?? '')) !== '') {
+        $konfigurasi['email'] = array_merge($konfigurasi['email'], $produksi);
+    }
+}
+
 $emailLokal = __DIR__ . '/email.lokal.php';
 if (is_file($emailLokal)) {
     $konfigurasi['email'] = array_merge($konfigurasi['email'], (array) require $emailLokal);
